@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>About Owner - Kaya Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            animation: fadeIn 0.4s ease-in;
+            text-align: left;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        h2 {
+            color: #2980b9;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            background-color: #eee;
+            color: #333;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .tab-btn.active {
+            background-color: #2980b9;
+            color: white;
+        }
+        footer {
+            margin-top: 30px;
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+        }
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+   <button onclick="window.location.href='index.html'" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">←</button>
+
+ <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
+
+    <div class="container">
+        <h1><span style="color:#2980b9;">Kaya</span> <span style="color:#e67e22;">Store</span></h1>
+
+      
+
+        <div style="text-align:center;">
+            <img src="myphoto.jpg" alt="Banson Asamoah Bright" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #2980b9;">
+            <h3 style="margin:10px 0 0 0;">Banson Asamoah Bright</h3>
+            <p style="margin:0; color:#555; font-size:14px;">Store Owner</p>
+        </div>
+
+        <h2>About Owner</h2>
+        <p>Banson is a young Ghanaian entrepreneur who started to find ends meet at age 16. He started with trading and tried TikTok as well. He started the Kaya Store project at age 20 in 2026 and is yet to see what the future holds for all Ghanaians.</p>
+
+        <h2>Interests</h2>
+        <ul>
+            <li>Self-taught Coding</li>
+            <li>Marketing Strategist</li>
+            <li>Learning new skills</li>
+        </ul>
+
+        <footer>
+            &copy; 2026 Banson. Built with HTML &amp; CSS.
+        </footer>
+    </div>
+
+    <script>
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+        const btn = document.getElementById("modeToggle");
+        if (document.body.classList.contains("dark-mode")) {
+            btn.innerHTML = "🌙";
+        } else {
+            btn.innerHTML = "☀️";
+        }
+    }
+    </script>
+</body>
+</html>
