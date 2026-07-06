@@ -1,135 +1,197 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My First Page</title>
-
-<style>
-   <style>
-@media (max-width: 600px) {
-    body {
-        padding: 15px;
-    }
-    .container {
-        padding: 15px;
-    }
-    h1 {
-        font-size: 24px;
-    }
-    nav a {
-        display: block;
-        margin: 8px 0;
-    }
+    <title>Kaya Market</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);animation: fadeIn 0.4s ease-in;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        h2 {
+            color: #2980b9;
+        }
+        ul {
+            line-height: 1.8;
+            text-align: left;
+            display: inline-block;
+        }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .profile-section img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2980b9;
+            margin-bottom: 0;
+        }
+        .profile-info h3 {
+            margin: 0 0 5px 0;
+        }
+        .profile-info p {
+            margin: 3px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background-color: #eee;
+            color: #333;
+            cursor: pointer;
+            font-weight: bold;text-decoration: none;
+    display: inline-block;
+        }
+        .tab-btn.active {
+            background-color: #2980b9;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            text-align: left;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        button.darkmode-btn {
+            margin: 10px 0;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2c3e50;
+            color: white;
+            cursor: pointer;
+        }
+        footer {
+            margin-top: 30px;
+            color: #888;
+            font-size: 14px;
+        }
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+        body.dark-mode .container {
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+        }
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .container { padding: 15px; }
+            h1 { font-size: 22px; }
+            .profile-section { flex-direction: column; text-align: center; }
+        };
+}@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-    body
-<div class="profile-section">
-    <img src="myphoto.jpg" alt="Store Owner">
-    <div class="profile-info">
-        <h3>Banson Asamoah Bright</h3>
-        <p>Store Owner - Kaya Market</p>
-        <p>Email: mr.banson1@gmail.com</p>
-        <p>Phone/WhatsApp: 0535263510</p>
-    </div>
-</div> {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        margin: 0;
-        padding: 40px;
-        color: #333;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .container {
-        max-width: 600px;
-        background-color: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    h1 {
-        color: #2c3e50;
-    }
-    h2 {
-        color: #2980b9;
-    }
-    ul {
-        line-height: 1.8;
-        text-align: left;
-        display: inline-block;
-    }
-    img {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-    }
-</style>.tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-    flex-wrap: wrap;
 }
-.tab-btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    background-color: #eee;
-    color: #333;
-    cursor: pointer;
-    font-weight: bold;
-}
-.tab-btn.active {
-    background-color: #2980b9;
-    color: white;
-}
-.tab-content {
-    display: none;
-}
-.tab-content.active {
-    display: block;
-}
-</style>
+    </style>
 </head>
-<body>
-    <body>
+<body><button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:15px; right:15px; width:35px; height:35px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:15px; cursor:pointer; z-index:100;">☀️</button>
+ 
+
     <div class="container">
-        <img src="myphoto.jpg" alt="myphoto.jpg">
-        <h1>Hello, my name is Banson</h1>
-        <p>I dey learn to code and build sharp things.</p>
 
-        <h2id="about">About Me</h2>
-        <p>I dey learn web development and I get big plans for the future.</p>
-<nav style="margin: 20px 0;">
-    <a href="#about" style="margin: 0 10px; color: #2980b9; text-decoration: none;">About</a>
-    <a href="#interests" style="margin: 0 10px; color: #2980b9; text-decoration: none;">Interests</a>
-    <a href="#contact" style="margin: 0 10px; color: #2980b9; text-decoration: none;">Contact</a>
-</nav>
-<button onclick="toggleDarkMode()" style="margin: 10px; padding: 8px 16px; border: none; border-radius: 5px; background-color: #2c3e50; color: white; cursor: pointer;">
-    Toggle Dark Mode
-</button>
-
-        <h2 id="interests">My Interests</h2>
-        <ul>
-            <li>Coding</li>
-            <li>Building things</li>
-            <li>Learning new skills</li>
-        </ul>
-<h2id="contact">Contact Me</h2>
-<p>Email: mr.banson1@gmail.com</p>
-<p>Phone/WhatsApp: 0535263510</p>
+       <div class="profile-section">
+    <img src="logo.jpg" alt="Kaya Market Logo">
+    <div class="profile-info">
+        <h3><span style="color:#2980b9;">Kaya</span> <span style="color:#e67e22;">Store</span></h3>
+        <p>Buy and sell used items near you</p>
     </div>
-<footer style="margin-top: 30px; color: #888; font-size: 14px;">
-    &copy; 2026 Banson. Built with HTML & CSS.
-</footer>
+</div>
+
+        <h1><span style="color:#2980b9;">Kaya</span> <span style="color:#e67e22;">Store</span></h1>
+        <p style="text-align:center;">Buy and sell used items near you</p>
+
+        
+       <div class="tabs">
+    <a href="market.html" class="tab-btn">Market</a>
+    <a href="about.html" class="tab-btn">About Owner</a>
+    <a href="contact.html" class="tab-btn">Contact</a>
+</div>
+
+        <div id="market" class="tab-content active">
+            <h2>Market</h2>
+            <p>Marketplace items will appear here soon — search, categories, and item listings.</p>
+        </div>
+
+        <div id="about" class="tab-content">
+
+    <div style="text-align:center;">
+
+        <img src="myphoto.jpg" alt="Banson Asamoah Bright" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #2980b9;">
+
+        <h3 style="margin:10px 0 0 0;">Banson Asamoah Bright</h3>
+
+        <p style="margin:0; color:#555; font-size:14px;">Store Owner</p>
+
+    </div>
+
+    <h2>About Owner</h2>
+
+    <p>Banson is a young ghanaian enterpreneur who started to find ends meat at age 16 .He started with trading and tried Tiktok as well. He started the KayaStore project at age 20 in 2026 and is yet to see what the future holds for all ghanaians.</p>
+            <h2>Interests</h2>
+            <ul>
+                <li> Self thought Coding</li>
+                <li>markerting strategist</li>
+                <li>Learning new skills</li>
+            </ul>
+        </div>
+
+        <div id="contact" class="tab-content">
+            <h2>Contact Me</h2>
+            <p>Email: mr.banson1@gmail.com</p>
+            <p>Phone/WhatsApp: 0535263510</p>
+        </div>
+
+        <footer>
+            &copy; 2026 Banson. Built with HTML &amp; CSS.
+        </footer>
+    </div>
+
+    <script>
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    function showTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+    </script>
 </body>
-</ul>
-</body>
-<script>
-function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
-}
-</script>
 </html>
