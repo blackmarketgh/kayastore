@@ -1,30 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script>
-    emailjs.init("b6-xDbaelZ0QnrUvB");
-</script>
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
-        authDomain: "kaya-store-ba45c.firebaseapp.com",
-        projectId: "kaya-store-ba45c",
-        storageBucket: "kaya-store-ba45c.firebasestorage.app",
-        messagingSenderId: "540474076335",
-        appId: "1:540474076335:web:315c5813e764c27417785a"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-</script>
-    <title>KayaMart - Market</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>About Owner - Kaya Store</title>
     <style>
         body {
-            font-family: 'Poppins', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
             padding: 40px;
@@ -32,23 +12,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
         }
         .container {
             max-width: 700px;
             width: 100%;
             background-color: white;
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             animation: fadeIn 0.4s ease-in;
-        }
-        .spin {
-            display: inline-block;
-            animation: pulseLoad 1.2s ease-in-out infinite;
-        }
-        @keyframes pulseLoad {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.92); }
+            text-align: left;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -56,162 +30,13 @@
         }
         h1 {
             color: #2c3e50;
+            text-align: center;
         }
         h2 {
-            color: #1a5c3a;
-            text-align: center;
+            color: #2980b9;
         }
-        * { box-sizing: border-box; }
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        input, select, button.add-btn {
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            font-family: 'Poppins', Arial, sans-serif;
-            transition: border-color 0.2s ease;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #1a5c3a;
-        }
-        #searchInput {
-            flex: 1;
-            min-width: 180px;
-        }
-        .add-btn {
-            background-color: #1a5c3a;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-        .add-btn:hover {
-            background-color: #134529;
-            transform: translateY(-1px);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 16px;
-            margin-top: 10px;
-        }
-        .item-card {
-            background: #fafafa;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .item-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-        }
-        .item-card img {
-            width: 100%;
-            height: 130px;
-            object-fit: cover;
-            background: #ddd;
-            display: block;
-        }
-        .item-info {
-            padding: 10px;
-        }
-        .item-info h3 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
-        }
-        .price {
-            color: #000;
-            font-weight: 700;
-            font-size: 15px;
-            margin: 4px 0;
-        }
-        .category-tag {
-            display: inline-block;
-            background: #eee;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-top: 5px;
-        }
-        .order-btn {
-            display: block;
-            width: 100%;
-            margin-top: 8px;
-            padding: 8px;
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 28px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
-            animation: popIn 0.25s ease;
-        }
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .modal-content input, .modal-content select {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        .modal-content button {
-            width: 100%;
-            margin-top: 5px;
-        }
-        #imagePreview, #regPhotoPreview {
-            width: 100%;
-            max-height: 130px;
-            object-fit: cover;
-            margin-top: 10px;
-            display: none;
-            border-radius: 6px;
-        }
-        body.dark-mode .item-card {
-            background: #383838;
-        }
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #eee;
-        }
-        .profile-section img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #1a5c3a;
+        ul {
+            line-height: 1.8;
         }
         .tabs {
             display: flex;
@@ -221,18 +46,17 @@
             flex-wrap: wrap;
         }
         .tab-btn {
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 10px 18px;
+            border-radius: 6px;
             background-color: #eee;
             color: #333;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
+            font-weight: bold;
             text-decoration: none;
             display: inline-block;
         }
         .tab-btn.active {
-            background-color: #1a5c3a;
+            background-color: #2980b9;
             color: white;
         }
         footer {
@@ -250,430 +74,45 @@
             color: #f0f0f0;
         }
         @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 18px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            h1 { font-size: 22px; }
-            .profile-section { gap: 12px; }
-            .profile-section img { width: 55px; height: 55px; }
-            #cartBtn { right: 65px; width: 40px; height: 40px; font-size: 16px; }
-            #modeToggle { width: 40px; height: 40px; font-size: 18px; }
-        }
-        body.dark-mode .category-tag {
-            background: #555;
-            color: #f0f0f0;
-        }
-        body.dark-mode .modal-content {
-            background: #2c2c2c;
-            color: #f0f0f0;
+            body { padding: 15px; }
+            .container { padding: 15px; }
         }
     </style>
 </head>
 <body>
-    <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
+   <button onclick="window.location.href='index.html'" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">←</button>
 
-    <button id="favBtn" onclick="document.getElementById('categoryFilter').value='Favorites'; renderItems(); window.scrollTo({top:0, behavior:'smooth'});" style="position:fixed; top:20px; right:130px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">❤️</button>
-
-    <button id="sellersBtn" onclick="openSellersPanel()" style="display:none; position:fixed; top:20px; right:185px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">
-        🔔<span id="sellerRequestCount" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:none; align-items:center; justify-content:center;">0</span>
-    </button>
-
-    <button id="cartBtn" onclick="openCart()" style="position:fixed; top:20px; right:75px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">
-        🛒<span id="cartCount" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:none; align-items:center; justify-content:center;">0</span>
-    </button>
-
-    <button onclick="toggleTabsMenu()" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☰</button>
-    <div id="tabsMenu" style="display:none; position:fixed; top:70px; left:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); padding:8px; z-index:100; min-width:150px;">
-        <a href="index.html" class="tab-btn active" style="display:block; margin:4px 0;">Market</a>
-        <a href="about.html" class="tab-btn" style="display:block; margin:4px 0;">About Owner</a>
-        <a href="contact.html" class="tab-btn" style="display:block; margin:4px 0;">Contact</a>
-    </div>
+ <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
 
     <div class="container">
-        <div class="profile-section">
-            <img src="logo.jpg" alt="KayaMart Logo" onclick="handleLogoClick()" style="cursor:pointer;">
-            <div>
-                <h1 style="margin:0;"><span style="color:#1a5c3a;">Kaya</span><span style="color:#e67e22;">Mart</span></h1>
-                <p style="margin:2px 0 0 0; font-size:14px;">Buy and sell used items near you</p>
-            </div>
-        </div>
-        <h2>Market</h2>
+        <h1>
+<span style="color:#1a5c3a;">Kaya</span><span style="color:#e67e22;">Mart</span>
+</h1>
 
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search items..." onkeyup="renderItems()">
-            <select id="categoryFilter" onchange="renderItems()">
-                <option value="All">All Categories</option>
-                <option value="Favorites">Favorites</option>
-                <option value="Clothes">Clothes</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Other">Other</option>
-            </select>
-            <button class="add-btn" onclick="openModal()">+ Add Item</button>
+      
+
+        <div style="text-align:center;">
+            <img src="myphoto.jpg" alt="Banson Asamoah Bright" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #2980b9;">
+            <h3 style="margin:10px 0 0 0;">Banson Asamoah Bright</h3>
+            <p style="margin:0; color:#555; font-size:14px;">Store Owner</p>
         </div>
 
-        <div class="grid" id="itemGrid">
-            <div id="loadingState" style="grid-column: 1/-1; text-align:center; padding:40px 0;">
-                <div class="spin" style="position:relative; display:inline-block; font-size:50px; margin-bottom:10px;">
-                    🛒
-                    <span style="position:absolute; top:48%; left:50%; transform:translate(-50%,-50%); font-size:14px; font-weight:700;"><span style="color:#1a5c3a;">K</span><span style="color:#e67e22;">M</span></span>
-                </div>
-                <p style="color:#1a5c3a; font-weight:600;">Loading KayaMart...</p>
-            </div>
-        </div>
+        <h2>About Owner</h2>
+        <p>Banson is a young Ghanaian entrepreneur who started to find ends meet at age 16. He started with trading and tried TikTok as well. He started the Kaya Store project at age 20 in 2026 and is yet to see what the future holds for all Ghanaians.</p>
 
-        <p id="sellerLoginPrompt" style="text-align:center; margin-top:15px;"><a href="#" id="sellerAuthLink" onclick="handleSellerAuthClick(); return false;" style="color:#1a5c3a; font-size:13px;">Are you a seller? Log in to post items</a></p>
+        <h2>Interests</h2>
+        <ul>
+            <li>Self-taught Coding</li>
+            <li>Marketing Strategist</li>
+            <li>Learning new skills</li>
+        </ul>
 
         <footer>
             &copy; 2026 Banson. Built with HTML &amp; CSS.
         </footer>
     </div>
 
-    <div class="modal" id="addModal">
-        <div class="modal-content">
-            <h3>Add New Item</h3>
-            <input type="text" id="itemTitle" placeholder="Item name">
-            <input type="number" id="itemPrice" placeholder="Price (GHS)">
-            <select id="itemCategory">
-                <option value="Clothes">Clothes</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="text" id="sellerName" placeholder="Your name (seller)">
-            <input type="text" id="sellerPhone" placeholder="Your WhatsApp number (e.g. 233535263510)">
-            <textarea id="itemDescription" placeholder="Description (optional)" rows="3" style="width:100%; margin-bottom:10px; padding:10px; border-radius:6px; border:1px solid #ccc; font-family:inherit;"></textarea>
-            <input type="file" id="itemImage" accept="image/*">
-            <img id="imagePreview">
-            <button class="add-btn" onclick="addItem()">Post Item</button>
-            <button onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
-
-    <div class="modal" id="detailModal">
-        <div class="modal-content" style="text-align:center;">
-            <img id="detailImage" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;">
-            <h3 id="detailTitle" style="margin:15px 0 5px 0;"></h3>
-            <div class="price" id="detailPrice" style="font-size:18px;"></div>
-            <span class="category-tag" id="detailCategory"></span>
-            <p id="detailDescription" style="text-align:left; margin-top:15px; color:#555;"></p>
-            <a class="order-btn" id="detailOrderBtn" href="#" target="_blank">Order Now</a>
-            <div id="ownerControls" style="display:none; gap:8px; margin-top:8px;">
-                <button onclick="editItem()" style="width:100%; background-color:#1a5c3a; color:white; border:none; border-radius:10px; padding:12px;">Edit Item</button>
-                <button onclick="deleteItem()" style="width:100%; background-color:#e74c3c; color:white; border:none; border-radius:10px; padding:12px;">Delete Item</button>
-            </div>
-            <button onclick="closeDetailModal()" style="margin-top:8px;">Close</button>
-        </div>
-    </div>
-
-    <div class="modal" id="cartModal">
-        <div class="modal-content">
-            <h3>Your Cart</h3>
-            <div id="cartItems" style="text-align:left; max-height:300px; overflow-y:auto;"></div>
-            <div id="cartTotal" style="font-weight:bold; margin-top:10px; text-align:right;"></div>
-            <a class="order-btn" id="checkoutBtn" href="#" target="_blank">Checkout via WhatsApp</a>
-            <button onclick="closeCart()" style="margin-top:8px;">Close</button>
-        </div>
-    </div>
-
-    <div class="modal" id="sellersModal">
-        <div class="modal-content">
-            <h3>Manage Sellers</h3>
-            <div id="sellersList" style="text-align:left; max-height:350px; overflow-y:auto;"></div>
-            <button onclick="closeSellersPanel()" style="margin-top:12px;">Close</button>
-        </div>
-    </div>
-
-    <div class="modal" id="sellerAuthModal">
-        <div class="modal-content">
-            <div style="display:flex; gap:8px; margin-bottom:15px;">
-                <button id="sellerRegisterTab" onclick="switchSellerTab('register')" style="width:100%; background:#1a5c3a; color:white; border:none;">Register</button>
-                <button id="sellerLoginTab" onclick="switchSellerTab('login')" style="width:100%; background:#eee; color:#333; border:none;">Log In</button>
-            </div>
-
-            <div id="sellerRegisterForm">
-                <h3>Become a Seller</h3>
-                <input type="text" id="regName" placeholder="Your full name">
-                <input type="text" id="regPhone" placeholder="WhatsApp number (e.g. 0591616403)">
-                <input type="email" id="regEmail" placeholder="Your email address">
-                <input type="password" id="regPassword" placeholder="Create a password">
-                <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Profile Photo</label>
-                <input type="file" id="regPhoto" accept="image/*" capture="user">
-                <img id="regPhotoPreview">
-                <button class="add-btn" onclick="submitSellerRegister()">Submit Request</button>
-            </div>
-
-            <div id="sellerLoginForm" style="display:none;">
-                <h3>Seller Log In</h3>
-                <input type="text" id="loginPhone" placeholder="Your registered WhatsApp number">
-                <input type="password" id="loginPassword" placeholder="Password">
-                <button class="add-btn" onclick="submitSellerLogin()">Log In</button>
-            </div>
-
-            <button onclick="closeSellerAuth()" style="margin-top:8px;">Cancel</button>
-        </div>
-    </div>
-
     <script>
-    let isOwner = localStorage.getItem('kayaOwner') === 'true';
-    let logoClickCount = 0;
-    let logoClickTimer = null;
-
-    function handleLogoClick() {
-        logoClickCount++;
-        if (logoClickTimer) clearTimeout(logoClickTimer);
-        logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
-
-        if (logoClickCount === 3) {
-            logoClickCount = 0;
-
-            if (isOwner) {
-                if (confirm("Log out of owner mode?")) {
-                    isOwner = false;
-                    localStorage.setItem('kayaOwner', 'false');
-                    alert("Logged out of owner mode.");
-                    renderItems();
-                    toggleOwnerControls();
-                }
-            } else {
-                const pass = prompt("Enter owner password:");
-                if (pass === "kaya2026") {
-                    isOwner = true;
-                    localStorage.setItem('kayaOwner', 'true');
-                    alert("Owner mode unlocked!");
-                    renderItems();
-                    toggleOwnerControls();
-                } else if (pass !== null) {
-                    alert("Incorrect password.");
-                }
-            }
-        }
-    }
-
-    let sellerId = localStorage.getItem('kayaSellerId') || null;
-    let sellerStatus = null;
-
-    function handleSellerAuthClick() {
-        if (sellerId) {
-            if (confirm("Log out of your seller account?")) {
-                localStorage.removeItem('kayaSellerId');
-                sellerId = null;
-                sellerStatus = null;
-                updateSellerLinkText();
-                document.querySelector('.controls .add-btn').style.display = 'none';
-                alert("Logged out.");
-            }
-        } else {
-            document.getElementById('sellerAuthModal').style.display = 'flex';
-        }
-    }
-
-    function updateSellerLinkText() {
-        const link = document.getElementById('sellerAuthLink');
-        if (!link) return;
-        link.innerText = sellerId ? "Log out of seller account" : "Are you a seller? Log in to post items";
-    }
-
-    function switchSellerTab(tab) {
-        const regForm = document.getElementById('sellerRegisterForm');
-        const loginForm = document.getElementById('sellerLoginForm');
-        const regTab = document.getElementById('sellerRegisterTab');
-        const loginTab = document.getElementById('sellerLoginTab');
-
-        if (tab === 'register') {
-            regForm.style.display = 'block';
-            loginForm.style.display = 'none';
-            regTab.style.background = '#1a5c3a';
-            regTab.style.color = 'white';
-            loginTab.style.background = '#eee';
-            loginTab.style.color = '#333';
-        } else {
-            regForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            loginTab.style.background = '#1a5c3a';
-            loginTab.style.color = 'white';
-            regTab.style.background = '#eee';
-            regTab.style.color = '#333';
-        }
-    }
-
-    function closeSellerAuth() {
-        document.getElementById('sellerAuthModal').style.display = 'none';
-    }
-
-    document.getElementById('regPhoto').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const preview = document.getElementById('regPhotoPreview');
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    function submitSellerRegister() {
-        const name = document.getElementById('regName').value;
-        const phone = document.getElementById('regPhone').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-        const photoFile = document.getElementById('regPhoto').files[0];
-
-        if (!name || !phone || !email || !password) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        function saveSeller(photoData) {
-            db.collection('sellers').add({
-                name, phone: formatPhone(phone), email, password, status: "pending", photo: photoData || "",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then((docRef) => {
-                localStorage.setItem('kayaSellerId', docRef.id);
-                sellerId = docRef.id;
-                alert("Registration submitted! Waiting for owner approval before you can post items.");
-                closeSellerAuth();
-                updateSellerLinkText();
-            });
-        }
-
-        if (photoFile) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                saveSeller(event.target.result);
-            };
-            reader.readAsDataURL(photoFile);
-        } else {
-            saveSeller("");
-        }
-    }
-
-    function submitSellerLogin() {
-        const phone = document.getElementById('loginPhone').value;
-        const password = document.getElementById('loginPassword').value;
-
-        if (!phone || !password) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        db.collection('sellers').where('phone', '==', formatPhone(phone)).where('password', '==', password).get().then((snapshot) => {
-            if (snapshot.empty) {
-                alert("No matching account found.");
-                return;
-            }
-            const doc = snapshot.docs[0];
-            localStorage.setItem('kayaSellerId', doc.id);
-            sellerId = doc.id;
-            checkSellerStatus();
-            closeSellerAuth();
-            updateSellerLinkText();
-        });
-    }
-
-    function openSellersPanel() {
-        document.getElementById('sellersModal').style.display = 'flex';
-        const list = document.getElementById('sellersList');
-        list.innerHTML = 'Loading...';
-        db.collection('sellers').orderBy('createdAt', 'desc').get().then((snapshot) => {
-            list.innerHTML = '';
-            if (snapshot.empty) {
-                list.innerHTML = '<p>No sellers yet.</p>';
-            }
-            snapshot.forEach((doc) => {
-                const s = doc.data();
-                const statusColor = s.status === 'approved' ? '#27ae60' : s.status === 'declined' ? '#e74c3c' : '#e67e22';
-                const photoHtml = s.photo
-                    ? `<img src="${s.photo}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">`
-                    : `<div style="width:40px; height:40px; border-radius:50%; background:#eee; margin-right:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">👤</div>`;
-                list.innerHTML += `
-                    <div style="padding:10px 0; border-bottom:1px solid #eee; display:flex; align-items:flex-start;">
-                        ${photoHtml}
-                        <div style="flex:1;">
-                            <strong>${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>
-                            <div style="font-size:13px; color:#777;">${s.phone}</div>
-                            <div style="display:flex; gap:6px; margin-top:6px;">
-                                <button onclick="setSellerStatus('${doc.id}', 'approved')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Approve</button>
-                                <button onclick="setSellerStatus('${doc.id}', 'declined')" style="width:auto; background:#e74c3c; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Decline</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }).catch((err) => {
-            list.innerHTML = '<p style="color:red;">Error loading sellers: ' + err.message + '</p>';
-        });
-    }
-
-    function closeSellersPanel() {
-        document.getElementById('sellersModal').style.display = 'none';
-    }
-
-    function setSellerStatus(id, status) {
-        db.collection('sellers').doc(id).get().then((doc) => {
-            const seller = doc.data();
-            db.collection('sellers').doc(id).update({ status }).then(() => {
-                if (status === 'approved' && seller.email) {
-                    emailjs.send('service_gzm7q7p', 'template_hj8414k', {
-                        to_name: seller.name,
-                        to_email: seller.email
-                    }).then(() => {
-                        console.log('Email sent successfully');
-                    }).catch((err) => {
-                        console.error('Email failed:', err);
-                    });
-                }
-                openSellersPanel();
-            });
-        });
-    }
-
-    function listenForPendingSellers() {
-        db.collection('sellers').where('status', '==', 'pending').onSnapshot((snapshot) => {
-            const badge = document.getElementById('sellerRequestCount');
-            const count = snapshot.size;
-            if (badge) {
-                if (count > 0) {
-                    badge.style.display = 'flex';
-                    badge.innerText = count;
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        });
-    }
-
-    function checkSellerStatus() {
-        if (!sellerId) return;
-        db.collection('sellers').doc(sellerId).onSnapshot((doc) => {
-            if (!doc.exists) return;
-            const data = doc.data();
-            sellerStatus = data.status;
-            toggleOwnerControls();
-        });
-    }
-
-    function toggleOwnerControls() {
-        const addBtn = document.querySelector('.controls .add-btn');
-        if (addBtn) addBtn.style.display = (isOwner || sellerStatus === 'approved') ? 'inline-block' : 'none';
-
-        const ownerControls = document.getElementById('ownerControls');
-        if (ownerControls) ownerControls.style.display = isOwner ? 'flex' : 'none';
-
-        const sellersBtn = document.getElementById('sellersBtn');
-        if (sellersBtn) sellersBtn.style.display = isOwner ? 'inline-block' : 'none';
-
-        const sellerPrompt = document.getElementById('sellerLoginPrompt');
-        if (sellerPrompt) sellerPrompt.style.display = isOwner ? 'none' : 'block';
-    }
-
-    function toggleTabsMenu() {
-        const menu = document.getElementById('tabsMenu');
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
-
     function toggleDarkMode() {
         document.body.classList.toggle("dark-mode");
         const btn = document.getElementById("modeToggle");
@@ -683,301 +122,6 @@
             btn.innerHTML = "☀️";
         }
     }
-
-    let cart = JSON.parse(localStorage.getItem('kayaCart')) || [];
-
-    function saveCart() {
-        localStorage.setItem('kayaCart', JSON.stringify(cart));
-        updateCartCount();
-    }
-
-    let favorites = JSON.parse(localStorage.getItem('kayaFavorites')) || [];
-
-    function saveFavorites() {
-        localStorage.setItem('kayaFavorites', JSON.stringify(favorites));
-    }
-
-    function toggleFavorite(index) {
-        const pos = favorites.indexOf(index);
-        if (pos === -1) {
-            favorites.push(index);
-        } else {
-            favorites.splice(pos, 1);
-        }
-        saveFavorites();
-        renderItems();
-    }
-
-    function updateCartCount() {
-        const count = cart.length;
-        const badge = document.getElementById('cartCount');
-        if (count > 0) {
-            badge.style.display = 'flex';
-            badge.innerText = count;
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    function addToCart(index) {
-        const existing = cart.find(c => c.title === items[index].title);
-        if (existing) {
-            existing.qty += 1;
-        } else {
-            cart.push({ ...items[index], qty: 1 });
-        }
-        saveCart();
-        alert(items[index].title + " added to cart!");
-    }
-
-    function formatPhone(number) {
-        number = number.replace(/\D/g, '');
-        if (number.startsWith('0')) {
-            number = '233' + number.substring(1);
-        }
-        return number;
-    }
-
-    let items = [];
-
-    function loadItemsFromFirestore() {
-        db.collection('items').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            items = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                data.firestoreId = doc.id;
-                items.push(data);
-            });
-            renderItems();
-            toggleOwnerControls();
-        });
-    }
-
-    function renderItems() {
-        const grid = document.getElementById('itemGrid');
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const category = document.getElementById('categoryFilter').value;
-
-        grid.innerHTML = "";
-
-        const filtered = items.filter(item => {
-            const matchesSearch = item.title.toLowerCase().includes(search);
-            let matchesCategory;
-            if (category === "Favorites") {
-                matchesCategory = favorites.includes(items.indexOf(item));
-            } else {
-                matchesCategory = category === "All" || item.category === category;
-            }
-            return matchesSearch && matchesCategory;
-        });
-
-        if (filtered.length === 0) {
-            grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
-            return;
-        }
-
-        filtered.forEach((item) => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.innerHTML = `
-                <div style="position:relative;">
-                    <img src="${item.image || 'https://via.placeholder.com/200x150?text=No+Image'}" alt="${item.title}" onclick="openDetail(${items.indexOf(item)})" style="cursor:pointer;">
-                    <span onclick="toggleFavorite(${items.indexOf(item)})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(items.indexOf(item)) ? '❤️' : '🤍'}</span>
-                </div>
-                <div class="item-info">
-                    <h3 onclick="openDetail(${items.indexOf(item)})" style="cursor:pointer;">${item.title}</h3>
-                    <div class="price">GHS ${item.price}</div>
-                    <span class="category-tag">${item.category}</span>
-                    <button class="order-btn" style="background-color:#1a5c3a; border:none;" onclick="addToCart(${items.indexOf(item)})">+ Add to Cart</button>
-                    <a class="order-btn" href="https://wa.me/${item.sellerPhone || '233535263510'}?text=${encodeURIComponent('Hi, I want to order: ' + item.title + ' (GHS ' + item.price + ')')}" target="_blank">Order Now</a>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    function openModal() {
-        document.getElementById('addModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('addModal').style.display = 'none';
-    }
-
-    let currentDetailIndex = null;
-
-    function openDetail(index) {
-        currentDetailIndex = index;
-        const item = items[index];
-        document.getElementById('detailImage').src = item.image || 'https://via.placeholder.com/200x150?text=No+Image';
-
-        const canManage = isOwner || (item.postedBy && item.postedBy === sellerId);
-        document.getElementById('ownerControls').style.display = canManage ? 'flex' : 'none';
-        document.getElementById('detailTitle').innerText = item.title;
-        document.getElementById('detailPrice').innerText = 'GHS ' + item.price;
-        document.getElementById('detailCategory').innerText = item.category;
-        document.getElementById('detailDescription').innerText = item.description || 'No description provided.';
-        document.getElementById('detailOrderBtn').href = 'https://wa.me/' + (item.sellerPhone || '233535263510') + '?text=' + encodeURIComponent('Hi, I want to order: ' + item.title + ' (GHS ' + item.price + ')');
-        document.getElementById('detailModal').style.display = 'flex';
-    }
-
-    function closeDetailModal() {
-        document.getElementById('detailModal').style.display = 'none';
-    }
-
-    function deleteItem() {
-        if (confirm("Are you sure you want to delete this item?")) {
-            const item = items[currentDetailIndex];
-            db.collection('items').doc(item.firestoreId).delete().then(() => {
-                closeDetailModal();
-            });
-        }
-    }
-
-    function editItem() {
-        const item = items[currentDetailIndex];
-        const newTitle = prompt("Item name:", item.title);
-        if (newTitle === null) return;
-        const newPrice = prompt("Price (GHS):", item.price);
-        if (newPrice === null) return;
-        const newDescription = prompt("Description:", item.description || "");
-
-        db.collection('items').doc(item.firestoreId).update({
-            title: newTitle,
-            price: newPrice,
-            description: newDescription
-        }).then(() => {
-            closeDetailModal();
-        });
-    }
-
-    function openCart() {
-        const cartItemsDiv = document.getElementById('cartItems');
-        const totalDiv = document.getElementById('cartTotal');
-        cartItemsDiv.innerHTML = '';
-
-        if (cart.length === 0) {
-            cartItemsDiv.innerHTML = '<div style="text-align:center; padding:20px 0; color:#999;"><div style="font-size:40px; margin-bottom:10px;">🛒</div><p>Your cart is empty.</p></div>';
-            totalDiv.innerText = '';
-        } else {
-            let total = 0;
-            let message = 'Hi, I want to order:%0A';
-            cart.forEach((item, i) => {
-                const lineTotal = Number(item.price) * item.qty;
-                total += lineTotal;
-                message += `- ${item.title} x${item.qty} (GHS ${lineTotal})%0A`;
-                cartItemsDiv.innerHTML += `
-                    <div style="padding:8px 0; border-bottom:1px solid #eee;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span>${item.title}</span>
-                            <button onclick="removeFromCart(${i})" style="width:auto; background:#e74c3c; color:white; border:none; border-radius:4px; padding:4px 8px; cursor:pointer;">✕</button>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <button onclick="changeQty(${i}, -1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer;">-</button>
-                                <span>${item.qty}</span>
-                                <button onclick="changeQty(${i}, 1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer;">+</button>
-                            </div>
-                            <span style="font-weight:bold;">GHS ${lineTotal}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            totalDiv.innerText = 'Total: GHS ' + total;
-            document.getElementById('checkoutBtn').href = 'https://wa.me/233535263510?text=' + message + encodeURIComponent('Total: GHS ' + total);
-        }
-
-        document.getElementById('cartModal').style.display = 'flex';
-    }
-
-    function closeCart() {
-        document.getElementById('cartModal').style.display = 'none';
-    }
-
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        saveCart();
-        openCart();
-    }
-
-    function changeQty(index, amount) {
-        cart[index].qty += amount;
-        if (cart[index].qty <= 0) {
-            cart.splice(index, 1);
-        }
-        saveCart();
-        openCart();
-    }
-
-    document.getElementById('itemImage').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const preview = document.getElementById('imagePreview');
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    function addItem() {
-        const title = document.getElementById('itemTitle').value;
-        const price = document.getElementById('itemPrice').value;
-        const category = document.getElementById('itemCategory').value;
-        const fileInput = document.getElementById('itemImage');
-        const file = fileInput.files[0];
-
-        if (!title || !price) {
-            alert("Please fill in item name and price.");
-            return;
-        }
-
-        const sellerName = document.getElementById('sellerName').value || (localStorage.getItem('kayaSellerName') || "Banson");
-        const sellerPhoneRaw = document.getElementById('sellerPhone').value || "233535263510";
-        const sellerPhone = formatPhone(sellerPhoneRaw);
-        const postedBy = isOwner ? "OWNER" : sellerId;
-        const itemStatus = isOwner ? "approved" : "pending";
-        const description = document.getElementById('itemDescription').value;
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                db.collection('items').add({
-                    title, price, category, description, sellerName, sellerPhone, postedBy, status: itemStatus,
-                    image: event.target.result,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    closeModal();
-                    resetForm();
-                });
-            };
-            reader.readAsDataURL(file);
-        } else {
-            db.collection('items').add({
-                title, price, category, description, sellerName, sellerPhone, postedBy, status: itemStatus,
-                image: "",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                closeModal();
-                resetForm();
-            });
-        }
-    }
-
-    function resetForm() {
-        document.getElementById('itemTitle').value = '';
-        document.getElementById('itemPrice').value = '';
-        document.getElementById('itemImage').value = '';
-        document.getElementById('imagePreview').style.display = 'none';
-    }
-
-    loadItemsFromFirestore();
-    updateCartCount();
-    checkSellerStatus();
-    listenForPendingSellers();
-    updateSellerLinkText();
     </script>
 </body>
 </html>
