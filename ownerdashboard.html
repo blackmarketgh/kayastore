@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
+        authDomain: "kaya-store-ba45c.firebaseapp.com",
+        projectId: "kaya-store-ba45c",
+        storageBucket: "kaya-store-ba45c.firebasestorage.app",
+        messagingSenderId: "540474076335",
+        appId: "1:540474076335:web:315c5813e764c27417785a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
+    <title>Owner Dashboard - KayaMart</title>
+    <style>
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1a5c3a;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-box .num {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1a5c3a;
+        }
+        .stat-box .label {
+            font-size: 12px;
+            color: #777;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .filter-bar label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: #555;
+        }
+        .filter-bar input[type="date"] {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .filter-bar button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #1a5c3a;
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            align-self: flex-end;
+        }
+        #clearFilterBtn {
+            background: #999;
+        }
+        .filter-bar button:hover {
+            opacity: 0.9;
+        }
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .activity-icon {
+            font-size: 20px;
+        }
+        .activity-text {
+            font-size: 14px;
+        }
+        .activity-time {
+            font-size: 11px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+     <h1>Owner Dashboard</h1>
+        <div class="filter-bar">
+            <label>From: <input type="date" id="dateFrom"></label>
+            <label>To: <input type="date" id="dateTo"></label>
+            <button id="applyFilterBtn" onclick="applyDateFilter()">Apply</button>
+            <button id="clearFilterBtn" onclick="clearDateFilter()">Clear</button>
+        </div>
+        <div class="filter-bar">
+            <label class="checkbox-label"><input type="checkbox" id="showSales" checked onchange="renderActivityFeed()"> 💰 Sales</label>
+            <label class="checkbox-label"><input type="checkbox" id="showSellers" checked onchange="renderActivityFeed()"> 🧑‍💼 New Sellers</label>
+            <label class="checkbox-label"><input type="checkbox" id="showChats" checked onchange="renderActivityFeed()"> 💬 Messages</label>
+        </div>
+     
+        <div id="activityFeed">Loading...</div>
+    </div>
+
+  <script>
+if (localStorage.getItem('kayaOwner') !== 'true') {
+        document.body.innerHTML = '<div style="padding:40px; text-align:center;"><h2>Access Denied</h2><p>Owner login required.</p></div>';
+    } else {
+        loadDashboard();
+    }
+
+    // Global raw data caches so filtering doesn't need a re-fetch
+    let allSalesData = [];
+    let allSellersData = [];
+    let allChatsData = [];
+    let activeItemCount = 0;
+    let activeSellerCount = 0;
+
+    function loadDashboard() {
+        db.collection('items').get().then(snap => {
+            activeItemCount = snap.size;
+            renderStats();
+        });
+
+        db.collection('sellers').where('status', '==', 'approved').get().then(snap => {
+            activeSellerCount = snap.size;
+            renderStats();
+        });
+
+      db.collection('sales').orderBy('soldAt', 'desc').get().then(snap => {
+            allSalesData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '💰',
+                    text: `Sale: ${d.title} - GHS ${d.price} (commission GHS ${d.commission?.toFixed(2)})`,
+                    time: d.soldAt ? d.soldAt.toMillis() : 0,
+                    commission: d.commission || 0,
+                    title: d.title || '',
+                    price: d.price || 0
+                };
+            });
+            renderStats();
+            renderActivityFeed();
+        });
+
+        db.collection('sellers').orderBy('createdAt', 'desc').get().then(snap => {
+            allSellersData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '🧑‍💼',
+                    text: `New seller registered: ${d.name} (${d.location || 'Unknown'})`,
+                    time: d.createdAt ? d.createdAt.toMillis() : 0
+                };
+            });
+            renderActivityFeed();
+        });
+
+        db.collection('chats').orderBy('lastMessageAt', 'desc').get().then(snap => {
+            allChatsData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '💬',
+                    text: `New message about: ${d.itemTitle} from ${d.buyerName}`,
+                    time: d.lastMessageAt ? d.lastMessageAt.toMillis() : 0
+                };
+            });
+            renderActivityFeed();
+        });
+    }
+
+    function getDateBounds() {
+        const fromVal = document.getElementById('dateFrom').value;
+        const toVal = document.getElementById('dateTo').value;
+        const from = fromVal ? new Date(fromVal + 'T00:00:00').getTime() : null;
+        const to = toVal ? new Date(toVal + 'T23:59:59').getTime() : null;
+        return { from, to };
+    }
+
+    function inRange(time, from, to) {
+        if (from !== null && time < from) return false;
+        if (to !== null && time > to) return false;
+        return true;
+    }
+
+    function renderStats() {
+        const { from, to } = getDateBounds();
+        const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+        const totalCommission = filteredSales.reduce((sum, s) => sum + s.commission, 0);
+
+        document.getElementById('statGrid').innerHTML = `
+            <div class="stat-box"><div class="num">${activeItemCount}</div><div class="label">Active Items</div></div>
+            <div class="stat-box"><div class="num">${activeSellerCount}</div><div class="label">Active Sellers</div></div>
+            <div class="stat-box"><div class="num">GHS ${totalCommission.toFixed(0)}</div><div class="label">Total Commission${(from || to) ? ' (filtered)' : ''}</div></div>
+        `;
+    }
+
+    function renderActivityFeed() {
+        const feed = document.getElementById('activityFeed');
+        const { from, to } = getDateBounds();
+
+      const showSales = document.getElementById('showSales').checked;
+        const showSellers = document.getElementById('showSellers').checked;
+        const showChats = document.getElementById('showChats').checked;
+
+        let allActivities = [];
+        if (showSales) allActivities = allActivities.concat(allSalesData);
+        if (showSellers) allActivities = allActivities.concat(allSellersData);
+        if (showChats) allActivities = allActivities.concat(allChatsData);
+
+        allActivities = allActivities.filter(act => inRange(act.time, from, to));
+
+        allActivities.sort((a, b) => b.time - a.time);
+
+        if (allActivities.length === 0) {
+            feed.innerHTML = '<p style="color:#999;">No activity in this range.</p>';
+            return;
+        }
+
+        feed.innerHTML = '';
+        allActivities.slice(0, 15).forEach(act => {
+            const dateStr = act.time ? new Date(act.time).toLocaleString() : '';
+            feed.innerHTML += `
+                <div class="activity-item">
+                    <div class="activity-icon">${act.icon}</div>
+                    <div>
+                        <div class="activity-text">${act.text}</div>
+                        <div class="activity-time">${dateStr}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function applyDateFilter() {
+        renderStats();
+        renderActivityFeed();
+    }
+
+    function clearDateFilter() {
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        renderStats();
+        renderActivityFeed();
+    }
+function exportSalesCSV() {
+        const { from, to } = getDateBounds();
+        const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+
+        if (filteredSales.length === 0) {
+            alert('No sales in the selected range to export.');
+            return;
+        }
+
+        let csv = 'Date,Title,Price (GHS),Commission (GHS)\n';
+        filteredSales.forEach(s => {
+            const dateStr = s.time ? new Date(s.time).toLocaleDateString() : '';
+            const safeTitle = `"${(s.title || '').replace(/"/g, '""')}"`;
+            csv += `${dateStr},${safeTitle},${s.price},${s.commission.toFixed(2)}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fromLabel = from ? new Date(from).toISOString().slice(0,10) : 'all';
+        const toLabel = to ? new Date(to).toISOString().slice(0,10) : 'all';
+        link.download = `kayamart-sales_${fromLabel}_to_${toLabel}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+</script>
+</body>
+</html>

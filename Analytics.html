@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
+        authDomain: "kaya-store-ba45c.firebaseapp.com",
+        projectId: "kaya-store-ba45c",
+        storageBucket: "kaya-store-ba45c.firebasestorage.app",
+        messagingSenderId: "540474076335",
+        appId: "1:540474076335:web:315c5813e764c27417785a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
+    <title>Analytics - KayaMart</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+     h1 {
+    color: #000;
+    text-align: left;
+}
+.tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+.tab-btn {
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+.tab-btn.active {
+    color: #1a5c3a;
+    border-bottom: 2px solid #1a5c3a;
+}
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 15px 0;
+    padding: 12px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    font-size: 13px;
+}
+.filter-bar label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #555;
+}
+.filter-bar input[type="date"] {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+.filter-bar button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: #1a5c3a;
+    color: white;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    align-self: flex-end;
+}
+#laClearFilterBtn {
+    background: #999;
+}
+.filter-bar button:hover {
+    opacity: 0.9;
+}
+.checkbox-label {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 6px !important;
+    cursor: pointer;
+    font-size: 13px;
+}
+#laExportBtn {
+    display: block;
+    margin: 10px 0 20px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #1a5c3a;
+    color: white;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+}
+#laExportBtn:hover {
+    opacity: 0.9;
+}
+.activity-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.activity-icon {
+    font-size: 20px;
+}
+.activity-text {
+    font-size: 14px;
+}
+.activity-time {
+    font-size: 11px;
+    color: #999;
+}
+.approval-card {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.approval-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.approval-card-info {
+    flex: 1;
+    min-width: 0;
+}
+.approval-card-title {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.approval-card-sub {
+    font-size: 12px;
+    color: #999;
+}
+.approval-view-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #eee;
+    color: #333;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.approval-section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #999;
+    margin: 20px 0 10px;
+}
+#approvalModalOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+#approvalModalOverlay.open {
+    display: flex;
+}
+.approval-modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 0;
+}
+.approval-modal-img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    background: #000;
+    border-radius: 16px 16px 0 0;
+    display: block;
+}
+.approval-modal-body {
+    padding: 20px;
+}
+.approval-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.9);
+    font-size: 18px;
+    cursor: pointer;
+}
+.approval-modal-wrap {
+    position: relative;
+}
+.approval-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+.approval-detail-label {
+    color: #999;
+}
+.approval-detail-value {
+    font-weight: 600;
+    text-align: right;
+}
+.approval-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+.approval-btn-approve, .approval-btn-reject {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+}
+.approval-btn-approve {
+    background: #1a5c3a;
+    color: white;
+}
+.approval-btn-reject {
+    background: #fdecea;
+    color: #c0392b;
+}    </style>
+</head>
+<body>
+  <button id="backBtn" onclick="window.location.href='index.html'" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">←</button>
+    <button onclick="logoutOwner()" style="position:fixed; top:20px; right:20px; padding:10px 16px; border-radius:22px; border:1px solid #ccc; background-color:white; font-size:13px; font-weight:600; color:#c0392b; cursor:pointer; z-index:100; font-family:'Poppins', Arial, sans-serif;">Log Out</button>
+
+<div class="container">
+      <div id="dashboardHeader" style="display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;">
+            <img src="myphoto.jpg" alt="Banson Asamoah Bright" style="width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid #1a5c3a;">
+            <h1 style="margin:0; flex:1;">Owner Dashboard</h1>
+            <button onclick="seedDemoItems()" style="background:#8e44ad; color:white; border:none; border-radius:8px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Poppins', Arial, sans-serif;">🌱 Seed Demo Items</button>
+        </div>
+
+        <div id="analyticsContent">            <p style="text-align:center; color:#999;">Loading...</p>
+        </div>
+    </div>
+
+    <div id="approvalModalOverlay" onclick="if(event.target===this) closeApprovalModal()">
+        <div class="approval-modal">
+            <div class="approval-modal-wrap">
+                <button class="approval-modal-close" onclick="closeApprovalModal()">✕</button>
+                <img id="approvalModalImg" class="approval-modal-img" src="" alt="">
+            </div>
+            <div class="approval-modal-body">
+                <h2 id="approvalModalTitle" style="margin-top:0; text-align:left;"></h2>
+                <div id="approvalModalDetails"></div>
+                <div class="approval-modal-actions">
+                    <button class="approval-btn-approve" onclick="confirmApproval()">✓ Approve</button>
+                    <button class="approval-btn-reject" onclick="confirmRejection()">✕ Reject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+  const isOwner = localStorage.getItem('kayaOwner') === 'true';
+    const sellerId = localStorage.getItem('kayaSellerId') || null;
+
+    if (isOwner) {
+        document.getElementById('backBtn').style.display = 'none';
+    }
+
+   function logoutOwner() {
+
+        localStorage.removeItem('kayaOwner');
+        localStorage.removeItem('kayaSellerId');
+        window.location.href = 'index.html';
+    }
+
+    function seedDemoItems() {
+        if (!isOwner) return;
+
+        if (localStorage.getItem('kayaDemoSeeded') === 'true') {
+            if (!confirm("Demo items were already seeded once on this device. Add them again anyway? This may create duplicates.")) {
+                return;
+            }
+        }
+
+        const demoItems = [
+            { title: "Men's Denim Jacket", price: "120", category: "Clothes", condition: "Used", description: "Classic blue denim jacket, size L. Barely worn.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=450&fit=crop" },
+            { title: "Ankara Print Dress", price: "180", category: "Clothes", condition: "New", description: "Beautiful handmade Ankara dress, size M.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=450&fit=crop" },
+            { title: "Nike Running Shoes", price: "250", category: "Clothes", condition: "Refurbished", description: "Size 42, cleaned and re-soled. Great condition.", sellerLocation: "Takoradi", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=450&fit=crop" },
+            { title: "Samsung Galaxy A14", price: "1450", category: "Electronics", condition: "Used", description: "128GB, good battery health, minor scratches on back.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&h=450&fit=crop" },
+            { title: "HP Laptop 15-inch", price: "3200", category: "Electronics", condition: "Refurbished", description: "8GB RAM, 256GB SSD. Freshly reinstalled Windows.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=450&fit=crop" },
+            { title: "Bluetooth Headphones", price: "180", category: "Electronics", condition: "New", description: "Sealed box, noise-cancelling, 20hr battery.", sellerLocation: "Ho", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=450&fit=crop" },
+            { title: "32-inch Smart TV", price: "1800", category: "Electronics", condition: "Used", description: "Works perfectly, selling due to upgrade.", sellerLocation: "Cape Coast", image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=450&fit=crop" },
+            { title: "3-Seater Sofa", price: "1600", category: "Furniture", condition: "Used", description: "Comfortable fabric sofa, minor wear on armrests.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&h=450&fit=crop" },
+            { title: "Wooden Dining Table Set", price: "2200", category: "Furniture", condition: "Refurbished", description: "Seats 6, sanded and re-varnished.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?w=600&h=450&fit=crop" },
+            { title: "Queen Size Bed Frame", price: "1400", category: "Furniture", condition: "Used", description: "Sturdy wooden frame, mattress not included.", sellerLocation: "Sunyani", image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=450&fit=crop" },
+            { title: "Bookshelf", price: "350", category: "Furniture", condition: "New", description: "5-tier wooden bookshelf, flat-packed.", sellerLocation: "Koforidua", image: "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=600&h=450&fit=crop" },
+            { title: "Blender & Juicer Set", price: "220", category: "Other", condition: "New", description: "Unused, still in original packaging.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600&h=450&fit=crop" },
+            { title: "Kids Bicycle", price: "300", category: "Other", condition: "Used", description: "Ages 6-9, good tires, minor rust on frame.", sellerLocation: "Tamale", image: "https://images.unsplash.com/photo-1471506480208-91b3a4cc78be?w=600&h=450&fit=crop" },
+            { title: "Camping Tent (4-person)", price: "450", category: "Other", condition: "Refurbished", description: "Waterproofed and cleaned, ready for the next trip.", sellerLocation: "Cape Coast", image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=450&fit=crop" }
+        ];
+
+        let addedCount = 0;
+        const promises = demoItems.map(item =>
+            db.collection('items').add({
+                ...item,
+                sellerName: "KayaMart",
+                sellerPhone: "233535263510",
+                postedBy: "OWNER",
+                status: "approved",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { addedCount++; })
+        );
+
+        Promise.all(promises).then(() => {
+            localStorage.setItem('kayaDemoSeeded', 'true');
+            alert("Seeded " + addedCount + " demo items into the market!");
+        }).catch((err) => {
+            alert("Some items failed to seed: " + err.message);
+        });
+    }
+
+   function loadAnalytics() {
+    const content = document.getElementById('analyticsContent');
+
+    if (!isOwner && !sellerId) {
+        content.innerHTML = '<p style="text-align:center; color:#999;">Please log in as a seller or owner to view analytics.</p>';
+        return;
+    }
+
+    if (isOwner) {
+        loadOwnerDashboard(content);
+    } else if (sellerId) {
+        loadSellerAnalytics(sellerId, content);
+    }
+}
+
+function loadOwnerDashboard(content) {
+    const header = document.getElementById('dashboardHeader');
+    if (header) header.style.display = '';
+    content.innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+
+    db.collection('sales').get().then((snapshot) => {
+        const sales = [];
+        snapshot.forEach(doc => sales.push(doc.data()));
+        renderOwnerDashboard(sales, content);
+    }).catch((err) => {
+        content.innerHTML = '<p style="color:red; text-align:center;">Error: ' + err.message + '</p>';
+    });
+}
+
+function renderOwnerDashboard(sales, content) {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfDay);
+    startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    let daily = 0, weekly = 0, yearly = 0, allTime = 0;
+    let dailyCommission = 0, weeklyCommission = 0, yearlyCommission = 0, allTimeCommission = 0;
+
+    sales.forEach(sale => {
+        const soldDate = sale.soldAt ? sale.soldAt.toDate() : new Date();
+        allTime += sale.price;
+        allTimeCommission += sale.commission;
+        if (soldDate >= startOfYear) { yearly += sale.price; yearlyCommission += sale.commission; }
+        if (soldDate >= startOfWeek) { weekly += sale.price; weeklyCommission += sale.commission; }
+        if (soldDate >= startOfDay) { daily += sale.price; dailyCommission += sale.commission; }
+    });
+
+    const maxVal = Math.max(dailyCommission, weeklyCommission, yearlyCommission, allTimeCommission, 1);
+    const dailyH = (dailyCommission / maxVal) * 100;
+    const weeklyH = (weeklyCommission / maxVal) * 100;
+    const yearlyH = (yearlyCommission / maxVal) * 100;
+    const allTimeH = (allTimeCommission / maxVal) * 100;
+
+   let html = `
+      <div class="tab-bar">
+            <button class="tab-btn active" id="tabOverviewBtn" onclick="switchOwnerTab('overview')">📊 Overview</button>
+            <button class="tab-btn" id="tabActivityBtn" onclick="switchOwnerTab('activity')">🔔 Live Activity</button>
+            <button class="tab-btn" id="tabApprovalsBtn" onclick="switchOwnerTab('approvals')">✅ Approvals</button>
+        </div>
+        </div>
+        <div id="overviewTabContent">
+        <h2 style="text-align:left; margin-top:0;">📊 Business Overview</h2>
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; margin:20px 0;">
+            <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+                <div style="font-size:12px; color:#777;">Today's Commission</div>
+                <div style="font-size:18px; font-weight:bold;">GHS ${dailyCommission.toFixed(2)}</div>
+            </div>
+            <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+                <div style="font-size:12px; color:#777;">This Week</div>
+                <div style="font-size:18px; font-weight:bold;">GHS ${weeklyCommission.toFixed(2)}</div>
+            </div>
+            <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+                <div style="font-size:12px; color:#777;">This Year</div>
+                <div style="font-size:18px; font-weight:bold;">GHS ${yearlyCommission.toFixed(2)}</div>
+            </div>
+            <div style="background:#1a5c3a; color:white; border-radius:10px; padding:15px; text-align:center;">
+                <div style="font-size:12px;">All-Time Commission</div>
+                <div style="font-size:18px; font-weight:bold;">GHS ${allTimeCommission.toFixed(2)}</div>
+            </div>
+        </div>
+
+        <div style="background:#fafafa; border-radius:10px; padding:15px; text-align:center; margin-bottom:20px;">
+            <div style="font-size:12px; color:#777;">Total Sales Volume (All Time)</div>
+            <div style="font-size:22px; font-weight:bold; color:#1a5c3a;">GHS ${allTime.toFixed(2)}</div>
+            <div style="font-size:11px; color:#999;">${sales.length} item${sales.length === 1 ? '' : 's'} sold across all sellers</div>
+        </div>
+
+        <h3>Commission Overview</h3>
+        <div style="display:flex; align-items:flex-end; justify-content:space-around; height:150px; background:#fafafa; border-radius:10px; padding:15px 10px; margin-bottom:25px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                <div style="width:35px; height:${dailyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+                <span style="font-size:11px; color:#777;">Day</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                <div style="width:35px; height:${weeklyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+                <span style="font-size:11px; color:#777;">Week</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                <div style="width:35px; height:${yearlyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+                <span style="font-size:11px; color:#777;">Year</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                <div style="width:35px; height:${allTimeH}px; background:#e67e22; border-radius:4px 4px 0 0; min-height:2px;"></div>
+                <span style="font-size:11px; color:#777;">All Time</span>
+            </div>
+        </div>
+
+     <div id="sellerPickerSection"></div>
+        </div>
+
+        <div id="activityTabContent" style="display:none;">
+            <div class="filter-bar">
+                <label>From: <input type="date" id="laDateFrom"></label>
+                <label>To: <input type="date" id="laDateTo"></label>
+                <button id="laApplyFilterBtn" onclick="applyDateFilter()">Apply</button>
+                <button id="laClearFilterBtn" onclick="clearDateFilter()">Clear</button>
+            </div>
+            <div class="filter-bar">
+                <label class="checkbox-label"><input type="checkbox" id="laShowSales" checked onchange="renderActivityFeed()"> 💰 Sales</label>
+                <label class="checkbox-label"><input type="checkbox" id="laShowSellers" checked onchange="renderActivityFeed()"> 🧑‍💼 New Sellers</label>
+                <label class="checkbox-label"><input type="checkbox" id="laShowChats" checked onchange="renderActivityFeed()"> 💬 Messages</label>
+            </div>
+            <div class="stat-grid" id="laStatGrid"></div>
+            <button id="laExportBtn" onclick="exportSalesCSV()">⬇ Export Sales (CSV)</button>
+            <h3>Live Activity</h3>
+            <div id="laActivityFeed">Loading...
+</div>
+        </div>
+
+        <div id="approvalsTabContent" style="display:none;">
+            <div class="approval-section-title">Pending Items</div>
+            <div id="pendingItemsList">Loading...</div>
+
+            <div class="approval-section-title">Pending Sellers</div>
+            <div id="pendingSellersList">Loading...</div>
+        </div>
+    `;
+
+    content.innerHTML = html;
+    loadOwnerSellerPicker(document.getElementById('sellerPickerSection'));
+}
+
+// ---- Live Activity tab logic ----
+
+let allSalesData = [];
+let allSellersData = [];
+let allChatsData = [];
+let activityDataLoaded = false;
+
+function switchOwnerTab(tab) {
+    const overviewBtn = document.getElementById('tabOverviewBtn');
+    const activityBtn = document.getElementById('tabActivityBtn');
+    const approvalsBtn = document.getElementById('tabApprovalsBtn');
+    const overviewContent = document.getElementById('overviewTabContent');
+    const activityContent = document.getElementById('activityTabContent');
+    const approvalsContent = document.getElementById('approvalsTabContent');
+
+    overviewBtn.classList.remove('active');
+    activityBtn.classList.remove('active');
+    approvalsBtn.classList.remove('active');
+    overviewContent.style.display = 'none';
+    activityContent.style.display = 'none';
+    approvalsContent.style.display = 'none';
+
+    if (tab === 'overview') {
+        overviewBtn.classList.add('active');
+        overviewContent.style.display = '';
+    } else if (tab === 'activity') {
+        activityBtn.classList.add('active');
+        activityContent.style.display = '';
+        if (!activityDataLoaded) {
+            activityDataLoaded = true;
+            loadActivityData();
+        }
+    } else if (tab === 'approvals') {
+        approvalsBtn.classList.add('active');
+        approvalsContent.style.display = '';
+        loadApprovalsData();
+    }
+}
+function loadActivityData() {
+    db.collection('items').get().then(snap => {
+        window.laActiveItemCount = snap.size;
+        renderActivityStats();
+    });
+
+    db.collection('sellers').where('status', '==', 'approved').get().then(snap => {
+        window.laActiveSellerCount = snap.size;
+        renderActivityStats();
+    });
+
+    db.collection('sales').orderBy('soldAt', 'desc').get().then(snap => {
+        allSalesData = snap.docs.map(doc => {
+            const d = doc.data();
+            return {
+                icon: '💰',
+                text: `Sale: ${d.title} - GHS ${d.price} (commission GHS ${d.commission?.toFixed(2)})`,
+                time: d.soldAt ? d.soldAt.toMillis() : 0,
+                commission: d.commission || 0,
+                title: d.title || '',
+                price: d.price || 0
+            };
+        });
+        renderActivityStats();
+        renderActivityFeed();
+    });
+
+    db.collection('sellers').orderBy('createdAt', 'desc').get().then(snap => {
+        allSellersData = snap.docs.map(doc => {
+            const d = doc.data();
+            return {
+                icon: '🧑‍💼',
+                text: `New seller registered: ${d.name} (${d.location || 'Unknown'})`,
+                time: d.createdAt ? d.createdAt.toMillis() : 0
+            };
+        });
+        renderActivityFeed();
+    });
+
+    db.collection('chats').orderBy('lastMessageAt', 'desc').get().then(snap => {
+        allChatsData = snap.docs.map(doc => {
+            const d = doc.data();
+            return {
+                icon: '💬',
+                text: `New message about: ${d.itemTitle} from ${d.buyerName}`,
+                time: d.lastMessageAt ? d.lastMessageAt.toMillis() : 0
+            };
+        });
+        renderActivityFeed();
+    });
+}
+
+function getDateBounds() {
+    const fromVal = document.getElementById('laDateFrom').value;
+    const toVal = document.getElementById('laDateTo').value;
+    const from = fromVal ? new Date(fromVal + 'T00:00:00').getTime() : null;
+    const to = toVal ? new Date(toVal + 'T23:59:59').getTime() : null;
+    return { from, to };
+}
+
+function inRange(time, from, to) {
+    if (from !== null && time < from) return false;
+    if (to !== null && time > to) return false;
+    return true;
+}
+
+function renderActivityStats() {
+    const { from, to } = getDateBounds();
+    const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+    const totalCommission = filteredSales.reduce((sum, s) => sum + s.commission, 0);
+
+    document.getElementById('laStatGrid').innerHTML = `
+        <div class="stat-box"><div class="num">${window.laActiveItemCount ?? '–'}</div><div class="label">Active Items</div></div>
+        <div class="stat-box"><div class="num">${window.laActiveSellerCount ?? '–'}</div><div class="label">Active Sellers</div></div>
+        <div class="stat-box"><div class="num">GHS ${totalCommission.toFixed(0)}</div><div class="label">Total Commission${(from || to) ? ' (filtered)' : ''}</div></div>
+    `;
+}
+
+function renderActivityFeed() {
+    const feed = document.getElementById('laActivityFeed');
+    const { from, to } = getDateBounds();
+
+    const showSales = document.getElementById('laShowSales').checked;
+    const showSellers = document.getElementById('laShowSellers').checked;
+    const showChats = document.getElementById('laShowChats').checked;
+
+    let allActivities = [];
+    if (showSales) allActivities = allActivities.concat(allSalesData);
+    if (showSellers) allActivities = allActivities.concat(allSellersData);
+    if (showChats) allActivities = allActivities.concat(allChatsData);
+
+    allActivities = allActivities.filter(act => inRange(act.time, from, to));
+    allActivities.sort((a, b) => b.time - a.time);
+
+    if (allActivities.length === 0) {
+        feed.innerHTML = '<p style="color:#999;">No activity in this range.</p>';
+        return;
+    }
+
+    feed.innerHTML = '';
+    allActivities.slice(0, 15).forEach(act => {
+        const dateStr = act.time ? new Date(act.time).toLocaleString() : '';
+        feed.innerHTML += `
+            <div class="activity-item">
+                <div class="activity-icon">${act.icon}</div>
+                <div>
+                    <div class="activity-text">${act.text}</div>
+                    <div class="activity-time">${dateStr}</div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function applyDateFilter() {
+    renderActivityStats();
+    renderActivityFeed();
+}
+
+function clearDateFilter() {
+    document.getElementById('laDateFrom').value = '';
+    document.getElementById('laDateTo').value = '';
+    renderActivityStats();
+    renderActivityFeed();
+}
+
+// ---- Approvals tab logic ----
+
+let pendingItemsData = [];
+let pendingSellersData = [];
+let currentApproval = null; // { type: 'item' | 'seller', id, data }
+
+function loadApprovalsData() {
+    document.getElementById('pendingItemsList').innerHTML = 'Loading...';
+    document.getElementById('pendingSellersList').innerHTML = 'Loading...';
+
+    db.collection('items').where('status', '==', 'pending').get().then(snap => {
+        pendingItemsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPendingItems();
+    }).catch(err => {
+        document.getElementById('pendingItemsList').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+    });
+
+    db.collection('sellers').where('status', '==', 'pending').get().then(snap => {
+        pendingSellersData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderPendingSellers();
+    }).catch(err => {
+        document.getElementById('pendingSellersList').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+    });
+}
+
+function renderPendingItems() {
+    const list = document.getElementById('pendingItemsList');
+    if (pendingItemsData.length === 0) {
+        list.innerHTML = '<p style="color:#999; font-size:13px;">No pending items.</p>';
+        return;
+    }
+    list.innerHTML = pendingItemsData.map(item => `
+        <div class="approval-card">
+            <img src="${item.image || 'https://via.placeholder.com/60?text=No+Image'}" onclick="openItemModal('${item.id}')">
+            <div class="approval-card-info">
+                <div class="approval-card-title">${item.title || 'Untitled'}</div>
+                <div class="approval-card-sub">GHS ${item.price || 0}</div>
+            </div>
+            <button class="approval-view-btn" onclick="openItemModal('${item.id}')">View</button>
+        </div>
+    `).join('');
+}
+
+function renderPendingSellers() {
+    const list = document.getElementById('pendingSellersList');
+    if (pendingSellersData.length === 0) {
+        list.innerHTML = '<p style="color:#999; font-size:13px;">No pending sellers.</p>';
+        return;
+    }
+    list.innerHTML = pendingSellersData.map(seller => `
+        <div class="approval-card">
+            <img src="${seller.photo || 'https://via.placeholder.com/60?text=?'}" onclick="openSellerModal('${seller.id}')">
+            <div class="approval-card-info">
+                <div class="approval-card-title">${seller.name || 'Unnamed'}</div>
+                <div class="approval-card-sub">${seller.location || 'Unknown location'}</div>
+            </div>
+            <button class="approval-view-btn" onclick="openSellerModal('${seller.id}')">View</button>
+        </div>
+    `).join('');
+}
+
+function openItemModal(id) {
+    const item = pendingItemsData.find(i => i.id === id);
+    if (!item) return;
+    currentApproval = { type: 'item', id, data: item };
+
+    document.getElementById('approvalModalImg').src = item.image || 'https://via.placeholder.com/480?text=No+Image';
+    document.getElementById('approvalModalTitle').textContent = item.title || 'Untitled';
+    document.getElementById('approvalModalDetails').innerHTML = `
+        <div class="approval-detail-row"><span class="approval-detail-label">Price</span><span class="approval-detail-value">GHS ${item.price || 0}</span></div>
+        <div class="approval-detail-row"><span class="approval-detail-label">Category</span><span class="approval-detail-value">${item.category || '—'}</span></div>
+        <div class="approval-detail-row"><span class="approval-detail-label">Description</span><span class="approval-detail-value">${item.description || '—'}</span></div>
+        <div class="approval-detail-row"><span class="approval-detail-label">Seller ID</span><span class="approval-detail-value">${item.sellerId || '—'}</span></div>
+    `;
+    document.getElementById('approvalModalOverlay').classList.add('open');
+}
+
+function openSellerModal(id) {
+    const seller = pendingSellersData.find(s => s.id === id);
+    if (!seller) return;
+    currentApproval = { type: 'seller', id, data: seller };
+
+    document.getElementById('approvalModalImg').src = seller.photo || 'https://via.placeholder.com/480?text=No+Photo';
+    document.getElementById('approvalModalTitle').textContent = seller.name || 'Unnamed';
+    document.getElementById('approvalModalDetails').innerHTML = `
+        <div class="approval-detail-row"><span class="approval-detail-label">Location</span><span class="approval-detail-value">${seller.location || '—'}</span></div>
+        <div class="approval-detail-row"><span class="approval-detail-label">Phone</span><span class="approval-detail-value">${seller.phone || '—'}</span></div>
+        <div class="approval-detail-row"><span class="approval-detail-label">Email</span><span class="approval-detail-value">${seller.email || '—'}</span></div>
+    `;
+    document.getElementById('approvalModalOverlay').classList.add('open');
+}
+
+function closeApprovalModal() {
+    document.getElementById('approvalModalOverlay').classList.remove('open');
+    currentApproval = null;
+}
+
+function confirmApproval() {
+    if (!currentApproval) return;
+    const { type, id } = currentApproval;
+    const collection = type === 'item' ? 'items' : 'sellers';
+
+    db.collection(collection).doc(id).update({ status: 'approved' }).then(() => {
+        removeFromPendingList(type, id);
+        closeApprovalModal();
+    }).catch(err => {
+        alert('Error approving: ' + err.message);
+    });
+}
+
+function confirmRejection() {
+    if (!currentApproval) return;
+    const { type, id } = currentApproval;
+    const collection = type === 'item' ? 'items' : 'sellers';
+
+    db.collection(collection).doc(id).update({ status: 'rejected' }).then(() => {
+        removeFromPendingList(type, id);
+        closeApprovalModal();
+    }).catch(err => {
+        alert('Error rejecting: ' + err.message);
+    });
+}
+
+function removeFromPendingList(type, id) {
+    if (type === 'item') {
+        pendingItemsData = pendingItemsData.filter(i => i.id !== id);
+        renderPendingItems();
+    } else {
+        pendingSellersData = pendingSellersData.filter(s => s.id !== id);
+        renderPendingSellers();
+    }
+}
+
+function exportSalesCSV() {    const { from, to } = getDateBounds();
+    const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+
+    if (filteredSales.length === 0) {
+        alert('No sales in the selected range to export.');
+        return;
+    }
+
+    let csv = 'Date,Title,Price (GHS),Commission (GHS)\n';
+    filteredSales.forEach(s => {
+        const dateStr = s.time ? new Date(s.time).toLocaleDateString() : '';
+        const safeTitle = `"${(s.title || '').replace(/"/g, '""')}"`;
+        csv += `${dateStr},${safeTitle},${s.price},${s.commission.toFixed(2)}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+   const link = document.createElement('a');
+    link.href = url;
+    const fromLabel = from ? new Date(from).toISOString().slice(0,10) : 'all';
+    const toLabel = to ? new Date(to).toISOString().slice(0,10) : 'all';
+    link.download = `kayamart-sales_${fromLabel}_to_${toLabel}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function loadOwnerSellerPicker(content) {
+    db.collection('sellers').where('status', '==', 'approved').get().then((snapshot) => {
+        if (snapshot.empty) {
+            content.innerHTML = '<p style="text-align:center; color:#999;">No approved sellers yet.</p>';
+            return;
+        }
+        let html = '<h3>Select a seller to view their analytics:</h3><div style="display:flex; flex-direction:column; gap:8px;">';
+        snapshot.forEach(doc => {
+            const s = doc.data();
+            html += `
+                <button onclick="viewSellerAnalytics('${doc.id}')" style="display:flex; align-items:center; gap:10px; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer; text-align:left;">
+                    <img src="${s.photo || 'https://via.placeholder.com/40?text=?'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <span>${s.name}</span>
+                </button>
+            `;
+        });
+        html += '</div>';
+        content.innerHTML = html;
+    });
+}
+
+function viewSellerAnalytics(id) {
+    const content = document.getElementById('analyticsContent');
+    content.innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    loadSellerAnalytics(id, content);
+}
+
+ function loadSellerAnalytics(id, content) {
+    const header = document.getElementById('dashboardHeader');
+    if (header) header.style.display = 'none';
+    content.innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+
+    db.collection('sellers').doc(id).get().then((sellerDoc) => {
+        const sellerInfo = sellerDoc.exists ? sellerDoc.data() : null;
+
+        db.collection('sales').where('sellerId', '==', id).get().then((salesSnapshot) => {
+            const sales = [];
+            salesSnapshot.forEach(doc => sales.push(doc.data()));
+            sales.sort((a, b) => {
+                const aTime = a.soldAt ? a.soldAt.toMillis() : 0;
+                const bTime = b.soldAt ? b.soldAt.toMillis() : 0;
+                return bTime - aTime;
+            });
+
+            db.collection('items').where('sellerId', '==', id).get().then((itemsSnapshot) => {
+                const postedItems = [];
+                itemsSnapshot.forEach(doc => postedItems.push({ id: doc.id, ...doc.data() }));
+                renderSellerAnalytics(sales, content, sellerInfo, postedItems);
+            }).catch((err) => {
+                content.innerHTML = '<p style="color:red; text-align:center;">Error: ' + err.message + '</p>';
+            });
+        }).catch((err) => {
+            content.innerHTML = '<p style="color:red; text-align:center;">Error: ' + err.message + '</p>';
+        });
+    });
+}
+
+function renderSellerAnalytics(sales, content, sellerInfo, postedItems) {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfDay);
+    startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    let daily = 0, weekly = 0, yearly = 0, allTime = 0;
+    let dailyCommission = 0, weeklyCommission = 0, yearlyCommission = 0, allTimeCommission = 0;
+
+    sales.forEach(sale => {
+        const soldDate = sale.soldAt ? sale.soldAt.toDate() : new Date();
+        allTime += sale.price;
+        allTimeCommission += sale.commission;
+
+        if (soldDate >= startOfYear) {
+            yearly += sale.price;
+            yearlyCommission += sale.commission;
+        }
+        if (soldDate >= startOfWeek) {
+            weekly += sale.price;
+            weeklyCommission += sale.commission;
+        }
+        if (soldDate >= startOfDay) {
+            daily += sale.price;
+            dailyCommission += sale.commission;
+        }
+    });
+let headerHtml = '';
+    if (isOwner) {
+        headerHtml += `<button onclick="loadOwnerDashboard(document.getElementById('analyticsContent'))" style="width:auto; background:#eee; color:#333; border:none; border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; margin-bottom:15px;">← Back to Business Overview</button>`;
+    }
+    if (sellerInfo) {
+        headerHtml += `
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                <img src="${sellerInfo.photo || 'https://via.placeholder.com/60?text=?'}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+                <h2 style="margin:0; text-align:left;">${sellerInfo.name}</h2>
+            </div>
+        `;
+    }
+   const maxVal = Math.max(daily, weekly, yearly, allTime, 1);
+const dailyH = (daily / maxVal) * 100;
+const weeklyH = (weekly / maxVal) * 100;
+const yearlyH = (yearly / maxVal) * 100;
+const allTimeH = (allTime / maxVal) * 100;
+
+let html = headerHtml + `
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; margin:20px 0;">        <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+            <div style="font-size:12px; color:#777;">Today</div>
+            <div style="font-size:18px; font-weight:bold;">GHS ${daily.toFixed(2)}</div>
+        </div>
+        <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+            <div style="font-size:12px; color:#777;">This Week</div>
+            <div style="font-size:18px; font-weight:bold;">GHS ${weekly.toFixed(2)}</div>
+        </div>
+        <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
+            <div style="font-size:12px; color:#777;">This Year</div>
+            <div style="font-size:18px; font-weight:bold;">GHS ${yearly.toFixed(2)}</div>
+        </div>
+        <div style="background:#1a5c3a; color:white; border-radius:10px; padding:15px; text-align:center;">
+            <div style="font-size:12px;">All Time</div>
+            <div style="font-size:18px; font-weight:bold;">GHS ${allTime.toFixed(2)}</div>
+        </div>
+    </div>
+
+    <h3>Income Overview</h3>
+    <div style="display:flex; align-items:flex-end; justify-content:space-around; height:150px; background:#fafafa; border-radius:10px; padding:15px 10px; margin-bottom:20px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+            <div style="width:35px; height:${dailyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+            <span style="font-size:11px; color:#777;">Day</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+            <div style="width:35px; height:${weeklyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+            <span style="font-size:11px; color:#777;">Week</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+            <div style="width:35px; height:${yearlyH}px; background:#1a5c3a; border-radius:4px 4px 0 0; min-height:2px;"></div>
+            <span style="font-size:11px; color:#777;">Year</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+            <div style="width:35px; height:${allTimeH}px; background:#e67e22; border-radius:4px 4px 0 0; min-height:2px;"></div>
+            <span style="font-size:11px; color:#777;">All Time</span>
+        </div>
+    </div>
+
+    <h3>Sold Items</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">
+`;
+if (sales.length === 0) {
+        html += '<p style="color:#999; grid-column:1/-1; text-align:center;">No items sold yet.</p>';
+    } else {
+        sales.forEach(sale => {
+            html += `
+                <div style="text-align:center;">
+                    <img src="${sale.image || 'https://via.placeholder.com/100?text=No+Image'}" style="width:100%; height:90px; object-fit:cover; border-radius:8px;">
+                    <div style="font-size:12px; margin-top:4px;">${sale.title}</div>
+                    <div style="font-size:12px; color:#1a5c3a; font-weight:bold;">GHS ${sale.price}</div>
+                </div>
+            `;
+        });
+    }
+
+    html += '</div>';
+
+    html += '<h3 style="margin-top:25px;">Posted Items</h3>';
+    html += '<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">';
+
+    const items = postedItems || [];
+    if (items.length === 0) {
+        html += '<p style="color:#999; grid-column:1/-1; text-align:center;">No items posted yet.</p>';
+    } else {
+        items.forEach(item => {
+            const statusColor = item.status === 'approved' ? '#1a5c3a' : (item.status === 'pending' ? '#e67e22' : '#c0392b');
+            const statusLabel = item.status || 'unknown';
+            html += `
+                <div style="text-align:center;">
+                    <div style="position:relative;">
+                        <img src="${item.image || 'https://via.placeholder.com/100?text=No+Image'}" style="width:100%; height:90px; object-fit:cover; border-radius:8px;">
+                        <span style="position:absolute; top:4px; right:4px; background:${statusColor}; color:white; font-size:9px; font-weight:600; padding:2px 6px; border-radius:6px; text-transform:capitalize;">${statusLabel}</span>
+                    </div>
+                    <div style="font-size:12px; margin-top:4px;">${item.title || 'Untitled'}</div>
+                    <div style="font-size:12px; color:#1a5c3a; font-weight:bold;">GHS ${item.price || 0}</div>
+                </div>
+            `;
+        });
+    }
+
+    html += '</div>';
+    content.innerHTML = html;
+}  loadAnalytics();
+    </script>
+</body>
+</html>
