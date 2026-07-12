@@ -23,7 +23,7 @@
 </script>
     <title>KayaMart - Market</title>
     <style>
-        body {
+      body {
             font-family: 'Poppins', Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
@@ -33,15 +33,20 @@
             flex-direction: column;
             align-items: center;
         }
-        .container {
-            max-width: 700px;
-            width: 100%;
-            background-color: white;
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            animation: fadeIn 0.4s ease-in;
+        body.intro-locked {
+            padding: 0;
+            overflow: hidden;
         }
+       .container {
+    max-width: 700px;
+    width: 100%;
+    background-color: white;
+    padding: 35px;
+    margin-top: 60px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    animation: fadeIn 0.4s ease-in;
+}
         .spin {
             display: inline-block;
             animation: pulseLoad 1.2s ease-in-out infinite;
@@ -57,10 +62,10 @@
         h1 {
             color: #2c3e50;
         }
-        h2 {
-            color: #1a5c3a;
-            text-align: center;
-        }
+       h2 {
+    color: #000;
+    text-align: left;
+}
         * { box-sizing: border-box; }
         .controls {
             display: flex;
@@ -97,11 +102,480 @@
             background-color: #134529;
             transform: translateY(-1px);
         }
-        .grid {
+       .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 16px;
             margin-top: 10px;
+        }
+        .scroll-row-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 20px 0 10px;
+            color: #1a1a1a;
+        }
+        .scroll-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+        }
+        .scroll-row::-webkit-scrollbar {
+            height: 6px;
+        }
+        .scroll-row::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+        .scroll-card {
+            flex: 0 0 130px;
+            scroll-snap-align: start;
+            cursor: pointer;
+        }
+        .scroll-card img {
+            width: 130px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #ddd;
+            display: block;
+        }
+        .scroll-card .scroll-card-title {
+            font-size: 12px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .scroll-card .scroll-card-price {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1a5c3a;
+        }
+        .promoted-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: #e67e22;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+.condition-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            color: white;
+        }
+        .condition-badge.New {
+            background: #27ae60;
+        }
+        .condition-badge.Refurbished {
+            background: #2980b9;
+        }
+      body.dark-mode .scroll-row-title {
+            color: #f0f0f0;
+        }
+       .launch-flyer {
+            background: linear-gradient(135deg, #1a5c3a, #134529);
+            color: white;
+            border-radius: 14px;
+            padding: 14px 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+        .launch-flyer-track {
+            display: inline-block;
+            padding-left: 100%;
+            animation: flyerScroll 18s linear infinite;
+        }
+        .launch-flyer-track span {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .launch-flyer-track .flyer-eyebrow {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        @keyframes flyerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+   .banner-carousel {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 20px 0;
+    touch-action: pan-y;
+    background: #1a1a1a;
+    display: block;
+    z-index: 1;
+    clear: both;
+}
+.banner-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 0.9s ease;
+            overflow: hidden;
+        }
+        .banner-slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+        .banner-slide-bg {
+            position: absolute;
+            inset: -20px;
+            background-size: cover;
+            background-position: center;
+            transform: scale(1);
+        }
+        .banner-slide.active .banner-slide-bg {
+            animation: kenBurns 6s ease-in-out forwards;
+        }
+        @keyframes kenBurns {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+        .banner-slide::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0.05) 100%);
+            z-index: 1;
+        }
+        .banner-slide-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 22px 26px;
+            color: white;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: translateY(14px);
+        }
+        .banner-slide.active .banner-slide-content {
+            animation: bannerTextIn 0.7s ease 0.15s forwards;
+        }
+        @keyframes bannerTextIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .banner-slide-content 
+        .banner-eyebrow {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.85;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+       .banner-slide-content p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+       .banner-cta {
+            margin-top: 12px;
+            display: inline-block;
+            width: fit-content;
+            padding: 8px 18px;
+            background: white;
+            color: #1a1a1a;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            transition: transform 0.15s ease;
+        }
+        .banner-cta:hover {
+            transform: translateY(-2px);
+        }
+        .banner-progress-track {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.25);
+            z-index: 3;
+        }
+        .banner-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: white;
+        }
+        .banner-progress-bar.animate {
+            transition: width 5s linear;
+        }
+        .banner-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 3;
+        }
+        .banner-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .banner-dot.active {
+            background: white;
+            width: 20px;
+            border-radius: 4px;
+        }
+.intro-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 999;
+    background: #000;
+    overflow: hidden;
+    margin: 0;
+}.intro-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+.intro-slide.active {
+    opacity: 1;
+}
+.intro-slide-bg {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    width: calc(100% + 40px);
+    height: calc(100% + 40px);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}.intro-slide.active .intro-slide-bg {
+    animation: introKenBurns 4s ease-in-out forwards;
+}
+@keyframes introKenBurns {
+    from { transform: scale(1); }
+    to { transform: scale(1.12); }
+}
+.intro-slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 100%);
+}
+.intro-slide-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+    padding: 60px 30px 90px;
+    color: white;
+    box-sizing: border-box;
+}
+.intro-slide-content .intro-eyebrow {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #e67e22;
+    opacity: 0;
+    transform: translateY(20px);
+}
+.intro-slide.active .intro-eyebrow {
+    animation: introTextIn 0.7s ease 0.3s forwards;
+}
+.intro-slide-content h2 {
+    font-size: 28px;
+    margin: 8px 0;
+    color: white;
+    opacity: 0;
+    transform: translateY(20px);
+}
+.intro-slide.active .intro-slide-content h2 {
+    animation: introTextIn 0.7s ease 0.5s forwards;
+}
+.intro-slide-content p {
+    font-size: 14px;
+    max-width: 320px;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+}
+.intro-slide.active .intro-slide-content p {
+    animation: introTextIn 0.7s ease 0.7s forwards;
+}
+@keyframes introTextIn {
+    to { opacity: 1; transform: translateY(0); }
+}
+.intro-get-started-btn {
+    background: white;
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+}
+.intro-slide.active .intro-get-started-btn {
+    animation: introTextIn 0.7s ease 0.9s forwards;
+}
+.intro-dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 3;
+}
+.intro-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transition: all 0.2s ease;
+}
+.intro-dot.active {
+    background: white;
+    width: 20px;
+    border-radius: 4px;
+}
+.intro-skip-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 3;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+}
+.detail-gallery {
+            position: relative;
+        }
+        .detail-gallery-main {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .detail-gallery-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .detail-gallery-arrow.prev { left: 8px; }
+        .detail-gallery-arrow.next { right: 8px; }
+        .detail-gallery-dots {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .detail-gallery-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+        }
+        .detail-gallery-dot.active {
+            background: #1a5c3a;
+            width: 16px;
+            border-radius: 3px;
+        }
+        .option-picker {
+            text-align: left;
+            margin-top: 12px;
+        }
+        .option-picker-label {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 6px;
+        }
+        .option-btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .option-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            background: white;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .option-btn.selected {
+            background: #1a5c3a;
+            color: white;
+            border-color: #1a5c3a;
+        }
+        body.dark-mode .option-btn {
+            background: #383838;
+            color: #f0f0f0;
+            border-color: #555;
+        }
+        .category-row-block {
+            margin-bottom: 10px;
         }
         .item-card {
             background: #fafafa;
@@ -157,23 +631,106 @@
             text-decoration: none;
             text-align: center;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
+.detail-action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+.detail-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 13px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    font-family: 'Poppins', Arial, sans-serif;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.detail-action-btn:hover {
+    transform: translateY(-2px);
+}
+.detail-order-btn {
+    background: #e67e22;
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,126,34,0.35);
+}
+.detail-chat-btn {
+    background: white;
+    color: #2980b9;
+    border: 2px solid #2980b9;
+}
+body.dark-mode .detail-chat-btn {
+    background: #2c2c2c;
+}
+      .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+#detailModal {
+    align-items: stretch;
+    justify-content: stretch;
+}
+#detailModal .modal-content {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    overflow-y: auto;
+    margin: 0;
+    box-sizing: border-box;
+}
+#detailModal .detail-gallery-main {
+    max-height: 320px;
+}
+#moreFromSellerSection .scroll-row-title {
+    font-weight: 700;
+    margin: 0 0 10px 0;
+}
+.more-seller-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-columns: 130px;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+}
+.more-seller-grid::-webkit-scrollbar {
+    height: 6px;
+}
+.more-seller-grid::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+.more-seller-grid .scroll-card {
+    scroll-snap-align: start;
+}
+.modal-content {
             background: white;
             padding: 28px;
             border-radius: 16px;
             width: 90%;
             max-width: 400px;
+            max-height: 88vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             box-shadow: 0 12px 32px rgba(0,0,0,0.2);
             animation: popIn 0.25s ease;
+            box-sizing: border-box;
         }
         @keyframes popIn {
             from { opacity: 0; transform: scale(0.95); }
@@ -187,14 +744,106 @@
             width: 100%;
             margin-top: 5px;
         }
-        #imagePreview, #regPhotoPreview {
-            width: 100%;
-            max-height: 130px;
-            object-fit: cover;
-            margin-top: 10px;
-            display: none;
-            border-radius: 6px;
-        }
+
+      .guest-prompt-banner {
+    background: linear-gradient(135deg, #1a5c3a, #134529);
+    margin: -28px -28px 20px -28px;
+    padding: 32px 28px 24px;
+    border-radius: 16px 16px 0 0;
+    color: white;
+}
+.guest-prompt-banner .emoji {
+    font-size: 38px;
+    margin-bottom: 8px;
+}
+.guest-prompt-banner h3 {
+    margin: 0 0 6px 0;
+    font-size: 19px;
+    color: white;
+}
+.guest-prompt-banner p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+    color: white;
+    line-height: 1.4;
+}
+.guest-prompt-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+    margin-top: 10px;
+    border: none;
+}
+.guest-prompt-primary {
+    background: #e67e22;
+    color: white;
+    box-shadow: 0 4px 12px rgba(230,126,34,0.35);
+}
+.guest-prompt-secondary {
+    background: white;
+    color: #1a5c3a;
+    border: 2px solid #1a5c3a;
+}
+body.dark-mode .guest-prompt-secondary {
+    background: #2c2c2c;
+}
+.guest-prompt-skip {
+    background: transparent;
+    color: #999;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: underline;
+    box-shadow: none;
+}
+.role-choice-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+.role-choice-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 22px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.role-choice-btn:hover {
+    transform: translateY(-2px);
+}
+.role-choice-btn .role-emoji {
+    font-size: 30px;
+}
+.role-choice-btn .role-label {
+    font-weight: 700;
+    font-size: 14px;
+}
+.role-choice-buyer {
+    background: #fff4ea;
+    border-color: #e67e22;
+    color: #b85c0f;
+}
+.role-choice-seller {
+    background: #eaf6ef;
+    border-color: #1a5c3a;
+    color: #164a30;
+}
+body.dark-mode .role-choice-buyer {
+    background: #3a2c1e;
+}
+body.dark-mode .role-choice-seller {
+    background: #1f3a2b;
+}
         body.dark-mode .item-card {
             background: #383838;
         }
@@ -235,30 +884,76 @@
             background-color: #1a5c3a;
             color: white;
         }
+.seller-tab-row {
+    display: flex;
+    gap: 6px;
+    background: #f0f0f0;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+}
+.seller-tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 9px;
+    font-family: 'Poppins', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #777;
+    transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.seller-tab-btn.active {
+    background: #1a5c3a;
+    color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+body.dark-mode .seller-tab-row {
+    background: #1f1f1f;
+}
+body.dark-mode .seller-tab-btn {
+    color: #aaa;
+}
         footer {
             margin-top: 30px;
             color: #888;
             font-size: 14px;
             text-align: center;
         }
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
-        }
-        body.dark-mode .container {
-            background-color: #2c2c2c;
-            color: #f0f0f0;
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 18px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            h1 { font-size: 22px; }
-            .profile-section { gap: 12px; }
-            .profile-section img { width: 55px; height: 55px; }
-            #cartBtn { right: 65px; width: 40px; height: 40px; font-size: 16px; }
-            #modeToggle { width: 40px; height: 40px; font-size: 18px; }
-        }
+      body.dark-mode {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
+body.dark-mode .container {
+    background-color: #2c2c2c;
+    color: #f0f0f0;
+}
+body.dark-mode h2 {
+    color: #f0f0f0;
+}
+body.dark-mode .price {
+    color: #f0f0f0;
+}
+      @media (max-width: 600px) {
+    body { padding: 10px; }
+    .container { padding: 18px; margin-top: 55px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    h1 { font-size: 22px; }
+    .profile-section { gap: 12px; }
+    .profile-section img { width: 55px; height: 55px; }
+    #modeToggle, #favBtn, #sellersBtn, #cartBtn, #messagesBtn {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+    #modeToggle { right: 10px; }
+    #favBtn { right: 55px; }
+    #sellersBtn { right: 100px; }
+    #cartBtn { right: 145px; }
+    #messagesBtn { right: 190px; }
+}
         body.dark-mode .category-tag {
             background: #555;
             color: #f0f0f0;
@@ -267,9 +962,38 @@
             background: #2c2c2c;
             color: #f0f0f0;
         }
+#chatToast {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    font-size: 13px;
+    z-index: 2000;
+    cursor: pointer;
+    max-width: 90%;
+    align-items: center;
+    gap: 10px;
+    animation: toastIn 0.3s ease;
+}
+@keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, -12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
     </style>
 </head>
 <body>
+    <div class="intro-splash" id="introSplash">
+        <button class="intro-skip-btn" onclick="closeIntroSplash()">Skip ▸</button>
+        <div id="introSlides"></div>
+        <div class="intro-dots" id="introDots"></div>
+    </div>
+
     <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
 
     <button id="favBtn" onclick="document.getElementById('categoryFilter').value='Favorites'; renderItems(); window.scrollTo({top:0, behavior:'smooth'});" style="position:fixed; top:20px; right:130px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">❤️</button>
@@ -281,15 +1005,20 @@
     <button id="cartBtn" onclick="openCart()" style="position:fixed; top:20px; right:75px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">
         🛒<span id="cartCount" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:none; align-items:center; justify-content:center;">0</span>
     </button>
+<button id="messagesBtn" onclick="openMessagesPanel()" style="display:none; position:fixed; top:20px; right:185px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">
+    💬<span id="messagesCount" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:none; align-items:center; justify-content:center;">0</span>
+</button>
 
     <button onclick="toggleTabsMenu()" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☰</button>
-    <div id="tabsMenu" style="display:none; position:fixed; top:70px; left:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); padding:8px; z-index:100; min-width:150px;">
-        <a href="index.html" class="tab-btn active" style="display:block; margin:4px 0;">Market</a>
-        <a href="about.html" class="tab-btn" style="display:block; margin:4px 0;">About Owner</a>
-        <a href="contact.html" class="tab-btn" style="display:block; margin:4px 0;">Contact</a>
-    </div>
+ <div id="tabsMenu" style="display:none; position:fixed; top:70px; left:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); padding:8px; z-index:100; min-width:150px;">
+    <a href="index.html" class="tab-btn active" style="display:block; margin:4px 0;">Market</a>
+    <a href="about.html" class="tab-btn" style="display:block; margin:4px 0;">About Owner</a>
+    <a href="contact.html" class="tab-btn" style="display:block; margin:4px 0;">Contact</a>
+  <a href="analytics.html" id="sellerAnalyticsLink" class="tab-btn" style="display:none; margin:4px 0;"> Seller Analytics</a>
+  <a href="#" id="buyerLogoutLink" onclick="handleBuyerLogout(); return false;" class="tab-btn" style="display:none; margin:4px 0;">Log Out</a>
+   </div>
 
-    <div class="container">
+   <div class="container">
         <div class="profile-section">
             <img src="logo.jpg" alt="KayaMart Logo" onclick="handleLogoClick()" style="cursor:pointer;">
             <div>
@@ -297,20 +1026,53 @@
                 <p style="margin:2px 0 0 0; font-size:14px;">Buy and sell used items near you</p>
             </div>
         </div>
+
+       <div class="banner-carousel" id="bannerCarousel">
+            <div id="bannerSlides"></div>
+            <div class="banner-progress-track"><div class="banner-progress-bar" id="bannerProgressBar"></div></div>
+            <div class="banner-dots" id="bannerDots"></div>
+        </div>
+
         <h2>Market</h2>
 
         <div class="controls">
             <input type="text" id="searchInput" placeholder="Search items..." onkeyup="renderItems()">
-            <select id="categoryFilter" onchange="renderItems()">
-                <option value="All">All Categories</option>
-                <option value="Favorites">Favorites</option>
-                <option value="Clothes">Clothes</option>
-                <option value="Electronics">Electronics</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Other">Other</option>
-            </select>
+           <select id="categoryFilter" onchange="renderItems()">
+    <option value="All">All Categories</option>
+    <option value="Favorites">Favorites</option>
+<option value="MyListings" id="myListingsOption" style="display:none;">My Listings</option>
+    <option value="Clothes">Clothes</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Furniture">Furniture</option>
+    <option value="Other">Other</option>
+</select>
+<select id="locationFilter" onchange="renderItems()">
+    <option value="All">All Locations</option>
+    <option value="Accra">Accra</option>
+    <option value="Kumasi">Kumasi</option>
+    <option value="Tamale">Tamale</option>
+    <option value="Takoradi">Takoradi</option>
+    <option value="Cape Coast">Cape Coast</option>
+    <option value="Ho">Ho</option>
+    <option value="Koforidua">Koforidua</option>
+    <option value="Sunyani">Sunyani</option>
+    <option value="Other">Other</option>
+</select>
+
             <button class="add-btn" onclick="openModal()">+ Add Item</button>
         </div>
+
+    <div id="promotedSection" style="display:none;">
+            <div class="scroll-row-title">🔥 Promoted</div>
+            <div class="scroll-row" id="promotedRow"></div>
+        </div>
+
+        <div id="recommendedSection" style="display:none;">
+            <div class="scroll-row-title">✨ Recommended for You</div>
+            <div class="scroll-row" id="recommendedRow"></div>
+        </div>
+
+        <div id="categoryRowsContainer"></div>
 
         <div class="grid" id="itemGrid">
             <div id="loadingState" style="grid-column: 1/-1; text-align:center; padding:40px 0;">
@@ -334,17 +1096,25 @@
             <h3>Add New Item</h3>
             <input type="text" id="itemTitle" placeholder="Item name">
             <input type="number" id="itemPrice" placeholder="Price (GHS)">
-            <select id="itemCategory">
+          <select id="itemCategory">
                 <option value="Clothes">Clothes</option>
                 <option value="Electronics">Electronics</option>
                 <option value="Furniture">Furniture</option>
                 <option value="Other">Other</option>
             </select>
+            <select id="itemCondition">
+                <option value="Used">Used</option>
+                <option value="New">New</option>
+                <option value="Refurbished">Refurbished</option>
+            </select>
             <input type="text" id="sellerName" placeholder="Your name (seller)">
             <input type="text" id="sellerPhone" placeholder="Your WhatsApp number (e.g. 233535263510)">
             <textarea id="itemDescription" placeholder="Description (optional)" rows="3" style="width:100%; margin-bottom:10px; padding:10px; border-radius:6px; border:1px solid #ccc; font-family:inherit;"></textarea>
-            <input type="file" id="itemImage" accept="image/*">
-            <img id="imagePreview">
+           <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Photos (you can select multiple, different angles)</label>
+            <input type="file" id="itemImage" accept="image/*" multiple>
+            <div id="imagePreviewRow" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
+            <input type="text" id="itemColors" placeholder="Available colors (e.g. Red, Blue, Black) - optional">
+            <input type="text" id="itemSizes" placeholder="Available sizes (e.g. S, M, L, XL) - optional">
             <button class="add-btn" onclick="addItem()">Post Item</button>
             <button onclick="closeModal()">Cancel</button>
         </div>
@@ -352,18 +1122,45 @@
 
     <div class="modal" id="detailModal">
         <div class="modal-content" style="text-align:center;">
-            <img id="detailImage" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;">
+            <button onclick="closeDetailModal()" style="position:sticky; top:0; left:0; z-index:10; background:white; border:1px solid #ccc; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; margin-bottom:10px; float:left;">←</button>
+            <div style="clear:both;"></div>
+            <div class="detail-gallery">
+
+                <img id="detailImage" class="detail-gallery-main" onclick="nextGalleryImage()">
+                <button class="detail-gallery-arrow prev" onclick="prevGalleryImage()">‹</button>
+                <button class="detail-gallery-arrow next" onclick="nextGalleryImage()">›</button>
+            </div>
+            <div class="detail-gallery-dots" id="detailGalleryDots"></div>
             <h3 id="detailTitle" style="margin:15px 0 5px 0;"></h3>
             <div class="price" id="detailPrice" style="font-size:18px;"></div>
             <span class="category-tag" id="detailCategory"></span>
+            <div id="detailOptionPickers"></div>
             <p id="detailDescription" style="text-align:left; margin-top:15px; color:#555;"></p>
-            <a class="order-btn" id="detailOrderBtn" href="#" target="_blank">Order Now</a>
-            <div id="ownerControls" style="display:none; gap:8px; margin-top:8px;">
-                <button onclick="editItem()" style="width:100%; background-color:#1a5c3a; color:white; border:none; border-radius:10px; padding:12px;">Edit Item</button>
-                <button onclick="deleteItem()" style="width:100%; background-color:#e74c3c; color:white; border:none; border-radius:10px; padding:12px;">Delete Item</button>
-            </div>
-            <button onclick="closeDetailModal()" style="margin-top:8px;">Close</button>
-        </div>
+           <div class="detail-action-row">
+                <button class="detail-action-btn detail-order-btn" id="detailOrderBtn" onclick="handleOrderClick(currentDetailIndex)">🛍️ Order Now</button>
+                <button class="detail-action-btn detail-chat-btn" onclick="startChat()">💬 Chat</button>
+           </div>
+<div style="margin-top:12px; padding-top:12px; border-top:1px solid #eee;">
+    <p style="font-size:13px; color:#777; margin-bottom:5px;">Rate this seller:</p>
+    <div id="starRating" style="font-size:24px; cursor:pointer;">
+        <span onclick="setRating(1)" id="star1">☆</span>
+        <span onclick="setRating(2)" id="star2">☆</span>
+        <span onclick="setRating(3)" id="star3">☆</span>
+        <span onclick="setRating(4)" id="star4">☆</span>
+        <span onclick="setRating(5)" id="star5">☆</span>
+    </div>
+</div>
+           <div id="ownerControls" style="display:none; gap:8px; margin-top:8px; flex-wrap:wrap;">
+    <button onclick="editItem()" style="width:100%; background-color:#1a5c3a; color:white; border:none; border-radius:10px; padding:12px;">Edit Item</button>
+    <button onclick="deleteItem()" style="width:100%; background-color:#e74c3c; color:white; border:none; border-radius:10px; padding:12px;">Delete Item</button>
+</div>
+<button id="markSoldBtn" onclick="markAsSold()" style="display:none; width:100%; background-color:#27ae60; color:white; border:none; border-radius:10px; padding:12px; margin-top:8px;">Mark as Sold</button>
+<button id="promoteBtn" onclick="togglePromote()" style="display:none; width:100%; background-color:#e67e22; color:white; border:none; border-radius:10px; padding:12px; margin-top:8px;">🔥 Promote This Item</button>
+
+<div id="moreFromSellerSection" style="display:none; text-align:left; margin-top:20px; padding-top:15px; border-top:1px solid #eee;">
+    <div class="scroll-row-title">More from this seller</div>
+    <div class="more-seller-grid" id="moreFromSellerRow"></div>
+</div>        </div>
     </div>
 
     <div class="modal" id="cartModal">
@@ -371,36 +1168,173 @@
             <h3>Your Cart</h3>
             <div id="cartItems" style="text-align:left; max-height:300px; overflow-y:auto;"></div>
             <div id="cartTotal" style="font-weight:bold; margin-top:10px; text-align:right;"></div>
-            <a class="order-btn" id="checkoutBtn" href="#" target="_blank">Checkout via WhatsApp</a>
+           <button class="order-btn" id="checkoutBtn" style="border:none;" onclick="handleCheckoutClick()">Checkout via WhatsApp</button>
             <button onclick="closeCart()" style="margin-top:8px;">Close</button>
         </div>
     </div>
 
-    <div class="modal" id="sellersModal">
+   <div class="modal" id="sellersModal">
         <div class="modal-content">
             <h3>Manage Sellers</h3>
             <div id="sellersList" style="text-align:left; max-height:350px; overflow-y:auto;"></div>
-            <button onclick="closeSellersPanel()" style="margin-top:12px;">Close</button>
+            <button onclick="seedDemoItems()" style="margin-top:12px; background:#8e44ad; color:white;">🌱 Seed Demo Items</button>
+            <button onclick="closeSellersPanel()" style="margin-top:8px;">Close</button>
         </div>
     </div>
+<div class="modal" id="sellerDetailModal">
+    <div class="modal-content" style="text-align:center;">
+        <img id="sdPhoto" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px;">
+        <h3 id="sdName"></h3>
+        <p id="sdPhone" style="color:#777; font-size:13px;"></p>
+        <p id="sdEmail" style="color:#777; font-size:13px;"></p>
+        <p id="sdJoined" style="color:#777; font-size:13px;"></p>
+        <p id="sdAddress" style="color:#777; font-size:13px;"></p>
 
-    <div class="modal" id="sellerAuthModal">
+        <div style="text-align:left; margin-top:12px; padding-top:12px; border-top:1px solid #eee;">
+            <p style="font-size:13px; color:#777; margin-bottom:5px;">Ghana Card Number</p>
+            <p id="sdGhanaCard" style="font-weight:bold; font-size:14px;"></p>
+            <p style="font-size:13px; color:#777; margin-bottom:5px;">Ghana Card Photo</p>
+            <img id="sdGhanaCardPhoto" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; display:none;">
+        </div>        <div style="display:flex; justify-content:space-around; margin:15px 0; padding:10px 0; border-top:1px solid #eee; border-bottom:1px solid #eee;">
+            <div>
+                <div style="font-weight:bold; font-size:18px;" id="sdRating">-</div>
+                <div style="font-size:12px; color:#777;">Rating</div>
+            </div>
+            <div>
+                <div style="font-weight:bold; font-size:18px;" id="sdItemCount">0</div>
+                <div style="font-size:12px; color:#777;">Items Posted</div>
+            </div>
+            <div>
+                <div style="font-weight:bold; font-size:18px;" id="sdCommission">GHS 0</div>
+                <div style="font-size:12px; color:#777;">Commission Earned</div>
+            </div>
+        </div>
+
+        <h4 style="text-align:left;">Posted Items</h4>
+        <div id="sdItemsList" style="text-align:left; max-height:200px; overflow-y:auto;"></div>
+
+        <button onclick="closeSellerDetail()" style="margin-top:12px;">Close</button>
+    </div>
+</div>
+  <div class="modal" id="buyerNameModal">
+    <div class="modal-content" style="text-align:center;">
+        <h3>What's your name?</h3>
+        <p style="font-size:13px; color:#777;">So the seller knows who's messaging them.</p>
+        <input type="text" id="buyerNameInput" placeholder="Your name">
+        <button class="add-btn" onclick="saveBuyerName()">Continue</button>
+        <button onclick="closeBuyerNameModal()" style="margin-top:8px;">Cancel</button>
+    </div>
+</div>
+<div class="modal" id="getStartedModal">
+    <div class="modal-content">
+        <div class="seller-tab-row">
+            <button id="buyerRegisterTab" class="seller-tab-btn active" onclick="switchBuyerTab('register')">Sign Up</button>
+            <button id="buyerLoginTab" class="seller-tab-btn" onclick="switchBuyerTab('login')">Log In</button>
+        </div>
+
+        <div id="buyerRegisterForm">
+            <h3>Create Your Buyer Account</h3>
+            <input type="text" id="getStartedName" placeholder="Your name">
+            <input type="text" id="getStartedPhone" placeholder="Phone number">
+            <input type="email" id="getStartedEmail" placeholder="Email address (optional)">
+            <input type="password" id="getStartedPassword" placeholder="Create a password">
+            <button class="add-btn" id="submitBuyerRegisterBtn" onclick="submitGetStarted()">Sign Up</button>
+        </div>
+
+        <div id="buyerLoginForm" style="display:none;">
+            <h3>Buyer Log In</h3>
+            <input type="text" id="buyerLoginPhone" placeholder="Your phone number">
+            <input type="password" id="buyerLoginPassword" placeholder="Password">
+            <button class="add-btn" onclick="submitBuyerLogin()">Log In</button>
+        </div>
+
+        <button onclick="skipGetStarted()" style="margin-top:8px;">Skip for now</button>
+    </div>
+</div><div class="modal" id="chatModal">
+    <div class="modal-content" style="display:flex; flex-direction:column; height:70vh; max-height:500px; padding:15px;">
+        <h3 id="chatItemTitle" style="margin:0 0 10px 0;"></h3>
+        <div id="chatMessages" style="flex:1; overflow-y:auto; background:#f8f8f8; border-radius:8px; padding:10px; margin-bottom:10px;"></div>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="chatMessageInput" placeholder="Type a message..." style="flex:1; margin-bottom:0;" onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()" style="width:auto; background:#1a5c3a; color:white; border:none; border-radius:8px; padding:12px 16px;">Send</button>
+        </div>
+        <button onclick="closeChatWindow()" style="margin-top:8px;">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="messagesPanelModal">
+    <div class="modal-content">
+        <h3>Your Messages</h3>
+        <div id="messagesPanelList" style="text-align:left; max-height:350px; overflow-y:auto;"></div>
+        <button onclick="closeMessagesPanel()" style="margin-top:12px;">Close</button>
+    </div>
+</div>
+<div id="chatToast">
+    <span style="font-size:18px;">💬</span>
+    <span id="chatToastText"></span>
+</div>
+<div class="modal" id="roleChoiceModal">
+    <div class="modal-content" style="text-align:center;">
+        <div style="font-size:36px; margin-bottom:6px;">👋</div>
+        <h3>Welcome to KayaMart</h3>
+        <p style="font-size:14px; color:#777; margin-bottom:4px;">How would you like to continue?</p>
+        <div class="role-choice-row">
+            <div class="role-choice-btn role-choice-buyer" onclick="continueAsBuyer()">
+                <span class="role-emoji">🛍️</span>
+                <span class="role-label">Continue as Buyer</span>
+            </div>
+            <div class="role-choice-btn role-choice-seller" onclick="continueAsSeller()">
+                <span class="role-emoji">🏪</span>
+                <span class="role-label">Continue as Seller</span>
+            </div>
+        </div>
+        <button class="guest-prompt-btn guest-prompt-skip" onclick="closeRoleChoice()">Continue Browsing</button>
+    </div>
+</div>
+<div class="modal" id="guestPromptModal">
+    <div class="modal-content" style="text-align:center;">
+        <div class="guest-prompt-banner">
+            <div class="emoji">👋</div>
+            <h3>Welcome to KayaMart</h3>
+            <p>Buy and sell used items near you. Register as a seller to start posting, or continue browsing as a guest.</p>
+        </div>
+        <button class="guest-prompt-btn guest-prompt-primary" onclick="closeGuestPrompt(); document.getElementById('sellerAuthModal').style.display='flex'; switchSellerTab('register');">🏪 Sign Up as a Seller</button>
+        <button class="guest-prompt-btn guest-prompt-secondary" onclick="closeGuestPrompt(); document.getElementById('sellerAuthModal').style.display='flex'; switchSellerTab('login');">Log In</button>
+        <button class="guest-prompt-btn guest-prompt-skip" onclick="closeGuestPrompt()">Continue Browsing</button>
+    </div>
+</div><div class="modal" id="sellerAuthModal">
         <div class="modal-content">
-            <div style="display:flex; gap:8px; margin-bottom:15px;">
-                <button id="sellerRegisterTab" onclick="switchSellerTab('register')" style="width:100%; background:#1a5c3a; color:white; border:none;">Register</button>
-                <button id="sellerLoginTab" onclick="switchSellerTab('login')" style="width:100%; background:#eee; color:#333; border:none;">Log In</button>
+          <div class="seller-tab-row">
+                <button id="sellerRegisterTab" class="seller-tab-btn active" onclick="switchSellerTab('register')">Register</button>
+                <button id="sellerLoginTab" class="seller-tab-btn" onclick="switchSellerTab('login')">Log In</button>
             </div>
 
             <div id="sellerRegisterForm">
                 <h3>Become a Seller</h3>
                 <input type="text" id="regName" placeholder="Your full name">
                 <input type="text" id="regPhone" placeholder="WhatsApp number (e.g. 0591616403)">
-                <input type="email" id="regEmail" placeholder="Your email address">
-                <input type="password" id="regPassword" placeholder="Create a password">
-                <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Profile Photo</label>
+               <input type="email" id="regEmail" placeholder="Your email address">
+<select id="regLocation">
+    <option value="">Select your location</option>
+    <option value="Accra">Accra</option>
+    <option value="Kumasi">Kumasi</option>
+    <option value="Tamale">Tamale</option>
+    <option value="Takoradi">Takoradi</option>
+    <option value="Cape Coast">Cape Coast</option>
+    <option value="Ho">Ho</option>
+    <option value="Koforidua">Koforidua</option>
+    <option value="Sunyani">Sunyani</option>
+    <option value="Other">Other</option>
+</select>
+<input type="text" id="regGhanaCard" placeholder="Ghana Card number (e.g. GHA-123456789-0)">
+<input type="text" id="regAddress" placeholder="Residential address">
+<label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Ghana Card Photo (front)</label>
+<input type="file" id="regGhanaCardPhoto" accept="image/*">
+<img id="regGhanaCardPreview">
+<input type="password" id="regPassword" placeholder="Create a password">                <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Profile Photo</label>
                 <input type="file" id="regPhoto" accept="image/*" capture="user">
                 <img id="regPhotoPreview">
-                <button class="add-btn" onclick="submitSellerRegister()">Submit Request</button>
+               <button class="add-btn" id="submitRegisterBtn" onclick="submitSellerRegister()">Submit Request</button>
             </div>
 
             <div id="sellerLoginForm" style="display:none;">
@@ -414,41 +1348,47 @@
         </div>
     </div>
 
-    <script>
+ <script>
     let isOwner = localStorage.getItem('kayaOwner') === 'true';
+
+    if (isOwner) {
+        window.location.href = 'analytics.html';
+    }
+const OWNER_PASSWORD_HASH = "98c3607e9532b8e48a3576e0574d2259b866d720afe94d956b3e9b77d4eb0cb5";
     let logoClickCount = 0;
     let logoClickTimer = null;
 
-    function handleLogoClick() {
-        logoClickCount++;
-        if (logoClickTimer) clearTimeout(logoClickTimer);
-        logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
+   async function handleLogoClick() {
+    logoClickCount++;
+    if (logoClickTimer) clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 1500);
 
-        if (logoClickCount === 3) {
-            logoClickCount = 0;
+    if (logoClickCount === 3) {
+        logoClickCount = 0;
 
-            if (isOwner) {
-                if (confirm("Log out of owner mode?")) {
-                    isOwner = false;
-                    localStorage.setItem('kayaOwner', 'false');
-                    alert("Logged out of owner mode.");
-                    renderItems();
-                    toggleOwnerControls();
-                }
+        if (isOwner) {
+            if (confirm("Log out of owner mode?")) {
+                isOwner = false;
+                localStorage.setItem('kayaOwner', 'false');
+                alert("Logged out of owner mode.");
+                renderItems();
+                toggleOwnerControls();
+            }
+        } else {
+            const pass = prompt("Enter owner password:");
+            if (pass === null) return;
+            const hashedInput = await hashPassword(pass);
+            if (hashedInput === OWNER_PASSWORD_HASH) {
+                isOwner = true;
+                localStorage.setItem('kayaOwner', 'true');
+                alert("Owner mode unlocked!");
+                window.location.href = 'analytics.html';
             } else {
-                const pass = prompt("Enter owner password:");
-                if (pass === "kaya2026") {
-                    isOwner = true;
-                    localStorage.setItem('kayaOwner', 'true');
-                    alert("Owner mode unlocked!");
-                    renderItems();
-                    toggleOwnerControls();
-                } else if (pass !== null) {
-                    alert("Incorrect password.");
-                }
+                alert("Incorrect password.");
             }
         }
     }
+}
 
     let sellerId = localStorage.getItem('kayaSellerId') || null;
     let sellerStatus = null;
@@ -467,6 +1407,229 @@
             document.getElementById('sellerAuthModal').style.display = 'flex';
         }
     }
+let guestPromptShownCount = 0;
+    let guestPromptTimer = null;
+
+ function maybeShowGuestPrompt() {
+        if (sellerId) return; // already a seller, don't show
+        if (buyerName) return; // already identified as a buyer, stop nagging
+        if (guestPromptShownCount >= 3) return; // cap how many times per visit
+        if (document.getElementById('sellerAuthModal').style.display === 'flex') return; // don't interrupt an open form
+        openRoleChoice();
+        guestPromptShownCount++;
+    }
+
+    function closeGuestPrompt() {
+        document.getElementById('guestPromptModal').style.display = 'none';
+    }
+function openRoleChoice() {
+        document.getElementById('roleChoiceModal').style.display = 'flex';
+    }
+
+    function closeRoleChoice() {
+        document.getElementById('roleChoiceModal').style.display = 'none';
+    }
+
+   function continueAsBuyer() {
+        closeRoleChoice();
+        if (buyerName) return;
+        switchBuyerTab('register');
+        document.getElementById('getStartedModal').style.display = 'flex';
+    }
+
+    function continueAsSeller() {
+        closeRoleChoice();
+        if (sellerId) return;
+        document.getElementById('sellerAuthModal').style.display = 'flex';
+        switchSellerTab('register');
+    }
+ function startGuestPromptTimer() {
+        if (guestPromptTimer) clearInterval(guestPromptTimer);
+        if (sellerId || buyerName) return; // already identified, no need to nag
+        setTimeout(maybeShowGuestPrompt, 90000); // repeat reminder after 90s
+        guestPromptTimer = setInterval(maybeShowGuestPrompt, 90000); // then every 90s
+    }
+
+   function showWelcomeGateIfNeeded() {
+        if (sellerId) return; // already registered/logged in, skip
+        if (buyerName) return; // already identified as a buyer, skip
+        if (localStorage.getItem('kayaWelcomeSeen') === 'true') return; // already seen before
+        openRoleChoice();
+        localStorage.setItem('kayaWelcomeSeen', 'true');
+        guestPromptShownCount++;
+    }
+const introSlidesData = [
+    { eyebrow: "Welcome to", title: "KayaMart", text: "Ghana's easiest way to buy and sell — new, refurbished, and secondhand.", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&h=1600&fit=crop" },
+    { eyebrow: "Selling Made Simple", title: "Turn clutter into cash", text: "Whether it's brand new, refurbished, or gently used — snap a photo, set a price, and reach buyers in your city.", image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=900&h=1600&fit=crop" },
+    { eyebrow: "Buying Made Easy", title: "New. Refurbished. Secondhand.", text: "Browse clothes, electronics, furniture and more — every listing tells you the condition upfront.", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&h=1600&fit=crop" },
+    { eyebrow: "Let's Go", title: "Ready when you are", text: "Join sellers and buyers across Accra, Kumasi, and beyond.", image: "https://images.unsplash.com/photo-1518219051733-d8d4fbbf9797?w=900&h=1600&fit=crop", isLast: true }
+];    let introIndex = 0;
+    let introInterval = null;
+
+    function renderIntroSplash() {
+        const container = document.getElementById('introSlides');
+        const dots = document.getElementById('introDots');
+        container.innerHTML = introSlidesData.map((s, i) => `
+            <div class="intro-slide ${i === 0 ? 'active' : ''}">
+                <div class="intro-slide-bg" style="background-image:url('${s.image}')"></div>
+                <div class="intro-slide-content">
+                    <span class="intro-eyebrow">${s.eyebrow}</span>
+                    <h2>${s.title}</h2>
+                    <p>${s.text}</p>
+                  ${s.isLast ? `<button class="intro-get-started-btn" onclick="handleGetStarted()">Get Started</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+        dots.innerHTML = introSlidesData.map((s, i) => `<div class="intro-dot ${i === 0 ? 'active' : ''}"></div>`).join('');
+    }
+
+    function setActiveIntroSlide(i) {
+        document.querySelectorAll('.intro-slide').forEach((el, idx) => el.classList.toggle('active', idx === i));
+        document.querySelectorAll('.intro-dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
+    }
+
+    function nextIntroSlide() {
+        introIndex++;
+        if (introIndex >= introSlidesData.length) {
+            clearInterval(introInterval);
+            return;
+        }
+        setActiveIntroSlide(introIndex);
+    }
+
+   function startIntroSplash() {
+        if (localStorage.getItem('kayaIntroSeen') === 'true') {
+            document.getElementById('introSplash').style.display = 'none';
+            showWelcomeGateIfNeeded();
+            return;
+        }
+        document.body.classList.add('intro-locked');
+        renderIntroSplash();
+        introInterval = setInterval(nextIntroSlide, 3500);
+    }
+
+ function closeIntroSplash() {
+        clearInterval(introInterval);
+        const splash = document.getElementById('introSplash');
+        splash.style.transition = 'opacity 0.6s ease';
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.style.display = 'none';
+            document.body.classList.remove('intro-locked');
+        }, 600);
+        localStorage.setItem('kayaIntroSeen', 'true');
+        showWelcomeGateIfNeeded();
+    }
+
+    function handleGetStarted() {
+        clearInterval(introInterval);
+        const splash = document.getElementById('introSplash');
+        splash.style.transition = 'opacity 0.6s ease';
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.style.display = 'none';
+            document.body.classList.remove('intro-locked');
+        }, 600);
+        localStorage.setItem('kayaIntroSeen', 'true');
+        document.getElementById('getStartedModal').style.display = 'flex';
+    }
+
+  function submitGetStarted() {
+        const name = document.getElementById('getStartedName').value.trim();
+        const phone = document.getElementById('getStartedPhone').value.trim();
+        const email = document.getElementById('getStartedEmail').value.trim();
+        const password = document.getElementById('getStartedPassword').value;
+
+        if (!name || !phone || !password) {
+            alert("Please enter your name, phone number, and a password.");
+            return;
+        }
+
+        const btn = document.getElementById('submitBuyerRegisterBtn');
+        btn.disabled = true;
+        btn.innerText = "Signing up...";
+
+        hashPassword(password).then((hashedPassword) => {
+            db.collection('buyers').add({
+                name, phone: formatPhone(phone), email, password: hashedPassword,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((docRef) => {
+                finishBuyerLogin(docRef.id, name, phone, email);
+                btn.disabled = false;
+                btn.innerText = "Sign Up";
+            }).catch((err) => {
+                alert("Sign up failed: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Sign Up";
+            });
+        });
+    }
+
+    function submitBuyerLogin() {
+        const phone = document.getElementById('buyerLoginPhone').value.trim();
+        const password = document.getElementById('buyerLoginPassword').value;
+
+        if (!phone || !password) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        hashPassword(password).then((hashedPassword) => {
+            db.collection('buyers')
+                .where('phone', '==', formatPhone(phone))
+                .where('password', '==', hashedPassword)
+                .get()
+                .then((snapshot) => {
+                    if (snapshot.empty) {
+                        alert("No matching account found.");
+                        return;
+                    }
+                    const doc = snapshot.docs[0];
+                    const b = doc.data();
+                    finishBuyerLogin(doc.id, b.name, b.phone, b.email);
+                })
+                .catch((err) => {
+                    alert("Login failed: " + err.message);
+                });
+        });
+    }
+
+    function finishBuyerLogin(buyerId, name, phone, email) {
+        buyerName = name;
+        localStorage.setItem('kayaBuyerId', buyerId);
+        localStorage.setItem('kayaBuyerName', name);
+        localStorage.setItem('kayaBuyerPhone', phone);
+        if (email) localStorage.setItem('kayaBuyerEmail', email);
+
+        document.getElementById('getStartedModal').style.display = 'none';
+
+        const buyerLogoutLink = document.getElementById('buyerLogoutLink');
+        if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
+
+        if (guestPromptTimer) clearInterval(guestPromptTimer);
+
+        if (pendingOrderUrl) {
+            window.open(pendingOrderUrl, '_blank');
+            pendingOrderUrl = null;
+        }
+        if (pendingChatItem) {
+            openChatWindow(pendingChatItem);
+            pendingChatItem = null;
+        }
+
+        if (!sellerId && localStorage.getItem('kayaSellerPromptAfterBuyerShown') !== 'true') {
+            localStorage.setItem('kayaSellerPromptAfterBuyerShown', 'true');
+            setTimeout(() => {
+                document.getElementById('sellerAuthModal').style.display = 'flex';
+                switchSellerTab('register');
+            }, 1200);
+        }
+    }
+
+    function skipGetStarted() {
+        document.getElementById('getStartedModal').style.display = 'none';
+        showWelcomeGateIfNeeded();
+    }
 
     function updateSellerLinkText() {
         const link = document.getElementById('sellerAuthLink');
@@ -474,7 +1637,7 @@
         link.innerText = sellerId ? "Log out of seller account" : "Are you a seller? Log in to post items";
     }
 
-    function switchSellerTab(tab) {
+   function switchSellerTab(tab) {
         const regForm = document.getElementById('sellerRegisterForm');
         const loginForm = document.getElementById('sellerLoginForm');
         const regTab = document.getElementById('sellerRegisterTab');
@@ -483,22 +1646,49 @@
         if (tab === 'register') {
             regForm.style.display = 'block';
             loginForm.style.display = 'none';
-            regTab.style.background = '#1a5c3a';
-            regTab.style.color = 'white';
-            loginTab.style.background = '#eee';
-            loginTab.style.color = '#333';
+            regTab.classList.add('active');
+            loginTab.classList.remove('active');
         } else {
             regForm.style.display = 'none';
             loginForm.style.display = 'block';
-            loginTab.style.background = '#1a5c3a';
-            loginTab.style.color = 'white';
-            regTab.style.background = '#eee';
-            regTab.style.color = '#333';
+            loginTab.classList.add('active');
+            regTab.classList.remove('active');
         }
     }
+function switchBuyerTab(tab) {
+        const regForm = document.getElementById('buyerRegisterForm');
+        const loginForm = document.getElementById('buyerLoginForm');
+        const regTab = document.getElementById('buyerRegisterTab');
+        const loginTab = document.getElementById('buyerLoginTab');
 
-    function closeSellerAuth() {
+        if (tab === 'register') {
+            regForm.style.display = 'block';
+            loginForm.style.display = 'none';
+            regTab.classList.add('active');
+            loginTab.classList.remove('active');
+        } else {
+            regForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginTab.classList.add('active');
+            regTab.classList.remove('active');
+        }
+    }
+function closeSellerAuth() {
         document.getElementById('sellerAuthModal').style.display = 'none';
+    }
+  function openBuyerLoginFromBanner(event) {
+        event.stopPropagation();
+        if (buyerName) {
+            alert("You're already logged in as " + buyerName + "!");
+            return;
+        }
+        document.getElementById('buyerNameModal').style.display = 'flex';
+    }
+function filterToCategoryFromBanner(event, category) {
+        event.stopPropagation();
+        document.getElementById('categoryFilter').value = category;
+        renderItems();
+        document.querySelector('.controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     document.getElementById('regPhoto').addEventListener('change', function(e) {
@@ -514,64 +1704,93 @@
         }
     });
 
-    function submitSellerRegister() {
-        const name = document.getElementById('regName').value;
-        const phone = document.getElementById('regPhone').value;
-        const email = document.getElementById('regEmail').value;
-        const password = document.getElementById('regPassword').value;
-        const photoFile = document.getElementById('regPhoto').files[0];
+  function submitSellerRegister() {
+   const name = document.getElementById('regName').value;
+const phone = document.getElementById('regPhone').value;
+const email = document.getElementById('regEmail').value;
+const location = document.getElementById('regLocation').value;
+const password = document.getElementById('regPassword').value;
+const photoFile = document.getElementById('regPhoto').files[0];
 
-        if (!name || !phone || !email || !password) {
-            alert("Please fill in all fields.");
-            return;
-        }
+if (!name || !phone || !email || !location || !password) {
+    alert("Please fill in all fields.");
+    return;
+}
 
-        function saveSeller(photoData) {
-            db.collection('sellers').add({
-                name, phone: formatPhone(phone), email, password, status: "pending", photo: photoData || "",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then((docRef) => {
-                localStorage.setItem('kayaSellerId', docRef.id);
-                sellerId = docRef.id;
-                alert("Registration submitted! Waiting for owner approval before you can post items.");
-                closeSellerAuth();
-                updateSellerLinkText();
-            });
-        }
+    const btn = document.getElementById('submitRegisterBtn');
+    btn.disabled = true;
+    btn.innerText = "Submitting...";
 
-        if (photoFile) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                saveSeller(event.target.result);
-            };
-            reader.readAsDataURL(photoFile);
-        } else {
-            saveSeller("");
-        }
+    function resetButton() {
+        btn.disabled = false;
+        btn.innerText = "Submit Request";
     }
 
-    function submitSellerLogin() {
-        const phone = document.getElementById('loginPhone').value;
-        const password = document.getElementById('loginPassword').value;
+ function saveSeller(photoData) {
+    hashPassword(password).then((hashedPassword) => {
+        db.collection('sellers').add({
+            name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending", photo: photoData || "",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then((docRef) => {
+            localStorage.setItem('kayaSellerId', docRef.id);
+            localStorage.setItem('kayaSellerLocation', location);
+            sellerId = docRef.id;
+            alert("Registration submitted! Waiting for owner approval before you can post items.");
 
-        if (!phone || !password) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        db.collection('sellers').where('phone', '==', formatPhone(phone)).where('password', '==', password).get().then((snapshot) => {
-            if (snapshot.empty) {
-                alert("No matching account found.");
-                return;
-            }
-            const doc = snapshot.docs[0];
-            localStorage.setItem('kayaSellerId', doc.id);
-            sellerId = doc.id;
-            checkSellerStatus();
             closeSellerAuth();
             updateSellerLinkText();
+startGuestPromptTimer();
+
+            resetButton();
+        }).catch((err) => {
+            alert("Registration failed: " + err.message);
+            resetButton();
         });
+    });
     }
+if (photoFile) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            saveSeller(event.target.result);
+        };
+        reader.readAsDataURL(photoFile);
+    } else {
+        saveSeller("");
+    }
+}
+ function submitSellerLogin() {
+    const phone = document.getElementById('loginPhone').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!phone || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    hashPassword(password).then((hashedPassword) => {
+        db.collection('sellers')
+            .where('phone', '==', formatPhone(phone))
+            .where('password', '==', hashedPassword)
+            .get()
+            .then((snapshot) => {
+                if (snapshot.empty) {
+                    alert("No matching account found.");
+                    return;
+                }
+                const doc = snapshot.docs[0];
+                const sellerData = doc.data();
+                localStorage.setItem('kayaSellerId', doc.id);
+                localStorage.setItem('kayaSellerLocation', sellerData.location || 'Other');
+                sellerId = doc.id;
+                checkSellerStatus();
+                closeSellerAuth();
+                updateSellerLinkText();
+            })
+            .catch((err) => {
+                alert("Login failed: " + err.message);
+            });
+    });
+}
 
     function openSellersPanel() {
         document.getElementById('sellersModal').style.display = 'flex';
@@ -588,43 +1807,142 @@
                 const photoHtml = s.photo
                     ? `<img src="${s.photo}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">`
                     : `<div style="width:40px; height:40px; border-radius:50%; background:#eee; margin-right:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">👤</div>`;
-                list.innerHTML += `
-                    <div style="padding:10px 0; border-bottom:1px solid #eee; display:flex; align-items:flex-start;">
-                        ${photoHtml}
-                        <div style="flex:1;">
-                            <strong>${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>
-                            <div style="font-size:13px; color:#777;">${s.phone}</div>
-                            <div style="display:flex; gap:6px; margin-top:6px;">
-                                <button onclick="setSellerStatus('${doc.id}', 'approved')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Approve</button>
-                                <button onclick="setSellerStatus('${doc.id}', 'declined')" style="width:auto; background:#e74c3c; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Decline</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
+              list.innerHTML += `
+    <div style="padding:10px 0; border-bottom:1px solid #eee; display:flex; align-items:flex-start;">
+        <div onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${photoHtml}</div>
+        <div style="flex:1;">
+            <strong onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>
+            <div style="font-size:13px; color:#777;">${s.phone}</div>
+            <div style="display:flex; gap:6px; margin-top:6px;">
+                <button onclick="setSellerStatus('${doc.id}', 'approved')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Approve</button>
+                <button onclick="setSellerStatus('${doc.id}', 'declined')" style="width:auto; background:#e74c3c; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Decline</button>
+                <button onclick="openSellerDetail('${doc.id}')" style="width:auto; background:#1a5c3a; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">View</button>
+            </div>
+        </div>
+    </div>
+`;
             });
         }).catch((err) => {
             list.innerHTML = '<p style="color:red;">Error loading sellers: ' + err.message + '</p>';
         });
     }
 
-    function closeSellersPanel() {
+  function closeSellersPanel() {
         document.getElementById('sellersModal').style.display = 'none';
     }
+
+    function seedDemoItems() {
+        if (!isOwner) return;
+
+        if (localStorage.getItem('kayaDemoSeeded') === 'true') {
+            if (!confirm("Demo items were already seeded once on this device. Add them again anyway? This may create duplicates.")) {
+                return;
+            }
+        }
+
+        const demoItems = [
+            { title: "Men's Denim Jacket", price: "120", category: "Clothes", condition: "Used", description: "Classic blue denim jacket, size L. Barely worn.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=450&fit=crop" },
+            { title: "Ankara Print Dress", price: "180", category: "Clothes", condition: "New", description: "Beautiful handmade Ankara dress, size M.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=450&fit=crop" },
+            { title: "Nike Running Shoes", price: "250", category: "Clothes", condition: "Refurbished", description: "Size 42, cleaned and re-soled. Great condition.", sellerLocation: "Takoradi", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=450&fit=crop" },
+            { title: "Samsung Galaxy A14", price: "1450", category: "Electronics", condition: "Used", description: "128GB, good battery health, minor scratches on back.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&h=450&fit=crop" },
+            { title: "HP Laptop 15-inch", price: "3200", category: "Electronics", condition: "Refurbished", description: "8GB RAM, 256GB SSD. Freshly reinstalled Windows.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&h=450&fit=crop" },
+            { title: "Bluetooth Headphones", price: "180", category: "Electronics", condition: "New", description: "Sealed box, noise-cancelling, 20hr battery.", sellerLocation: "Ho", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=450&fit=crop" },
+            { title: "32-inch Smart TV", price: "1800", category: "Electronics", condition: "Used", description: "Works perfectly, selling due to upgrade.", sellerLocation: "Cape Coast", image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&h=450&fit=crop" },
+            { title: "3-Seater Sofa", price: "1600", category: "Furniture", condition: "Used", description: "Comfortable fabric sofa, minor wear on armrests.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&h=450&fit=crop" },
+            { title: "Wooden Dining Table Set", price: "2200", category: "Furniture", condition: "Refurbished", description: "Seats 6, sanded and re-varnished.", sellerLocation: "Kumasi", image: "https://images.unsplash.com/photo-1617806118233-18e1de247200?w=600&h=450&fit=crop" },
+            { title: "Queen Size Bed Frame", price: "1400", category: "Furniture", condition: "Used", description: "Sturdy wooden frame, mattress not included.", sellerLocation: "Sunyani", image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=450&fit=crop" },
+            { title: "Bookshelf", price: "350", category: "Furniture", condition: "New", description: "5-tier wooden bookshelf, flat-packed.", sellerLocation: "Koforidua", image: "https://images.unsplash.com/photo-1594620302200-9a762244a156?w=600&h=450&fit=crop" },
+            { title: "Blender & Juicer Set", price: "220", category: "Other", condition: "New", description: "Unused, still in original packaging.", sellerLocation: "Accra", image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600&h=450&fit=crop" },
+            { title: "Kids Bicycle", price: "300", category: "Other", condition: "Used", description: "Ages 6-9, good tires, minor rust on frame.", sellerLocation: "Tamale", image: "https://images.unsplash.com/photo-1471506480208-91b3a4cc78be?w=600&h=450&fit=crop" },
+            { title: "Camping Tent (4-person)", price: "450", category: "Other", condition: "Refurbished", description: "Waterproofed and cleaned, ready for the next trip.", sellerLocation: "Cape Coast", image: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=600&h=450&fit=crop" }
+        ];
+
+        let addedCount = 0;
+        const promises = demoItems.map(item =>
+            db.collection('items').add({
+                ...item,
+                sellerName: "KayaMart",
+                sellerPhone: "233535263510",
+                postedBy: "OWNER",
+                status: "approved",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { addedCount++; })
+        );
+
+        Promise.all(promises).then(() => {
+            localStorage.setItem('kayaDemoSeeded', 'true');
+            alert("Seeded " + addedCount + " demo items into the market!");
+        }).catch((err) => {
+            alert("Some items failed to seed: " + err.message);
+        });
+    }
+function openSellerDetail(sellerDocId) {
+    db.collection('sellers').doc(sellerDocId).get().then((doc) => {
+        const s = doc.data();
+        document.getElementById('sdPhoto').src = s.photo || 'https://via.placeholder.com/80?text=?';
+        document.getElementById('sdName').innerText = s.name;
+        document.getElementById('sdPhone').innerText = '📞 ' + s.phone;
+        document.getElementById('sdEmail').innerText = '✉️ ' + (s.email || 'No email');
+
+      let joinedText = 'Joined: Unknown';
+        if (s.createdAt) {
+            const date = s.createdAt.toDate();
+            joinedText = 'Joined: ' + date.toLocaleDateString();
+        }
+        document.getElementById('sdJoined').innerText = joinedText;
+
+        document.getElementById('sdAddress').innerText = s.address ? '🏠 ' + s.address : '';
+        document.getElementById('sdGhanaCard').innerText = s.ghanaCard || 'Not provided';
+
+        const gcPhoto = document.getElementById('sdGhanaCardPhoto');
+        if (s.ghanaCardPhoto) {
+            gcPhoto.src = s.ghanaCardPhoto;
+            gcPhoto.style.display = 'block';
+        } else {
+            gcPhoto.style.display = 'none';
+        }
+
+        document.getElementById('sdRating').innerText = s.avgRating ? s.avgRating.toFixed(1) + ' ★' : 'No ratings yet';
+        document.getElementById('sdCommission').innerText = 'GHS ' + (s.commissionEarned || 0);
+
+        const sellerItems = items.filter(item => item.postedBy === sellerDocId);
+        document.getElementById('sdItemCount').innerText = sellerItems.length;
+
+        const itemsListDiv = document.getElementById('sdItemsList');
+        if (sellerItems.length === 0) {
+            itemsListDiv.innerHTML = '<p style="color:#999;">No items posted yet.</p>';
+        } else {
+            itemsListDiv.innerHTML = sellerItems.map(item => `
+                <div style="padding:6px 0; border-bottom:1px solid #eee; font-size:13px;">
+                    ${item.title} — GHS ${item.price}
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('sellerDetailModal').style.display = 'flex';
+    });
+}
+
+function closeSellerDetail() {
+    document.getElementById('sellerDetailModal').style.display = 'none';
+}
 
     function setSellerStatus(id, status) {
         db.collection('sellers').doc(id).get().then((doc) => {
             const seller = doc.data();
             db.collection('sellers').doc(id).update({ status }).then(() => {
-                if (status === 'approved' && seller.email) {
-                    emailjs.send('service_gzm7q7p', 'template_hj8414k', {
-                        to_name: seller.name,
-                        to_email: seller.email
-                    }).then(() => {
-                        console.log('Email sent successfully');
-                    }).catch((err) => {
-                        console.error('Email failed:', err);
-                    });
-                }
+             if (status === 'approved' && seller.email) {
+    emailjs.send('service_cbiw5me', 'template_hj8414k', {
+        to_name: seller.name,
+        to_email: seller.email
+    }).then(() => {
+        alert('Email sent successfully to ' + seller.email);
+    }).catch((err) => {
+        alert('Email failed: ' + JSON.stringify(err));
+    });
+} else if (status === 'approved' && !seller.email) {
+    alert('No email found for this seller - cannot send welcome email.');
+}
                 openSellersPanel();
             });
         });
@@ -645,30 +1963,61 @@
         });
     }
 
-    function checkSellerStatus() {
+   function checkSellerStatus() {
         if (!sellerId) return;
         db.collection('sellers').doc(sellerId).onSnapshot((doc) => {
             if (!doc.exists) return;
             const data = doc.data();
             sellerStatus = data.status;
             toggleOwnerControls();
+            if (sellerStatus === 'approved') {
+                listenForSellerMessages();
+            }
         });
     }
 
-    function toggleOwnerControls() {
+   function toggleOwnerControls() {
         const addBtn = document.querySelector('.controls .add-btn');
         if (addBtn) addBtn.style.display = (isOwner || sellerStatus === 'approved') ? 'inline-block' : 'none';
 
         const ownerControls = document.getElementById('ownerControls');
-        if (ownerControls) ownerControls.style.display = isOwner ? 'flex' : 'none';
+        if (ownerControls)
+ ownerControls.style.display = isOwner ? 'flex' : 'none';
 
         const sellersBtn = document.getElementById('sellersBtn');
         if (sellersBtn) sellersBtn.style.display = isOwner ? 'inline-block' : 'none';
 
         const sellerPrompt = document.getElementById('sellerLoginPrompt');
         if (sellerPrompt) sellerPrompt.style.display = isOwner ? 'none' : 'block';
-    }
+const messagesBtn = document.getElementById('messagesBtn');
+if (messagesBtn) messagesBtn.style.display = (sellerId && sellerStatus === 'approved') ? 'inline-block' : 'none';
 
+const sellerAnalyticsLink = document.getElementById('sellerAnalyticsLink');
+if (sellerAnalyticsLink) sellerAnalyticsLink.style.display = (sellerId && sellerStatus === 'approved') ? 'block' : 'none';
+
+const buyerLogoutLink = document.getElementById('buyerLogoutLink');
+if (buyerLogoutLink) buyerLogoutLink.style.display = (buyerName && !sellerId) ? 'block' : 'none';const myListingsOption = document.getElementById('myListingsOption');
+if (myListingsOption) myListingsOption.style.display = (isOwner || (sellerId && sellerStatus === 'approved')) ? 'block' : 'none';
+    }window.addEventListener('scroll', function() {    const shouldHide = window.scrollY > 50;
+    const modeToggle = document.getElementById('modeToggle');
+    const favBtn = document.getElementById('favBtn');
+    const cartBtn = document.getElementById('cartBtn');
+    const hamburger = document.querySelector('button[onclick="toggleTabsMenu()"]');
+
+    if (modeToggle) modeToggle.style.display = shouldHide ? 'none' : 'inline-block';
+    if (favBtn) favBtn.style.display = shouldHide ? 'none' : 'inline-block';
+    if (cartBtn) cartBtn.style.display = shouldHide ? 'none' : 'inline-block';
+    if (hamburger) hamburger.style.display = shouldHide ? 'none' : 'block';
+
+    if (!shouldHide) {
+        toggleOwnerControls();
+    } else {
+        const sellersBtn = document.getElementById('sellersBtn');
+        const messagesBtn = document.getElementById('messagesBtn');
+        if (sellersBtn) sellersBtn.style.display = 'none';
+        if (messagesBtn) messagesBtn.style.display = 'none';
+    }
+});
     function toggleTabsMenu() {
         const menu = document.getElementById('tabsMenu');
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
@@ -729,7 +2078,13 @@
         saveCart();
         alert(items[index].title + " added to cart!");
     }
-
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
     function formatPhone(number) {
         number = number.replace(/\D/g, '');
         if (number.startsWith('0')) {
@@ -753,23 +2108,30 @@
         });
     }
 
-    function renderItems() {
+   function renderItems() {
         const grid = document.getElementById('itemGrid');
         const search = document.getElementById('searchInput').value.toLowerCase();
         const category = document.getElementById('categoryFilter').value;
 
-        grid.innerHTML = "";
+      grid.innerHTML = "";
+        renderPromotedRow();
+        renderRecommendedRow();
+        renderCategoryRows();
 
-        const filtered = items.filter(item => {
-            const matchesSearch = item.title.toLowerCase().includes(search);
-            let matchesCategory;
-            if (category === "Favorites") {
-                matchesCategory = favorites.includes(items.indexOf(item));
-            } else {
-                matchesCategory = category === "All" || item.category === category;
-            }
-            return matchesSearch && matchesCategory;
-        });
+       const locationFilterValue = document.getElementById('locationFilter').value;
+const filtered = items.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(search);
+    let matchesCategory;
+    if (category === "Favorites") {
+        matchesCategory = favorites.includes(items.indexOf(item));
+    } else if (category === "MyListings") {
+        matchesCategory = isOwner ? true : (item.postedBy && item.postedBy === sellerId);
+    } else {
+        matchesCategory = category === "All" || item.category === category;
+    }
+    const matchesLocation = category === "MyListings" ? true : (locationFilterValue === "All" || item.sellerLocation === locationFilterValue);
+    return matchesSearch && matchesCategory && matchesLocation;
+});
 
         if (filtered.length === 0) {
             grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
@@ -779,21 +2141,143 @@
         filtered.forEach((item) => {
             const card = document.createElement('div');
             card.className = 'item-card';
-            card.innerHTML = `
+           card.innerHTML = `
                 <div style="position:relative;">
-                    <img src="${item.image || 'https://via.placeholder.com/200x150?text=No+Image'}" alt="${item.title}" onclick="openDetail(${items.indexOf(item)})" style="cursor:pointer;">
+                  <img src="${(item.images && item.images.length > 0 ? item.images[0] : item.image) || 'https://via.placeholder.com/200x150?text=No+Image'}"
+     alt="${item.title}"
+     onclick="openDetail(${items.indexOf(item)})"
+     style="cursor:pointer;">
+
+                    ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>` : ''}
                     <span onclick="toggleFavorite(${items.indexOf(item)})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(items.indexOf(item)) ? '❤️' : '🤍'}</span>
                 </div>
                 <div class="item-info">
                     <h3 onclick="openDetail(${items.indexOf(item)})" style="cursor:pointer;">${item.title}</h3>
                     <div class="price">GHS ${item.price}</div>
-                    <span class="category-tag">${item.category}</span>
-                    <button class="order-btn" style="background-color:#1a5c3a; border:none;" onclick="addToCart(${items.indexOf(item)})">+ Add to Cart</button>
-                    <a class="order-btn" href="https://wa.me/${item.sellerPhone || '233535263510'}?text=${encodeURIComponent('Hi, I want to order: ' + item.title + ' (GHS ' + item.price + ')')}" target="_blank">Order Now</a>
-                </div>
+                   <span class="category-tag">${item.category}</span>
+<span class="category-tag" style="margin-left:4px;">📍 ${item.sellerLocation || 'Other'}</span>
+<button class="order-btn" style="background-color:#1a5c3a; border:none;" onclick="addToCart(${items.indexOf(item)})">+ Add to Cart</button>
+<button class="order-btn" style="border:none;" onclick="handleOrderClick(${items.indexOf(item)})">Order Now</button>${canManageThis ? `
+<div style="display:flex; gap:6px; margin-top:6px;">
+    <button class="order-btn" style="background-color:#2980b9; border:none; margin-top:0;" onclick="event.stopPropagation(); quickEditItem(${items.indexOf(item)})">✏️ Edit</button>
+    <button class="order-btn" style="background-color:#e74c3c; border:none; margin-top:0;" onclick="event.stopPropagation(); quickDeleteItem(${items.indexOf(item)})">🗑️ Delete</button>
+</div>` : ''}
+</div>
             `;
             grid.appendChild(card);
         });
+    }
+
+   function renderPromotedRow() {
+        const section = document.getElementById('promotedSection');
+        const row = document.getElementById('promotedRow');
+        const promoted = items.filter(item => item.promoted === true);
+
+        if (promoted.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        row.innerHTML = promoted.map(item => `
+            <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
+                <div style="position:relative;">
+                    <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
+                    <span class="promoted-badge">🔥 PROMOTED</span>
+                </div>
+                <div class="scroll-card-title">${item.title}</div>
+                <div class="scroll-card-price">GHS ${item.price}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderRecommendedRow() {
+        const section = document.getElementById('recommendedSection');
+        const row = document.getElementById('recommendedRow');
+
+        if (items.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const favoritedCategories = favorites
+            .map(i => items[i] ? items[i].category : null)
+            .filter(Boolean);
+
+        let recommended;
+        if (favoritedCategories.length > 0) {
+            const counts = {};
+            favoritedCategories.forEach(c => counts[c] = (counts[c] || 0) + 1);
+            const topCategory = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+            recommended = items.filter(item =>
+                item.category === topCategory && !favorites.includes(items.indexOf(item))
+            );
+        }
+
+        if (!recommended || recommended.length === 0) {
+            recommended = [...items].slice(0, 10);
+        }
+
+        recommended = recommended.slice(0, 10);
+
+        if (recommended.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        row.innerHTML = recommended.map(item => `
+            <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
+              <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
+                                    ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURB'}</span>` : ''}
+
+      <div class="scroll-card-title">${item.title}</div>
+                <div class="scroll-card-price">GHS ${item.price}</div>
+            </div>
+        `).join('');
+    }
+
+    function togglePromote() {
+        const item = items[currentDetailIndex];
+        const newState = !item.promoted;
+        db.collection('items').doc(item.firestoreId).update({ promoted: newState }).then(() => {
+            closeDetailModal();
+        });
+    }
+
+    function renderCategoryRows() {
+        const container = document.getElementById('categoryRowsContainer');
+        const categories = ['Clothes', 'Electronics', 'Furniture', 'Other'];
+        let html = '';
+
+        categories.forEach(cat => {
+            const catItems = items.filter(item => item.category === cat);
+            if (catItems.length === 0) return;
+
+            html += `
+                <div class="category-row-block">
+                    <div class="scroll-row-title">${categoryEmoji(cat)} ${cat}</div>
+                    <div class="scroll-row">
+                        ${catItems.slice(0, 10).map(item => `
+                            <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
+                                <div style="position:relative;">
+                                    <img src="${item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
+                                    ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURB'}</span>` : ''}
+                                </div>
+                                <div class="scroll-card-title">${item.title}</div>
+                                <div class="scroll-card-price">GHS ${item.price}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function categoryEmoji(cat) {
+        const map = { 'Clothes': '👕', 'Electronics': '🔌', 'Furniture': '🛋️', 'Other': '📦' };
+        return map[cat] || '🛍️';
     }
 
     function openModal() {
@@ -804,27 +2288,484 @@
         document.getElementById('addModal').style.display = 'none';
     }
 
-    let currentDetailIndex = null;
+   let currentDetailIndex = null;
+    let currentGalleryImages = [];
+    let currentGalleryIndex = 0;
+    let selectedColor = null;
+    let selectedSize = null;
+
+    function renderGalleryDots() {
+        const dotsDiv = document.getElementById('detailGalleryDots');
+        if (currentGalleryImages.length <= 1) {
+            dotsDiv.innerHTML = '';
+            return;
+        }
+        dotsDiv.innerHTML = currentGalleryImages.map((_, i) =>
+            `<span class="detail-gallery-dot ${i === currentGalleryIndex ? 'active' : ''}" onclick="setGalleryIndex(${i})"></span>`
+        ).join('');
+    }
+
+    function setGalleryIndex(i) {
+        currentGalleryIndex = i;
+        document.getElementById('detailImage').src = currentGalleryImages[i] || 'https://via.placeholder.com/200x150?text=No+Image';
+        renderGalleryDots();
+    }
+
+    function nextGalleryImage() {
+        if (currentGalleryImages.length <= 1) return;
+        setGalleryIndex((currentGalleryIndex + 1) % currentGalleryImages.length);
+    }
+
+    function prevGalleryImage() {
+        if (currentGalleryImages.length <= 1) return;
+        setGalleryIndex((currentGalleryIndex - 1 + currentGalleryImages.length) % currentGalleryImages.length);
+    }
+
+    function selectColor(color) {
+        selectedColor = color;
+        renderOptionPickers(items[currentDetailIndex]);
+    }
+
+    function selectSize(size) {
+        selectedSize = size;
+        renderOptionPickers(items[currentDetailIndex]);
+    }
+
+    function renderOptionPickers(item) {
+        const container = document.getElementById('detailOptionPickers');
+        let html = '';
+
+        if (item.colors && item.colors.length > 0) {
+            html += `
+                <div class="option-picker">
+                    <div class="option-picker-label">Color:</div>
+                    <div class="option-btn-row">
+                        ${item.colors.map(c => `<button class="option-btn ${selectedColor === c ? 'selected' : ''}" onclick="selectColor('${c.replace(/'/g, "\\'")}')">${c}</button>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (item.sizes && item.sizes.length > 0) {
+            html += `
+                <div class="option-picker">
+                    <div class="option-picker-label">Size:</div>
+                    <div class="option-btn-row">
+                        ${item.sizes.map(s => `<button class="option-btn ${selectedSize === s ? 'selected' : ''}" onclick="selectSize('${s.replace(/'/g, "\\'")}')">${s}</button>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    }
 
     function openDetail(index) {
         currentDetailIndex = index;
         const item = items[index];
-        document.getElementById('detailImage').src = item.image || 'https://via.placeholder.com/200x150?text=No+Image';
 
-        const canManage = isOwner || (item.postedBy && item.postedBy === sellerId);
-        document.getElementById('ownerControls').style.display = canManage ? 'flex' : 'none';
+        currentGalleryImages = (item.images && item.images.length > 0) ? item.images : (item.image ? [item.image] : []);
+        currentGalleryIndex = 0;
+        selectedColor = (item.colors && item.colors.length > 0) ? item.colors[0] : null;
+        selectedSize = (item.sizes && item.sizes.length > 0) ? item.sizes[0] : null;
+
+       document.getElementById('detailImage').src = currentGalleryImages[0] || 'https://via.placeholder.com/200x150?text=No+Image';
+        renderGalleryDots();
+        document.querySelectorAll('.detail-gallery-arrow').forEach(arrow => {
+            arrow.style.display = currentGalleryImages.length > 1 ? 'flex' : 'none';
+        });
+        renderOptionPickers(item);
+
+     const canManage = isOwner || (item.postedBy && item.postedBy === sellerId);
+document.getElementById('ownerControls').style.display = canManage ? 'flex' : 'none';
+document.getElementById('markSoldBtn').style.display = isOwner ? 'block' : 'none';
+const promoteBtn = document.getElementById('promoteBtn');
+if (promoteBtn) {
+    promoteBtn.style.display = isOwner ? 'block' : 'none';
+    promoteBtn.innerText = item.promoted ? '✕ Remove from Promoted' : '🔥 Promote This Item';
+}
         document.getElementById('detailTitle').innerText = item.title;
         document.getElementById('detailPrice').innerText = 'GHS ' + item.price;
-        document.getElementById('detailCategory').innerText = item.category;
-        document.getElementById('detailDescription').innerText = item.description || 'No description provided.';
-        document.getElementById('detailOrderBtn').href = 'https://wa.me/' + (item.sellerPhone || '233535263510') + '?text=' + encodeURIComponent('Hi, I want to order: ' + item.title + ' (GHS ' + item.price + ')');
+       document.getElementById('detailCategory').innerText = item.category + (item.condition && item.condition !== 'Used' ? ' • ' + item.condition : '');
+       document.getElementById('detailDescription').innerText = item.description || 'No description provided.';
+        renderMoreFromSeller(item);
         document.getElementById('detailModal').style.display = 'flex';
+        document.querySelector('#detailModal .modal-content').scrollTop = 0;
+        document.body.style.overflow = 'hidden';
+    }
+
+    function renderMoreFromSeller(item) {
+        const section = document.getElementById('moreFromSellerSection');
+        const row = document.getElementById('moreFromSellerRow');
+
+        if (!item.postedBy) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const otherItems = items.filter(it => it.postedBy === item.postedBy && it.firestoreId !== item.firestoreId);
+
+        if (otherItems.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+      row.innerHTML = otherItems.map(it => `
+            <div class="scroll-card" onclick="openDetail(${items.indexOf(it)})">
+                <div style="position:relative;">
+                    <img src="${(it.images && it.images[0]) || it.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
+                    ${it.condition && it.condition !== 'Used' ? `<span class="condition-badge ${it.condition}">${it.condition === 'New' ? '✨ NEW' : '♻️ REFURB'}</span>` : ''}
+                </div>
+                <div class="scroll-card-title">${it.title}</div>
+                <div class="scroll-card-price">GHS ${it.price}</div>
+            </div>
+        `).join('');
     }
 
     function closeDetailModal() {
         document.getElementById('detailModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+let buyerName = localStorage.getItem('kayaBuyerName') || null;
+let pendingChatItem = null;
+let pendingOrderUrl = null;
+
+function startChat() {
+    const item = items[currentDetailIndex];
+    if (!item.postedBy || item.postedBy === 'OWNER') {
+        alert("Chat isn't available for this item.");
+        return;
     }
 
+    if (buyerName) {
+        openChatWindow(item);
+    } else {
+        pendingChatItem = item;
+        document.getElementById('buyerNameModal').style.display = 'flex';
+    }
+}
+
+function saveBuyerName() {
+    const name = document.getElementById('buyerNameInput').value;
+    if (!name) {
+        alert("Please enter your name.");
+        return;
+    }
+   buyerName = name;
+    localStorage.setItem('kayaBuyerName', name);
+    document.getElementById('buyerNameModal').style.display = 'none';
+
+    const buyerLogoutLink = document.getElementById('buyerLogoutLink');
+    if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
+
+    if (guestPromptTimer) clearInterval(guestPromptTimer); // they're identified now, stop the repeating nag
+
+    if (pendingChatItem) {
+        openChatWindow(pendingChatItem);
+        pendingChatItem = null;
+    }
+   if (pendingOrderUrl) {
+        window.open(pendingOrderUrl, '_blank');
+        pendingOrderUrl = null;
+    }
+
+  if (!sellerId && localStorage.getItem('kayaSellerPromptAfterBuyerShown') !== 'true') {
+        localStorage.setItem('kayaSellerPromptAfterBuyerShown', 'true');
+        setTimeout(() => {
+            document.getElementById('guestPromptModal').style.display = 'flex';
+        }, 1200);
+    }
+}
+
+function handleBuyerLogout() {
+    if (!confirm("Log out? You'll see the welcome intro again next time.")) return;
+    buyerName = null;
+    localStorage.removeItem('kayaBuyerName');
+    localStorage.removeItem('kayaBuyerPhone');
+    localStorage.removeItem('kayaBuyerEmail');
+    localStorage.removeItem('kayaBuyerId');
+    localStorage.removeItem('kayaIntroSeen');
+    localStorage.removeItem('kayaWelcomeSeen');
+    localStorage.removeItem('kayaSellerPromptAfterBuyerShown');
+    document.getElementById('tabsMenu').style.display = 'none';
+    location.reload();
+}function handleOrderClick(index) {
+    const item = items[index];
+    if (!item) return;
+
+    let message = 'Hi, I want to order: ' + item.title + ' (GHS ' + item.price + ')';
+    if (selectedColor) message += ' - Color: ' + selectedColor;
+    if (selectedSize) message += ' - Size: ' + selectedSize;
+
+    const url = 'https://wa.me/' + (item.sellerPhone || '233535263510') + '?text=' + encodeURIComponent(message);
+
+    if (buyerName) {
+        window.open(url, '_blank');
+    } else {
+        pendingOrderUrl = url;
+        openRoleChoice();
+    }
+}function closeBuyerNameModal() {
+    document.getElementById('buyerNameModal').style.display = 'none';
+    pendingChatItem = null;
+}
+let currentChatId = null;
+let chatUnsubscribe = null;
+
+function openChatWindow(item) {
+    currentChatId = item.sellerPhone + '_' + item.firestoreId;
+    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + item.title;
+    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    document.getElementById('chatModal').style.display = 'flex';
+
+    if (chatUnsubscribe) chatUnsubscribe();
+
+    chatUnsubscribe = db.collection('chats').doc(currentChatId).collection('messages')
+        .orderBy('sentAt', 'asc')
+        .onSnapshot((snapshot) => {
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '';
+            if (snapshot.empty) {
+                messagesDiv.innerHTML = '<p style="text-align:center; color:#999;">No messages yet. Say hi!</p>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const isBuyer = msg.sender === 'buyer';
+                messagesDiv.innerHTML += `
+                    <div style="display:flex; justify-content:${isBuyer ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+                        <div style="max-width:75%; background:${isBuyer ? '#1a5c3a' : 'white'}; color:${isBuyer ? 'white' : '#333'}; padding:8px 12px; border-radius:12px; font-size:14px; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                            <div style="font-size:11px; opacity:0.8; margin-bottom:2px;">${msg.senderName}</div>
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+    db.collection('chats').doc(currentChatId).set({
+        itemTitle: item.title,
+        sellerId: item.postedBy,
+        buyerName: buyerName,
+        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chatMessageInput');
+    const text = input.value.trim();
+    if (!text || !currentChatId) return;
+
+    const isSellerSending = sellerId && sellerStatus === 'approved';
+    const senderType = isSellerSending ? 'seller' : 'buyer';
+    const senderNameToUse = isSellerSending ? (localStorage.getItem('kayaSellerName') || 'Seller') : buyerName;
+
+    db.collection('chats').doc(currentChatId).collection('messages').add({
+        text: text,
+        sender: senderType,
+        senderName: senderNameToUse,
+        sentAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+   db.collection('chats').doc(currentChatId).update({
+        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSender: senderType
+    });
+
+    input.value = '';
+}
+
+function closeChatWindow() {
+    if (chatUnsubscribe) chatUnsubscribe();
+    document.getElementById('chatModal').style.display = 'none';
+}
+let sellerChatListenerUnsub = null;
+let unreadChatIds = new Set();
+
+function updateMessagesBadge() {
+    const badge = document.getElementById('messagesCount');
+    if (!badge) return;
+    const count = unreadChatIds.size;
+    if (count > 0) {
+        badge.style.display = 'flex';
+        badge.innerText = count;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function showChatToast(text, chatId, itemTitle) {
+    const toast = document.getElementById('chatToast');
+    const textEl = document.getElementById('chatToastText');
+    textEl.innerText = text;
+    toast.style.display = 'flex';
+    toast.onclick = () => {
+        toast.style.display = 'none';
+        openSellerChatView(chatId, itemTitle);
+    };
+    clearTimeout(toast._hideTimer);
+    toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 5000);
+}
+
+function listenForSellerMessages() {
+    if (!sellerId) return;
+    if (sellerChatListenerUnsub) sellerChatListenerUnsub();
+
+    let isFirstSnapshot = true;
+
+    sellerChatListenerUnsub = db.collection('chats').where('sellerId', '==', sellerId)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const chat = change.data();
+                if (!chat.lastSender || isFirstSnapshot) return;
+
+                if (chat.lastSender === 'buyer' && change.doc.id !== currentChatId) {
+                    unreadChatIds.add(change.doc.id);
+                    updateMessagesBadge();
+                    showChatToast('New message from ' + (chat.buyerName || 'a buyer') + ' about ' + chat.itemTitle, change.doc.id, chat.itemTitle);
+                }
+            });
+            isFirstSnapshot = false;
+        });
+}
+function openMessagesPanel() {
+    document.getElementById('messagesPanelModal').style.display = 'flex';
+    const list = document.getElementById('messagesPanelList');
+    list.innerHTML = 'Loading...';
+
+    db.collection('chats').where('sellerId', '==', sellerId).get().then((snapshot) => {
+        if (snapshot.empty) {
+            list.innerHTML = '<p style="color:#999;">No conversations yet.</p>';
+            return;
+        }
+        let chats = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            data.chatId = doc.id;
+            chats.push(data);
+        });
+        chats.sort((a, b) => {
+            const aTime = a.lastMessageAt ? a.lastMessageAt.toMillis() : 0;
+            const bTime = b.lastMessageAt ? b.lastMessageAt.toMillis() : 0;
+            return bTime - aTime;
+        });
+
+        list.innerHTML = chats.map(chat => `
+            <div onclick="openSellerChatView('${chat.chatId}', '${chat.itemTitle.replace(/'/g, "\\'")}')" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">
+                <strong>${chat.buyerName}</strong>
+                <div style="font-size:13px; color:#777;">Re: ${chat.itemTitle}</div>
+            </div>
+        `).join('');
+    }).catch((err) => {
+        list.innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+    });
+}
+
+function closeMessagesPanel() {
+    document.getElementById('messagesPanelModal').style.display = 'none';
+}
+
+function openSellerChatView(chatId, itemTitle) {
+    currentChatId = chatId;
+    unreadChatIds.delete(chatId);
+    updateMessagesBadge();    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + itemTitle;
+    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    document.getElementById('messagesPanelModal').style.display = 'none';
+    document.getElementById('chatModal').style.display = 'flex';
+
+    if (chatUnsubscribe) chatUnsubscribe();
+
+    chatUnsubscribe = db.collection('chats').doc(currentChatId).collection('messages')
+        .orderBy('sentAt', 'asc')
+        .onSnapshot((snapshot) => {
+            const messagesDiv = document.getElementById('chatMessages');
+            messagesDiv.innerHTML = '';
+            if (snapshot.empty) {
+                messagesDiv.innerHTML = '<p style="text-align:center; color:#999;">No messages yet.</p>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const msg = doc.data();
+                const isSeller = msg.sender === 'seller';
+                messagesDiv.innerHTML += `
+                    <div style="display:flex; justify-content:${isSeller ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+                        <div style="max-width:75%; background:${isSeller ? '#1a5c3a' : 'white'}; color:${isSeller ? 'white' : '#333'}; padding:8px 12px; border-radius:12px; font-size:14px; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+                            <div style="font-size:11px; opacity:0.8; margin-bottom:2px;">${msg.senderName}</div>
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+}
+
+
+function markAsSold() {
+    const item = items[currentDetailIndex];
+    if (!item.postedBy || item.postedBy === 'OWNER') {
+        alert("This item wasn't posted by a seller, so no commission applies.");
+        return;
+    }
+
+    if (!confirm("Mark '" + item.title + "' as sold? This will add 10% commission (GHS " + (item.price * 0.1).toFixed(2) + ") to the seller's total.")) {
+        return;
+    }
+
+    const commission = Number(item.price) * 0.10;
+
+    db.collection('sales').add({
+        sellerId: item.postedBy,
+        title: item.title,
+        image: item.image || "",
+        price: Number(item.price),
+        commission: commission,
+        soldAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        db.collection('sellers').doc(item.postedBy).get().then((doc) => {
+            const seller = doc.data();
+            const currentCommission = seller.commissionEarned || 0;
+            const currentTotalSales = seller.totalSales || 0;
+            db.collection('sellers').doc(item.postedBy).update({
+                commissionEarned: currentCommission + commission,
+                totalSales: currentTotalSales + Number(item.price)
+            }).then(() => {
+                db.collection('items').doc(item.firestoreId).delete().then(() => {
+                    alert("Item marked as sold. Commission added: GHS " + commission.toFixed(2));
+                    closeDetailModal();
+                });
+            });
+        });
+    });
+}
+function setRating(stars) {
+    const item = items[currentDetailIndex];
+    if (!item.postedBy || item.postedBy === 'OWNER') {
+        alert("Can't rate this seller.");
+        return;
+    }
+
+    for (let i = 1; i <= 5; i++) {
+        document.getElementById('star' + i).innerText = i <= stars ? '★' : '☆';
+    }
+
+    db.collection('sellers').doc(item.postedBy).get().then((doc) => {
+        const seller = doc.data();
+        const oldCount = seller.ratingCount || 0;
+        const oldAvg = seller.avgRating || 0;
+        const newCount = oldCount + 1;
+        const newAvg = ((oldAvg * oldCount) + stars) / newCount;
+
+        db.collection('sellers').doc(item.postedBy).update({
+            ratingCount: newCount,
+            avgRating: newAvg
+        }).then(() => {
+            alert('Thanks for rating!');
+        });
+    });
+}
     function deleteItem() {
         if (confirm("Are you sure you want to delete this item?")) {
             const item = items[currentDetailIndex];
@@ -856,9 +2797,10 @@
         const totalDiv = document.getElementById('cartTotal');
         cartItemsDiv.innerHTML = '';
 
-        if (cart.length === 0) {
+       if (cart.length === 0) {
             cartItemsDiv.innerHTML = '<div style="text-align:center; padding:20px 0; color:#999;"><div style="font-size:40px; margin-bottom:10px;">🛒</div><p>Your cart is empty.</p></div>';
             totalDiv.innerText = '';
+            cartCheckoutUrl = null;
         } else {
             let total = 0;
             let message = 'Hi, I want to order:%0A';
@@ -884,7 +2826,7 @@
                 `;
             });
             totalDiv.innerText = 'Total: GHS ' + total;
-            document.getElementById('checkoutBtn').href = 'https://wa.me/233535263510?text=' + message + encodeURIComponent('Total: GHS ' + total);
+           cartCheckoutUrl = 'https://wa.me/233535263510?text=' + message + encodeURIComponent('Total: GHS ' + total);
         }
 
         document.getElementById('cartModal').style.display = 'flex';
@@ -909,25 +2851,41 @@
         openCart();
     }
 
-    document.getElementById('itemImage').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const preview = document.getElementById('imagePreview');
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
+ document.getElementById('itemImage').addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    const previewRow = document.getElementById('imagePreviewRow');
+    previewRow.innerHTML = '';
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.style.cssText = 'width:70px; height:70px; object-fit:cover; border-radius:8px;';
+            previewRow.appendChild(img);
+        };
+        reader.readAsDataURL(file);
     });
+});
+
+function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
 
     function addItem() {
         const title = document.getElementById('itemTitle').value;
         const price = document.getElementById('itemPrice').value;
         const category = document.getElementById('itemCategory').value;
-        const fileInput = document.getElementById('itemImage');
-        const file = fileInput.files[0];
+        const condition = document.getElementById('itemCondition').value;
+        const files = Array.from(document.getElementById('itemImage').files);
+        const colorsRaw = document.getElementById('itemColors').value.trim();
+        const sizesRaw = document.getElementById('itemSizes').value.trim();
+        const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(Boolean) : [];
+        const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
 
         if (!title || !price) {
             alert("Please fill in item name and price.");
@@ -940,44 +2898,178 @@
         const postedBy = isOwner ? "OWNER" : sellerId;
         const itemStatus = isOwner ? "approved" : "pending";
         const description = document.getElementById('itemDescription').value;
+        const sellerLocation = localStorage.getItem('kayaSellerLocation') || "Other";
 
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                db.collection('items').add({
-                    title, price, category, description, sellerName, sellerPhone, postedBy, status: itemStatus,
-                    image: event.target.result,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    closeModal();
-                    resetForm();
-                });
-            };
-            reader.readAsDataURL(file);
-        } else {
+      Promise.all(files.map(fileToDataUrl)).then((images) => {
             db.collection('items').add({
-                title, price, category, description, sellerName, sellerPhone, postedBy, status: itemStatus,
-                image: "",
+                title, price, category, condition, description, sellerName, sellerPhone, postedBy, status: itemStatus, sellerLocation,
+                images: images,
+                image: images[0] || "",
+                colors, sizes,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 closeModal();
                 resetForm();
             });
-        }
+        });
     }
-
-    function resetForm() {
+function resetForm() {
         document.getElementById('itemTitle').value = '';
         document.getElementById('itemPrice').value = '';
         document.getElementById('itemImage').value = '';
-        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('itemCondition').value = 'Used';
+        document.getElementById('itemColors').value = '';
+        document.getElementById('itemSizes').value = '';
+        document.getElementById('imagePreviewRow').innerHTML = '';
+    }
+   const banners = [
+     { eyebrow: "Coming Soon", title: "Something new is on the way", text: "Stay tuned for upcoming KayaMart features!", bg: "linear-gradient(135deg, #1a5c3a, #134529)", image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1600&h=600&fit=crop", cta: "Log In as Buyer", ctaType: "buyer" },
+
+       { eyebrow: "Sell With Us", title: "Turn your used items into cash", text: "Register as a seller and start posting today.", bg: "linear-gradient(135deg, #e67e22, #c0630f)", image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1600&h=600&fit=crop", cta: "Sign Up as a Seller" },
+
+       { eyebrow: "Clothes", title: "Fresh styles, secondhand prices", text: "Browse quality clothing from local sellers.", bg: "linear-gradient(135deg, #8e44ad, #5b2c6f)", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1600&h=600&fit=crop", cta: "Shop Clothes", ctaCategory: "Clothes" },
+      { eyebrow: "Electronics", title: "Phones, gadgets & more", text: "Great deals on electronics near you.", bg: "linear-gradient(135deg, #2980b9, #1c5d85)", image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1600&h=600&fit=crop", cta: "Shop Electronics", ctaCategory: "Electronics" },
+       { eyebrow: "Furniture", title: "Furnish your space for less", text: "Sofas, tables, and more at KayaMart prices.", bg: "linear-gradient(135deg, #16a085, #0e6655)", image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&h=600&fit=crop", cta: "Shop Furniture", ctaCategory: "Furniture" },
+
+        { eyebrow: "Trending", title: "Check out promoted listings", text: "Fresh deals added by sellers near you.", bg: "linear-gradient(135deg, #e74c3c, #a93226)", image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&h=600&fit=crop" }
+    ];
+
+    let bannerIndex = 0;
+    let bannerInterval = null;
+
+   function renderBanners() {
+        const container = document.getElementById('bannerSlides');
+        const dots = document.getElementById('bannerDots');
+        container.innerHTML = banners.map((b, i) => `
+            <div class="banner-slide ${i === 0 ? 'active' : ''}">
+                <div class="banner-slide-bg" style="background:${b.bg}; background-image:url('${b.image}'); background-size:cover; background-position:center;"></div>
+
+               <div class="banner-slide-content">
+                    <span class="banner-eyebrow">${b.eyebrow}</span>
+                    <h4>${b.title}</h4>
+                    <p>${b.text}</p>
+                ${b.cta ? `<button class="banner-cta" onclick="${b.ctaCategory ? `filterToCategoryFromBanner(event, '${b.ctaCategory}')` : (b.ctaType === 'buyer' ? 'openBuyerLoginFromBanner(event)' : 'openSellerAuthFromBanner(event)')}">${b.cta}</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+        dots.innerHTML = banners.map((b, i) => `
+            <span class="banner-dot ${i === 0 ? 'active' : ''}" onclick="goToBanner(${i})"></span>
+        `).join('');
     }
 
+    function setActiveBanner(i) {
+        document.querySelectorAll('.banner-slide').forEach((el, idx) => {
+            el.classList.toggle('active', idx === i);
+        });
+        document.querySelectorAll('.banner-dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
+    }
+
+    function restartProgress() {
+        const bar = document.getElementById('bannerProgressBar');
+        bar.classList.remove('animate');
+        bar.style.width = '0%';
+        void bar.offsetWidth;
+        bar.classList.add('animate');
+        bar.style.width = '100%';
+    }
+
+    function goToBanner(i) {
+        bannerIndex = i;
+        setActiveBanner(bannerIndex);
+        restartProgress();
+        resetBannerAutoplay();
+    }
+
+    function nextBanner() {
+        bannerIndex = (bannerIndex + 1) % banners.length;
+        setActiveBanner(bannerIndex);
+        restartProgress();
+    }
+
+    function resetBannerAutoplay() {
+        if (bannerInterval) clearInterval(bannerInterval);
+        bannerInterval = setInterval(nextBanner, 5000);
+    }
+
+    function initBannerSwipe() {
+        const carousel = document.getElementById('bannerCarousel');
+        let startX = 0;
+        let isDragging = false;
+
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        });
+
+        carousel.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) {
+                    bannerIndex = (bannerIndex + 1) % banners.length;
+                } else {
+                    bannerIndex = (bannerIndex - 1 + banners.length) % banners.length;
+                }
+                setActiveBanner(bannerIndex);
+                restartProgress();
+                resetBannerAutoplay();
+            }
+        });
+    }
+function initGallerySwipe() {
+        const gallery = document.querySelector('.detail-gallery');
+        let startX = 0;
+        let isDragging = false;
+
+        gallery.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        });
+
+        gallery.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) {
+                    nextGalleryImage();
+                } else {
+                    prevGalleryImage();
+                }
+            }
+        });
+    }
+function anyModalOpen() {
+        return Array.from(document.querySelectorAll('.modal')).some(m => m.style.display === 'flex');
+    }
+
+    const modalScrollObserver = new MutationObserver(() => {
+        document.body.style.overflow = anyModalOpen() ? 'hidden' : '';
+    });
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        modalScrollObserver.observe(modal, { attributes: true, attributeFilter: ['style'] });
+    });
+
+  renderBanners();
+    setActiveBanner(0);
+  renderBanners();
+    setActiveBanner(0);
+    restartProgress();
+    initBannerSwipe();
+    initGallerySwipe();
+    resetBannerAutoplay();
     loadItemsFromFirestore();
     updateCartCount();
     checkSellerStatus();
     listenForPendingSellers();
-    updateSellerLinkText();
+   updateSellerLinkText();
+    startIntroSplash();
+    startGuestPromptTimer();
     </script>
+
 </body>
 </html>
