@@ -5,9 +5,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
+    emailjs.init("b6-xDbaelZ0QnrUvB");
+</script>
+<script>
+    const firebaseConfig = {        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
         authDomain: "kaya-store-ba45c.firebaseapp.com",
         projectId: "kaya-store-ba45c",
         storageBucket: "kaya-store-ba45c.firebasestorage.app",
@@ -429,13 +432,27 @@ function renderOwnerDashboard(sales, content) {
     const allTimeH = (allTimeCommission / maxVal) * 100;
 
    let html = `
-      <div class="tab-bar">
+    <div class="tab-bar">
             <button class="tab-btn active" id="tabOverviewBtn" onclick="switchOwnerTab('overview')">📊 Overview</button>
             <button class="tab-btn" id="tabActivityBtn" onclick="switchOwnerTab('activity')">🔔 Live Activity</button>
             <button class="tab-btn" id="tabApprovalsBtn" onclick="switchOwnerTab('approvals')">✅ Approvals</button>
-        </div>
-        </div>
-        <div id="overviewTabContent">
+            <button class="tab-btn" id="tabAllItemsBtn" onclick="switchOwnerTab('allitems')">🛍️ All Items</button>
+          <button class="tab-btn"
+id="tabSellerManagementBtn"
+onclick="switchOwnerTab('sellerManagement')">
+👨‍💼 Sellers
+</button>
+<button class="tab-btn"
+id="tabAnnouncementsBtn"
+onclick="switchOwnerTab('announcements')">
+📢 Announcements
+</button>
+<button class="tab-btn"
+id="tabOrdersDealsBtn"
+onclick="switchOwnerTab('ordersDeals')">
+📦 Orders & Deals
+</button></button>
+        </div>        </div>       <div id="overviewTabContent">
         <h2 style="text-align:left; margin-top:0;">📊 Business Overview</h2>
         <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px; margin:20px 0;">
             <div style="background:#f8f8f8; border-radius:10px; padding:15px; text-align:center;">
@@ -504,16 +521,77 @@ function renderOwnerDashboard(sales, content) {
 </div>
         </div>
 
-        <div id="approvalsTabContent" style="display:none;">
+       <div id="approvalsTabContent" style="display:none;">
             <div class="approval-section-title">Pending Items</div>
             <div id="pendingItemsList">Loading...</div>
 
             <div class="approval-section-title">Pending Sellers</div>
             <div id="pendingSellersList">Loading...</div>
         </div>
-    `;
 
-    content.innerHTML = html;
+       <div id="allItemsTabContent" style="display:none;">
+            <h2 style="text-align:left; margin-top:0;">🛍️ All Items in the Market</h2>
+            <input type="text" id="allItemsSearch" placeholder="Search by title or seller..." oninput="renderAllItems()" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid #ddd; font-family:'Poppins', Arial, sans-serif; font-size:13px; margin-bottom:15px;">
+            <div id="allItemsList">Loading...</div>
+        </div>
+
+    <div id="sellerManagementTabContent" style="display:none;">
+
+<h2 style="text-align:left;margin-top:0;">
+👨‍💼 Seller Management
+</h2>
+
+<input
+id="sellerSearch"
+type="text"
+placeholder="Search seller by name, email or phone..."
+style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px;font-family:Poppins;"
+oninput="renderSellerManagement()">
+
+<div id="sellerManagementList">
+Loading...
+</div>
+
+</div>
+
+<div id="announcementsTabContent" style="display:none;">
+
+<h2 style="text-align:left; margin-top:0;">📢 Send Announcement</h2>
+
+<textarea id="announcementMessage" placeholder="Type your message..." rows="3" style="width:100%; box-sizing:border-box; padding:10px; border-radius:8px; border:1px solid #ddd; font-family:'Poppins', Arial, sans-serif; font-size:13px; margin-bottom:10px;"></textarea>
+
+<select id="announcementAudience" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-family:'Poppins', Arial, sans-serif; font-size:13px; margin-bottom:10px;">
+    <option value="everyone">Everyone</option>
+    <option value="sellers">Sellers Only</option>
+    <option value="buyers">Buyers Only</option>
+</select>
+
+<button id="sendAnnouncementBtn" onclick="sendAnnouncement()" style="width:100%; background:#1a5c3a; color:white; border:none; border-radius:8px; padding:12px; font-weight:600; cursor:pointer; font-family:'Poppins', Arial, sans-serif;">Send</button>
+
+<h3 style="margin-top:25px;">Sent Announcements</h3>
+<div id="announcementsAdminList">Loading...</div>
+
+</div>
+
+<div id="ordersDealsTabContent" style="display:none;">
+
+<h2 style="text-align:left; margin-top:0;">📦 Orders & Deals</h2>
+
+<div class="tab-bar" style="margin-bottom:15px;">
+    <button class="tab-btn active" id="dealsSubTabOrdersBtn" onclick="switchDealsSubTab('orders')">Orders</button>
+    <button class="tab-btn" id="dealsSubTabCommissionBtn" onclick="switchDealsSubTab('commission')">Commission</button>
+</div>
+
+<div id="ordersSubContent">
+<div id="ordersList">Loading...</div>
+</div>
+
+<div id="commissionSubContent" style="display:none;">
+<div id="closedDealsSummary" style="font-weight:bold; margin-bottom:15px; color:#1a5c3a;"></div>
+<div id="closedDealsBySeller">Loading...</div>
+</div>
+
+</div>`;content.innerHTML = html;
     loadOwnerSellerPicker(document.getElementById('sellerPickerSection'));
 }
 
@@ -528,19 +606,31 @@ function switchOwnerTab(tab) {
     const overviewBtn = document.getElementById('tabOverviewBtn');
     const activityBtn = document.getElementById('tabActivityBtn');
     const approvalsBtn = document.getElementById('tabApprovalsBtn');
+    const allItemsBtn = document.getElementById('tabAllItemsBtn');
+const sellerManagementBtn = document.getElementById('tabSellerManagementBtn');
+const announcementsBtn = document.getElementById('tabAnnouncementsBtn');
+const ordersDealsBtn = document.getElementById('tabOrdersDealsBtn');
     const overviewContent = document.getElementById('overviewTabContent');
     const activityContent = document.getElementById('activityTabContent');
     const approvalsContent = document.getElementById('approvalsTabContent');
-
-    overviewBtn.classList.remove('active');
-    activityBtn.classList.remove('active');
+    const allItemsContent = document.getElementById('allItemsTabContent');
+   const sellerManagementContent = document.getElementById('sellerManagementTabContent');
+const announcementsContent = document.getElementById('announcementsTabContent');
+const ordersDealsContent = document.getElementById('ordersDealsTabContent');
+    overviewBtn.classList.remove('active');    activityBtn.classList.remove('active');
     approvalsBtn.classList.remove('active');
+    allItemsBtn.classList.remove('active');
+   sellerManagementBtn.classList.remove('active');
+announcementsBtn.classList.remove('active');
     overviewContent.style.display = 'none';
     activityContent.style.display = 'none';
     approvalsContent.style.display = 'none';
+    allItemsContent.style.display = 'none';
+sellerManagementContent.style.display = 'none';
+announcementsContent.style.display = 'none';
+ordersDealsContent.style.display = 'none';
 
-    if (tab === 'overview') {
-        overviewBtn.classList.add('active');
+    if (tab === 'overview') {        overviewBtn.classList.add('active');
         overviewContent.style.display = '';
     } else if (tab === 'activity') {
         activityBtn.classList.add('active');
@@ -553,9 +643,24 @@ function switchOwnerTab(tab) {
         approvalsBtn.classList.add('active');
         approvalsContent.style.display = '';
         loadApprovalsData();
-    }
+    } else if (tab === 'allitems') {
+        allItemsBtn.classList.add('active');
+        allItemsContent.style.display = '';
+        loadAllItemsData();
+ } else if (tab === 'sellerManagement') {
+    sellerManagementBtn.classList.add('active');
+    sellerManagementContent.style.display = '';
+    loadSellerManagement();
+} else if (tab === 'announcements') {
+    announcementsBtn.classList.add('active');
+    announcementsContent.style.display = '';
+    loadAnnouncementsAdmin();
+} else if (tab === 'ordersDeals') {
+    ordersDealsBtn.classList.add('active');
+    ordersDealsContent.style.display = '';
+    switchDealsSubTab(currentDealsSubTab);
 }
-function loadActivityData() {
+}function loadActivityData() {
     db.collection('items').get().then(snap => {
         window.laActiveItemCount = snap.size;
         renderActivityStats();
@@ -780,17 +885,24 @@ function closeApprovalModal() {
 
 function confirmApproval() {
     if (!currentApproval) return;
-    const { type, id } = currentApproval;
+    const { type, id, data } = currentApproval;
     const collection = type === 'item' ? 'items' : 'sellers';
 
     db.collection(collection).doc(id).update({ status: 'approved' }).then(() => {
+        if (type === 'seller' && data.email) {
+            emailjs.send('service_cbiw5me', 'template_hj8414k', {
+                to_name: data.name,
+                to_email: data.email
+            }).catch((err) => {
+                console.error('Welcome email failed:', err);
+            });
+        }
         removeFromPendingList(type, id);
         closeApprovalModal();
     }).catch(err => {
         alert('Error approving: ' + err.message);
     });
 }
-
 function confirmRejection() {
     if (!currentApproval) return;
     const { type, id } = currentApproval;
@@ -839,7 +951,141 @@ function exportSalesCSV() {    const { from, to } = getDateBounds();
     link.click();
     URL.revokeObjectURL(url);
 }
+// ---- All Items tab logic ----
 
+let allMarketItemsData = [];
+
+function loadAllItemsData() {
+    document.getElementById('allItemsList').innerHTML = 'Loading...';
+    db.collection('items').orderBy('createdAt', 'desc').get().then(snap => {
+        allMarketItemsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderAllItems();
+    }).catch(err => {
+        document.getElementById('allItemsList').innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+    });
+}
+
+function renderAllItems() {
+    const list = document.getElementById('allItemsList');
+    const search = (document.getElementById('allItemsSearch').value || '').toLowerCase();
+
+    const filtered = allMarketItemsData.filter(item => {
+        const title = (item.title || '').toLowerCase();
+        const seller = (item.sellerName || '').toLowerCase();
+        return title.includes(search) || seller.includes(search);
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<p style="color:#999; text-align:center;">No items found.</p>';
+        return;
+    }
+
+    const statusColor = (status) => status === 'approved' ? '#1a5c3a' : (status === 'pending' ? '#e67e22' : '#c0392b');
+
+    list.innerHTML = filtered.map(item => {
+        const postedByLabel = item.postedBy === 'OWNER' ? 'Owner (KayaMart)' : (item.sellerName || 'Unknown seller');
+        return `
+        <div class="approval-card">
+            <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/60?text=No+Image'}">
+            <div class="approval-card-info">
+                <div class="approval-card-title">${item.title || 'Untitled'}</div>
+                <div class="approval-card-sub">GHS ${item.price || 0} • Posted by: ${postedByLabel}</div>
+                <div class="approval-card-sub">Status: <span style="color:${statusColor(item.status)}; font-weight:600; text-transform:capitalize;">${item.status || 'unknown'}</span></div>
+            </div>
+            <button class="approval-view-btn" style="background:#fdecea; color:#c0392b;" onclick="deleteAnyItem('${item.id}')">🗑️ Delete</button>
+        </div>
+        `;
+    }).join('');
+}
+
+function deleteAnyItem(id) {
+    const item = allMarketItemsData.find(i => i.id === id);
+    if (!item) return;
+    if (!confirm('Delete "' + (item.title || 'this item') + '" from the market? This cannot be undone.')) return;
+
+    db.collection('items').doc(id).delete().then(() => {
+        allMarketItemsData = allMarketItemsData.filter(i => i.id !== id);
+        renderAllItems();
+    }).catch(err => {
+        alert('Error deleting item: ' + err.message);
+    });
+}
+// ---- Users Per Day tab logic ----
+
+function dayKey(dateObj) {
+    return dateObj.toISOString().slice(0, 10);
+}
+
+function last14DayKeys() {
+    const keys = [];
+    for (let i = 13; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        keys.push(dayKey(d));
+    }
+    return keys;
+}
+
+function loadUsersData() {
+    const container = document.getElementById('usersDailyList');
+    container.innerHTML = 'Loading...';
+
+    const days = last14DayKeys();
+    const buyerCounts = {};
+    const sellerCounts = {};
+    const visitorCounts = {};
+    days.forEach(d => { buyerCounts[d] = 0; sellerCounts[d] = 0; visitorCounts[d] = 0; });
+
+    const earliestDate = new Date();
+    earliestDate.setDate(earliestDate.getDate() - 13);
+    earliestDate.setHours(0, 0, 0, 0);
+
+    Promise.all([
+        db.collection('buyers').where('createdAt', '>=', earliestDate).get(),
+        db.collection('sellers').where('createdAt', '>=', earliestDate).get(),
+        db.collection('visits').where('date', '>=', days[0]).get()
+    ]).then(([buyersSnap, sellersSnap, visitsSnap]) => {
+        buyersSnap.forEach(doc => {
+            const d = doc.data();
+            if (!d.createdAt) return;
+            const key = dayKey(d.createdAt.toDate());
+            if (key in buyerCounts) buyerCounts[key]++;
+        });
+
+        sellersSnap.forEach(doc => {
+            const d = doc.data();
+            if (!d.createdAt) return;
+            const key = dayKey(d.createdAt.toDate());
+            if (key in sellerCounts) sellerCounts[key]++;
+        });
+
+        visitsSnap.forEach(doc => {
+            const d = doc.data();
+            if (d.date in visitorCounts) visitorCounts[d.date]++;
+        });
+
+        renderUsersDaily(days, buyerCounts, sellerCounts, visitorCounts);
+    }).catch(err => {
+        container.innerHTML = '<p style="color:red;">Error: ' + err.message + '</p>';
+    });
+}
+
+function renderUsersDaily(days, buyerCounts, sellerCounts, visitorCounts) {
+    const container = document.getElementById('usersDailyList');
+
+    container.innerHTML = days.slice().reverse().map(day => {
+        const totalSignups = buyerCounts[day] + sellerCounts[day];
+        return `
+        <div class="approval-card" style="align-items:center;">
+            <div class="approval-card-info">
+                <div class="approval-card-title">${day}</div>
+                <div class="approval-card-sub">🧑 ${buyerCounts[day]} new buyer${buyerCounts[day] === 1 ? '' : 's'} • 🧑‍💼 ${sellerCounts[day]} new seller${sellerCounts[day] === 1 ? '' : 's'} (${totalSignups} sign-up${totalSignups === 1 ? '' : 's'} total)</div>
+                <div class="approval-card-sub">👁️ ${visitorCounts[day]} unique visitor${visitorCounts[day] === 1 ? '' : 's'}</div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
 function loadOwnerSellerPicker(content) {
     db.collection('sellers').where('status', '==', 'approved').get().then((snapshot) => {
         if (snapshot.empty) {
@@ -1024,9 +1270,469 @@ if (sales.length === 0) {
         });
     }
 
-    html += '</div>';
+  html += '</div>';
     content.innerHTML = html;
-}  loadAnalytics();
+}
+let currentDealsSubTab = 'orders';
+
+function switchDealsSubTab(sub) {
+    currentDealsSubTab = sub;
+    const ordersBtn = document.getElementById('dealsSubTabOrdersBtn');
+    const commissionBtn = document.getElementById('dealsSubTabCommissionBtn');
+    const ordersSub = document.getElementById('ordersSubContent');
+    const commissionSub = document.getElementById('commissionSubContent');
+
+    if (sub === 'orders') {
+        ordersBtn.classList.add('active');
+        commissionBtn.classList.remove('active');
+        ordersSub.style.display = '';
+        commissionSub.style.display = 'none';
+        loadOrdersData();
+    } else {
+        commissionBtn.classList.add('active');
+        ordersBtn.classList.remove('active');
+        commissionSub.style.display = '';
+        ordersSub.style.display = 'none';
+        loadClosedDealsData();
+    }
+}
+
+// ================= ORDERS ===================
+// ================= ORDERS ===================
+
+let allOrdersData = [];
+
+function loadOrdersData() {
+    const listDiv = document.getElementById('ordersList');
+    listDiv.innerHTML = 'Loading...';
+
+    db.collection('orders').orderBy('createdAt', 'desc').get().then((snapshot) => {
+        allOrdersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderOrders();
+    }).catch((err) => {
+        listDiv.innerHTML = '<p style="color:red;">Error loading orders: ' + err.message + '</p>';
+    });
+}
+
+function renderOrders() {
+    const listDiv = document.getElementById('ordersList');
+
+    if (allOrdersData.length === 0) {
+        listDiv.innerHTML = '<p style="color:#999;">No orders yet.</p>';
+        return;
+    }
+
+    listDiv.innerHTML = allOrdersData.map(order => {
+        const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleString() : 'Unknown date';
+        const statusColor = order.status === 'handled' ? '#27ae60' : '#e67e22';
+
+        const itemsHtml = (order.items || []).map(it => {
+            let extras = '';
+            if (it.color) extras += ' • Color: ' + it.color;
+            if (it.size) extras += ' • Size: ' + it.size;
+            return `
+                <div style="padding:6px 0; border-bottom:1px dashed #eee; font-size:13px;">
+                    <div>${it.title} x${it.qty} (GHS ${it.price * it.qty})${extras}</div>
+                    <div style="color:#777; font-size:12px;">Seller: ${it.sellerName || 'Unknown'} — 📞 ${it.sellerPhone || 'N/A'}</div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div style="padding:14px 0; border-bottom:2px solid #ddd;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong>${order.buyerName || 'Unknown Buyer'}</strong>
+                    <span style="color:${statusColor}; font-weight:bold; text-transform:capitalize;">${order.status || 'pending'}</span>
+                </div>
+                <div style="font-size:13px; color:#777; margin:4px 0;">📞 ${order.buyerPhone || 'N/A'} • ${order.deliveryMethod || ''} to ${order.location || ''}</div>
+                ${order.address ? `<div style="font-size:12px; color:#999; margin-bottom:6px;">Address: ${order.address}</div>` : ''}
+                <div style="margin:8px 0;">${itemsHtml}</div>
+                <div style="font-weight:bold; text-align:right;">Total: GHS ${order.total}</div>
+                <div style="font-size:11px; color:#999; margin-top:4px;">${dateStr}</div>
+                ${order.status !== 'handled' ? `<button onclick="markOrderHandled('${order.id}')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; margin-top:8px;">✅ Mark as Handled</button>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function markOrderHandled(id) {
+    db.collection('orders').doc(id).update({ status: 'handled' }).then(() => {
+        loadOrdersData();
+    }).catch((err) => {
+        alert("Failed to update order: " + err.message);
+    });
+}
+// ================= CLOSED DEALS ===================
+
+function loadClosedDealsData() {
+    const summaryDiv = document.getElementById('closedDealsSummary');
+    const listDiv = document.getElementById('closedDealsBySeller');
+    listDiv.innerHTML = 'Loading...';
+
+    db.collection('sales').orderBy('soldAt', 'desc').get().then((snapshot) => {
+        if (snapshot.empty) {
+            listDiv.innerHTML = '<p style="color:#999;">No closed deals yet.</p>';
+            summaryDiv.innerText = '';
+            return;
+        }
+
+        const bySeller = {};
+        let totalOutstanding = 0;
+        let totalCollected = 0;
+
+        snapshot.forEach((doc) => {
+            const sale = doc.data();
+            sale.id = doc.id;
+            const sid = sale.sellerId || 'unknown';
+            if (!bySeller[sid]) bySeller[sid] = [];
+            bySeller[sid].push(sale);
+
+            if (sale.collected) {
+                totalCollected += Number(sale.commission) || 0;
+            } else {
+                totalOutstanding += Number(sale.commission) || 0;
+            }
+        });
+
+        summaryDiv.innerText = `Outstanding: GHS ${totalOutstanding.toFixed(2)} • Already Collected: GHS ${totalCollected.toFixed(2)}`;
+
+        const sellerIds = Object.keys(bySeller);
+        const sellerNamePromises = sellerIds.map(sid =>
+            sid === 'OWNER' || sid === 'unknown'
+                ? Promise.resolve({ id: sid, name: sid === 'OWNER' ? 'KayaMart (You)' : 'Unknown Seller' })
+                : db.collection('sellers').doc(sid).get().then(d => ({ id: sid, name: d.exists ? d.data().name : 'Unknown Seller' }))
+        );
+
+        Promise.all(sellerNamePromises).then((sellerInfos) => {
+            const nameMap = {};
+            sellerInfos.forEach(info => { nameMap[info.id] = info.name; });
+
+            let html = '';
+            sellerIds.forEach(sid => {
+                const sales = bySeller[sid];
+                const outstandingForSeller = sales.filter(s => !s.collected).reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
+                const uncollectedIds = sales.filter(s => !s.collected).map(s => s.id);
+
+                html += `
+                    <div style="padding:12px 0; border-bottom:2px solid #ddd;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong>${nameMap[sid] || 'Unknown Seller'}</strong>
+                            <span style="color:${outstandingForSeller > 0 ? '#e74c3c' : '#27ae60'}; font-weight:bold;">
+                                ${outstandingForSeller > 0 ? 'Owes GHS ' + outstandingForSeller.toFixed(2) : 'Settled ✓'}
+                            </span>
+                        </div>
+                        ${outstandingForSeller > 0 ? `<button onclick='collectCommission("${sid}", ${JSON.stringify(uncollectedIds)})' style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; margin-top:6px;">💰 Mark as Collected</button>` : ''}
+                        <div style="margin-top:8px;">
+                            ${sales.map(sale => {
+                                const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : 'Unknown date';
+                                return `
+                                    <div style="padding:6px 0; font-size:13px; display:flex; justify-content:space-between; color:${sale.collected ? '#999' : '#333'};">
+                                        <span>${sale.title} (GHS ${sale.price})</span>
+                                        <span>${sale.collected ? '✓ Collected' : 'GHS ' + Number(sale.commission).toFixed(2)} • ${dateStr}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            listDiv.innerHTML = html;
+        });
+    }).catch((err) => {
+        listDiv.innerHTML = '<p style="color:red;">Error loading closed deals: ' + err.message + '</p>';
+    });
+}
+
+function collectCommission(sellerId, saleIds) {
+    if (!confirm("Mark all outstanding commission for this seller as collected?")) return;
+
+    const promises = saleIds.map(id =>
+        db.collection('sales').doc(id).update({ collected: true })
+    );
+
+    Promise.all(promises).then(() => {
+        alert("Commission marked as collected.");
+        loadClosedDealsData();
+    }).catch((err) => {
+        alert("Failed to update: " + err.message);
+    });
+}
+// ================= SELLER MANAGEMENT ===================
+
+let sellerManagementData = [];
+
+function loadSellerManagement(){
+
+const container=document.getElementById("sellerManagementList");
+
+container.innerHTML="<p>Loading sellers...</p>";
+
+db.collection("sellers")
+.orderBy("createdAt","desc")
+.get()
+.then((snapshot)=>{
+
+sellerManagementData=[];
+
+snapshot.forEach(doc=>{
+
+sellerManagementData.push({
+id:doc.id,
+...doc.data()
+});
+
+});
+
+renderSellerManagement();
+
+});
+
+}
+
+function renderSellerManagement(){
+
+const container=document.getElementById("sellerManagementList");
+
+const search=(document.getElementById("sellerSearch").value||"").toLowerCase();
+
+const sellers=sellerManagementData.filter(s=>{
+
+return (
+(s.name||"").toLowerCase().includes(search) ||
+(s.email||"").toLowerCase().includes(search) ||
+(s.phone||"").toLowerCase().includes(search)
+);
+
+});
+
+if(sellers.length===0){
+
+container.innerHTML="<p>No sellers found.</p>";
+
+return;
+
+}
+
+let html="";
+
+sellers.forEach(s=>{
+
+const photo=s.photo || "https://via.placeholder.com/80";
+
+const colour=
+s.status==="approved"
+?"green":
+s.status==="pending"
+?"orange":
+"red";
+
+html+=`
+
+<div style="
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:15px;
+border-radius:12px;
+display:flex;
+gap:15px;
+align-items:center;
+">
+
+<img src="${photo}"
+style="
+width:80px;
+height:80px;
+border-radius:50%;
+object-fit:cover;
+">
+
+<div style="flex:1;">
+
+<h3 style="margin:0;">
+${s.name||"Unknown Seller"}
+</h3>
+
+<div>Email : ${s.email||"-"}</div>
+
+<div>Phone : ${s.phone||"-"}</div>
+
+<div>Location : ${s.location||"-"}</div>
+
+<div>Status :
+<span style="
+color:${colour};
+font-weight:bold;
+text-transform:capitalize;
+">
+${s.status||"Unknown"}
+</span>
+</div>
+
+</div>
+
+<div style="
+display:flex;
+flex-direction:column;
+gap:8px;
+">
+
+<button onclick="viewSeller('${s.id}')">
+View
+</button>
+
+<button onclick="warnSeller('${s.id}')">
+Warn
+</button>
+
+${s.status === "suspended"
+? `<button onclick="unsuspendSeller('${s.id}')">Unsuspend</button>`
+: `<button onclick="suspendSeller('${s.id}')">Suspend</button>`}
+<button
+style="
+background:#e74c3c;
+color:white;
+"
+onclick="deleteSeller('${s.id}')">
+Remove
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+container.innerHTML=html;
+
+}
+
+function viewSeller(id){
+
+const seller=sellerManagementData.find(x=>x.id===id);
+
+if(!seller)return;
+
+alert(
+
+"Seller Name : "+(seller.name||"")+
+
+"\n\nEmail : "+(seller.email||"")+
+
+"\n\nPhone : "+(seller.phone||"")+
+
+"\n\nLocation : "+(seller.location||"")+
+
+"\n\nStatus : "+(seller.status||"")
+
+);
+
+}
+
+function warnSeller(id){
+
+const reason=prompt("Enter warning reason");
+
+if(!reason)return;
+
+db.collection("sellers")
+.doc(id)
+.update({
+
+lastWarning:reason,
+
+warningCount:firebase.firestore.FieldValue.increment(1)
+
+})
+.then(()=>{
+
+alert("Warning saved.");
+
+loadSellerManagement();
+
+});
+
+}
+
+function suspendSeller(id){
+
+if(!confirm("Suspend this seller?")) return;
+
+db.collection("sellers")
+.doc(id)
+.update({
+
+status:"suspended"
+
+})
+.then(()=>{
+
+alert("Seller suspended.");
+
+loadSellerManagement();
+
+});
+
+}
+function unsuspendSeller(id){
+
+if(!confirm("Unsuspend this seller and restore their approved status?")) return;
+
+db.collection("sellers")
+.doc(id)
+.update({
+
+status:"approved"
+
+})
+.then(()=>{
+
+alert("Seller unsuspended.");
+
+loadSellerManagement();
+
+});
+
+}
+
+function deleteSeller(id){
+
+if(!confirm("Delete this seller permanently?")) return;
+
+db.collection("items")
+.where("sellerId","==",id)
+.get()
+.then(snapshot=>{
+
+const batch=db.batch();
+
+snapshot.forEach(doc=>{
+
+batch.delete(doc.ref);
+
+});
+
+batch.delete(db.collection("sellers").doc(id));
+
+return batch.commit();
+
+})
+.then(()=>{
+
+alert("Seller removed.");
+
+loadSellerManagement();
+
+})
+.catch((err)=>{
+
+alert("Error removing seller: " + err.message);
+
+});
+
+} loadAnalytics();
     </script>
 </body>
 </html>
