@@ -1626,11 +1626,13 @@ body.dark-mode #detailCategory {
 .pd-seller-strip {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     margin: 14px 0;
     padding: 12px;
     background: #f7f8fa;
     border-radius: 14px;
+    flex-wrap: wrap;
 }
 .pd-seller-strip img {
     width: 38px;
@@ -1640,8 +1642,7 @@ body.dark-mode #detailCategory {
     flex-shrink: 0;
     background: #ddd;
 }
-.pd-seller-info { flex: 1; min-width: 0; }
-.pd-seller-name {
+.pd-seller-info { flex: 1 1 auto; min-width: 0; }.pd-seller-name {
     font-weight: 700;
     font-size: 13.5px;
     white-space: nowrap;
@@ -1812,7 +1813,26 @@ body.dark-mode .pd-icon-action-btn { background: #1f1f1f; border-color: #444; co
 
 .detail-action-btn:active { transform: scale(0.96); }
 body.dark-mode .pd-seller-strip { background: #1f1f1f; }
-
+.pd-follow-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--accent);
+    background: white;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12.5px;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.pd-follow-btn:hover { transform: translateY(-2px); }
+.pd-follow-btn:active { transform: scale(0.94); }
+.pd-follow-btn.following {
+    background: var(--accent);
+    color: white;
+}
+body.dark-mode .pd-follow-btn { background: #2c2c2c; }
 /* ---- Micro-interactions & fade-ins ---- */
 @keyframes fadeSlideIn {
     from { opacity: 0; }
@@ -2508,8 +2528,9 @@ body {
             </div>
 
             <div id="sellerRegisterForm">
-                <h3>Become a Seller</h3>
+               <h3>Become a Seller</h3>
                 <input type="text" id="regName" placeholder="Your full name">
+                <input type="text" id="regBusinessName" placeholder="Business name (e.g. Ama's Fashion Store)">
                 <input type="text" id="regPhone" placeholder="WhatsApp number (e.g. 0591616403)">
                <input type="email" id="regEmail" placeholder="Your email address">
 <select id="regLocation">
@@ -3043,6 +3064,7 @@ function readFileAsDataUrl(file) {
 }
 function submitSellerRegister() {
     const name = document.getElementById('regName').value;
+    const businessName = document.getElementById('regBusinessName').value.trim();
     const phone = document.getElementById('regPhone').value;
     const email = document.getElementById('regEmail').value;
     const location = document.getElementById('regLocation').value;
@@ -3076,13 +3098,14 @@ function submitSellerRegister() {
         btn.innerText = "Submit Request";
     }
 
-    compressImage(ghanaCardPhotoFile).then((ghanaCardPhotoData) => {
-        hashPassword(password).then((hashedPassword) => {
-            db.collection('sellers').add({
-                name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
+   compressImage(ghanaCardPhotoFile).then((ghanaCardPhotoData) => {
+        return hashPassword(password).then((hashedPassword) => {
+          return db.collection('sellers').add({
+                name, businessName: businessName || name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
                 photo: photoData, ghanaCard, address, ghanaCardPhoto: ghanaCardPhotoData,
+                followerCount: 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).then((docRef) => {
+            }).then((docRef) => {
                 localStorage.setItem('kayaSellerId', docRef.id);
                 localStorage.setItem('kayaSellerLocation', location);
                 localStorage.setItem('kayaSellerName', name);
@@ -3092,13 +3115,12 @@ function submitSellerRegister() {
                 updateSellerLinkText();
                 startGuestPromptTimer();
                 showGreetingToast(name, '🏪');
-                resetButton();
-
-            }).catch((err) => {
-                alert("Registration failed: " + err.message);
-                resetButton();
             });
         });
+    }).catch((err) => {
+        alert("Registration failed: " + err.message);
+    }).finally(() => {
+        resetButton();
     });
 }
 
@@ -3990,6 +4012,14 @@ const CATEGORY_ICONS = {
         }
     }
 
+   function getFollowerKey() {
+        return localStorage.getItem('kayaBuyerId') || localStorage.getItem('kayaVisitorId');
+    }
+
+    function followDocId(sellerDocId) {
+        return getFollowerKey() + '_' + sellerDocId;
+    }
+
     function renderSellerStrip(item) {
         const strip = document.getElementById('pdSellerStrip');
         if (!strip) return;
@@ -3998,17 +4028,93 @@ const CATEGORY_ICONS = {
             return;
         }
         strip.style.display = 'flex';
-        const avatarUrl = item.postedBy === 'OWNER' ? 'logo.jpg' : getSellerAvatar(item.postedBy);
-const isOwnerItem = item.postedBy === 'OWNER';
-        const avatarHtml = isOwnerItem ? '' : `<img src="${getSellerAvatar(item.postedBy)}" alt="${item.sellerName || 'Seller'}">`;
+
+        // Show basic info immediately, then enrich once seller data loads
         strip.innerHTML = `
-            ${avatarHtml}
             <div class="pd-seller-info">
                 <div class="pd-seller-name">${item.sellerName || 'Seller'}</div>
                 <div class="pd-seller-meta">📍 ${item.sellerLocation || 'Other'}</div>
             </div>
         `;
+
+        if (item.postedBy === 'OWNER') return;
+
+        db.collection('sellers').doc(item.postedBy).get().then((doc) => {
+            if (!doc.exists) return;
+            const s = doc.data();
+
+            let sinceText = '';
+            if (s.createdAt) {
+                const d = s.createdAt.toDate();
+                sinceText = 'Selling since ' + d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            }
+
+            const followerCount = s.followerCount || 0;
+
+            db.collection('follows').doc(followDocId(item.postedBy)).get()
+                .then((followDoc) => buildStrip(followDoc.exists))
+                .catch(() => buildStrip(false));
+
+            function buildStrip(isFollowing) {
+                strip.innerHTML = `
+                    <div class="pd-seller-info">
+                        <div class="pd-seller-name">${s.businessName || item.sellerName || 'Seller'}</div>
+                        <div class="pd-seller-meta">📍 ${item.sellerLocation || 'Other'}</div>
+                        ${sinceText ? `<div class="pd-seller-meta">${sinceText}</div>` : ''}
+                        <div class="pd-seller-meta" id="pdFollowerCount">${followerCount} follower${followerCount === 1 ? '' : 's'}</div>
+                    </div>
+                    <button class="pd-follow-btn ${isFollowing ? 'following' : ''}" id="pdFollowBtn" onclick="toggleFollowSeller('${item.postedBy}')">${isFollowing ? '✓ Following' : '+ Follow'}</button>
+                `;
+            }
+        }).catch((err) => console.error('Failed to load seller info:', err));
     }
+
+    function updateFollowerCountDisplay(delta) {
+        const el = document.getElementById('pdFollowerCount');
+        if (!el) return;
+        const current = parseInt(el.innerText) || 0;
+        const next = Math.max(0, current + delta);
+        el.innerText = next + ' follower' + (next === 1 ? '' : 's');
+    }
+
+    function toggleFollowSeller(sellerDocId) {
+        const key = getFollowerKey();
+        if (!key) {
+            alert("Please log in or continue as a buyer first.");
+            return;
+        }
+        const btn = document.getElementById('pdFollowBtn');
+        if (btn) btn.disabled = true;
+
+        const followId = followDocId(sellerDocId);
+        const followRef = db.collection('follows').doc(followId);
+        const sellerRef = db.collection('sellers').doc(sellerDocId);
+
+        followRef.get().then((doc) => {
+            if (doc.exists) {
+                followRef.delete().then(() => {
+                    sellerRef.update({ followerCount: firebase.firestore.FieldValue.increment(-1) });
+                    if (btn) { btn.innerText = '+ Follow'; btn.classList.remove('following'); btn.disabled = false; }
+                    updateFollowerCountDisplay(-1);
+                });
+            } else {
+                followRef.set({
+                    buyerId: key,
+                    sellerId: sellerDocId,
+                    buyerName: buyerName || 'Guest',
+                    followedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    sellerRef.update({ followerCount: firebase.firestore.FieldValue.increment(1) });
+                    if (btn) { btn.innerText = '✓ Following'; btn.classList.add('following'); btn.disabled = false; }
+                    updateFollowerCountDisplay(1);
+                });
+            }
+        }).catch((err) => {
+            alert("Something went wrong: " + err.message);
+            if (btn) btn.disabled = false;
+        });
+    }
+
 
    function renderOptionPickers(item) {
         const container = document.getElementById('detailOptionPickers');
@@ -5040,8 +5146,8 @@ function fileToDataUrl(file) {
         const postedBy = isOwner ? "OWNER" : sellerId;
         const itemStatus = isOwner ? "approved" : "pending";
 
-     Promise.all(files.map(f => compressImage(f))).then((images) => {
-            db.collection('items').add({
+    Promise.all(files.map(f => compressImage(f))).then((images) => {
+            return db.collection('items').add({
                 title, price, stock, category, condition, description, sellerName, sellerPhone, postedBy, status: itemStatus, sellerLocation,
                 images: images,
                 image: images[0] || "",
@@ -5051,9 +5157,9 @@ function fileToDataUrl(file) {
                 closeModal();
                 resetForm();
                 alert("Item posted!" + (isOwner ? "" : " It'll appear once approved."));
-            }).catch((err) => {
-                alert("Failed to post item: " + err.message);
             });
+        }).catch((err) => {
+            alert("Failed to post item: " + err.message);
         });
     }
 function resetForm() {
