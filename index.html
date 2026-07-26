@@ -190,8 +190,65 @@
             background: #f7f8fa;
             font-size: 14px;
         }
-        #searchInput:focus {
+      #searchInput:focus {
             background: white;
+        }
+        #searchSuggestions {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 50;
+            padding: 6px;
+        }
+        #searchSuggestions.active { display: block; }
+        .search-suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .search-suggestion-item:hover { background: #f7f8fa; }
+        .search-suggestion-item img {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #eee;
+            flex-shrink: 0;
+        }
+        .search-suggestion-title {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .search-suggestion-price {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .search-suggestion-empty {
+            padding: 14px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+        body.dark-mode #searchSuggestions {
+            background: #2c2c2c;
+        }
+        body.dark-mode .search-suggestion-item:hover {
+            background: #383838;
         }
         body.dark-mode #searchInput {
             background: #383838;
@@ -1949,9 +2006,10 @@ body {
         </div>
 
   <div class="market-section">
-        <div class="search-bar-wrap">
+       <div class="search-bar-wrap">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-            <input type="text" id="searchInput" placeholder="Search for products..." onkeyup="renderItems()">
+            <input type="text" id="searchInput" placeholder="Search for products..." onkeyup="renderItems(); renderSearchSuggestions();" onfocus="renderSearchSuggestions();">
+            <div id="searchSuggestions"></div>
         </div>
       </div>
 
@@ -3367,11 +3425,13 @@ if (myListingsOption) myListingsOption.style.display = (isOwner || (sellerId && 
     const favBtn = document.getElementById('favBtn');
     const cartBtn = document.getElementById('cartBtn');
     const hamburger = document.querySelector('button[onclick="toggleTabsMenu()"]');
+    const bellBtn = document.querySelector('.top-bell-btn');
 
     if (modeToggle) modeToggle.style.display = shouldHide ? 'none' : 'inline-block';
     if (favBtn) favBtn.style.display = shouldHide ? 'none' : 'inline-block';
     if (cartBtn) cartBtn.style.display = shouldHide ? 'none' : 'inline-block';
     if (hamburger) hamburger.style.display = shouldHide ? 'none' : 'block';
+    if (bellBtn) bellBtn.style.display = shouldHide ? 'none' : 'flex';
 
     if (!shouldHide) {
         toggleOwnerControls();
@@ -3528,7 +3588,51 @@ function trackVisit() {
         });
     }
 
+  function renderSearchSuggestions() {
+        const wrap = document.getElementById('searchSuggestions');
+        const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+        if (!search) {
+            wrap.classList.remove('active');
+            wrap.innerHTML = '';
+            return;
+        }
+
+        const matches = items.filter(item => item.title.toLowerCase().includes(search)).slice(0, 6);
+
+        if (matches.length === 0) {
+            wrap.innerHTML = '<div class="search-suggestion-empty">No matching items found.</div>';
+        } else {
+            wrap.innerHTML = matches.map(item => `
+                <div class="search-suggestion-item" onclick="selectSearchSuggestion(${items.indexOf(item)})">
+                    <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/42x42?text=No+Image'}">
+                    <div>
+                        <div class="search-suggestion-title">${item.title}</div>
+                        <div class="search-suggestion-price">GHS ${item.price}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        wrap.classList.add('active');
+    }
+
+    function selectSearchSuggestion(index) {
+        document.getElementById('searchSuggestions').classList.remove('active');
+        document.getElementById('searchInput').value = items[index].title;
+        openDetail(index);
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrap = document.getElementById('searchSuggestions');
+        const searchWrap = document.querySelector('.search-bar-wrap');
+        if (wrap && searchWrap && !searchWrap.contains(e.target)) {
+            wrap.classList.remove('active');
+        }
+    });
+
    function renderItems() {
+
         const grid = document.getElementById('itemGrid');
         const search = document.getElementById('searchInput').value.toLowerCase();
         const category = document.getElementById('categoryFilter').value;
