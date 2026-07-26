@@ -5,6 +5,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/128/three.min.js"></script>
 <script>
     emailjs.init("b6-xDbaelZ0QnrUvB");
 </script>
@@ -2015,7 +2016,106 @@ body.dark-mode .pd-icon-btn { background: rgba(44,44,44,0.9); color: #f0f0f0; }
 
 body {
     padding-bottom: 70px;
-}    </style></head>
+}
+
+/* ============================================================
+   SHOP THE LOOK — split-screen category viewer
+   ============================================================ */
+#lookbookModal .modal-content{
+    padding:0; width:100%; max-width:100%; height:100%; max-height:100%;
+    border-radius:0; margin:0; display:flex; flex-direction:column;
+}
+@media (min-width:900px){
+    #lookbookModal .modal-content{ flex-direction:row; }
+}
+.lb-stage{
+    position:relative;
+    flex:0 0 auto;
+    width:100%; height:46vh;
+    background:radial-gradient(120% 90% at 30% 0%, #FBFAF6 0%, #F6F4EE 55%);
+    overflow:hidden;
+}
+@media (min-width:900px){
+    .lb-stage{ width:65%; height:100%; }
+}
+.lb-ghost-number{
+    position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
+    font-family:'Poppins',Arial,sans-serif; font-weight:700;
+    font-size:min(40vw, 340px); line-height:1; color:#15171A; opacity:0.05;
+    user-select:none; pointer-events:none;
+}
+.lb-mannequin-mount{
+    position:absolute; inset:0;
+    cursor:grab;
+    touch-action:none;
+}
+.lb-mannequin-mount:active{ cursor:grabbing; }
+.lb-mannequin-mount canvas{ display:block; width:100%; height:100%; }
+.lb-drag-hint{
+    position:absolute; top:16px; left:16px; z-index:3;
+    font-size:11px; font-weight:600; color:#777;
+    background:rgba(255,255,255,0.85); padding:6px 12px; border-radius:20px;
+    opacity:1; transition:opacity .4s ease;
+    pointer-events:none;
+}
+.lb-drag-hint.lb-hint-fade{ opacity:0; }
+.lb-stage-caption{
+    position:absolute; left:16px; bottom:16px; right:16px; z-index:2;
+    max-width:320px;
+    background:rgba(255,255,255,0.85); backdrop-filter:blur(8px);
+    border-radius:14px; padding:12px 14px;
+}
+.lb-stage-caption .lb-cap-eyebrow{
+    font-size:10.5px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin-bottom:3px;
+}
+.lb-stage-caption h2{ font-size:16px; margin:0 0 3px; font-weight:700; }
+.lb-stage-caption .lb-cap-price{ font-weight:800; font-size:15px; }
+.lb-close-btn{
+    position:absolute; top:14px; right:14px; z-index:5;
+    width:36px; height:36px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.9); font-size:16px; cursor:pointer;
+}
+.lb-rail{
+    flex:1; background:white; padding:16px; overflow-y:auto;
+}
+.lb-rail-head h1{ font-size:20px; margin:0; font-weight:700; }
+.lb-rail-head .lb-look-label{ font-size:11px; color:#999; letter-spacing:1px; text-transform:uppercase; }
+.lb-look-switch{ display:flex; gap:8px; overflow-x:auto; margin-bottom:12px; padding-bottom:2px; }
+.lb-look-pill{
+    flex:0 0 auto; font-size:12px; font-weight:600; padding:7px 13px;
+    border-radius:20px; border:1px solid #ddd; background:white; color:#777; cursor:pointer;
+}
+.lb-look-pill.lb-pill-active{ background:var(--accent); color:white; border-color:var(--accent); }
+.lb-rail-divider{ height:1px; background:#eee; margin:14px 0; }
+.lb-piece-grid{ display:flex; flex-direction:column; gap:10px; }
+.lb-piece{
+    display:flex; align-items:center; gap:12px; padding:9px; border-radius:14px;
+    border:1.5px solid transparent; background:#f7f6f2; cursor:pointer;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.lb-piece:hover{ transform:translateY(-2px); box-shadow:0 8px 18px -12px rgba(0,0,0,0.25); }
+.lb-piece.lb-active{ border-color:var(--accent); background:white; box-shadow:0 8px 18px -12px rgba(41,128,185,0.35); }
+.lb-piece-thumb{ position:relative; flex:0 0 auto; width:58px; height:58px; border-radius:10px; overflow:hidden; background:#eee; }
+.lb-piece-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.lb-piece-num{
+    position:absolute; left:4px; top:4px; font-size:9px; font-weight:700;
+    background:rgba(255,255,255,0.9); padding:1px 5px; border-radius:5px;
+}
+.lb-piece.lb-active .lb-piece-num{ background:var(--accent); color:white; }
+.lb-piece-body{ flex:1; min-width:0; }
+.lb-piece-name{ font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lb-piece-price{ font-size:12px; color:#888; margin-top:2px; }
+.lb-piece.lb-active .lb-piece-price{ color:#e67e22; font-weight:700; }
+.lb-rail-footer{ margin-top:16px; padding-top:14px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.lb-total-value{ font-size:16px; font-weight:700; }
+.lb-shop-all-btn{ padding:11px 18px; border-radius:22px; border:none; background:var(--accent); color:white; font-weight:700; font-size:13px; cursor:pointer; }
+.lb-shop-all-btn:hover{ background:var(--accent-dark); }
+body.dark-mode .lb-rail{ background:#2c2c2c; }
+body.dark-mode .lb-piece{ background:#1f1f1f; }
+body.dark-mode .lb-piece.lb-active{ background:#2c2c2c; }
+body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0; }
+    </style></head>
 <body>
   <div id="pageLoadingOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; height:100dvh; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease;">
         <div class="pl-bubble" style="width:90px; height:90px; top:12%; left:10%; animation-duration:7s;"></div>
@@ -2097,6 +2197,17 @@ body {
                 <span class="section-see-all" onclick="handleNavCategories()">See all ›</span>
             </div>
             <div class="category-icon-row" id="categoryIconRow"></div>
+        </div>
+
+<div class="market-section" id="lookbookEntrySection" style="display:none;">
+            <div style="background:linear-gradient(135deg,#1a1a1a,#2c2c2c); border-radius:16px; padding:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;" onclick="openLookbookModal()">
+                <div>
+                    <div style="color:#e67e22; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">New</div>
+                   <div style="color:white; font-weight:700; font-size:17px; margin-top:2px;">👗 View Dresses in 3D</div>
+                    <div style="color:#bbb; font-size:12.5px; margin-top:2px;">Spin the mannequin to see every angle</div>
+                </div>
+                <div style="color:white; font-size:22px;">›</div>
+            </div>
         </div>
 
         <div class="market-section" id="promotedSection" style="display:none;">
@@ -2192,6 +2303,38 @@ body {
             <input type="text" id="itemSizes" placeholder="Available sizes (e.g. S, M, L, XL) - optional">
             <button class="add-btn" onclick="addItem()">Post Item</button>
             <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+<div class="modal" id="lookbookModal">
+        <div class="modal-content">
+           <div class="lb-stage">
+                <div class="lb-ghost-number" id="lbGhostNumber">01</div>
+                <div id="lbMannequinMount" class="lb-mannequin-mount"></div>
+                <div class="lb-drag-hint" id="lbDragHint">↔ Drag to rotate</div>
+                <button class="lb-close-btn" onclick="closeLookbookModal()">✕</button>
+                <div class="lb-stage-caption" id="lbCaption">
+                    <div class="lb-cap-eyebrow" id="lbCapEyebrow">Item 01</div>
+                    <h2 id="lbCapName">—</h2>
+                    <div class="lb-cap-price" id="lbCapPrice"></div>
+                </div>
+            </div>
+            <div class="lb-rail">
+                <div class="lb-look-switch" id="lbLookSwitch"></div>
+                <div class="lb-rail-head">
+                    <div class="lb-look-label" id="lbLookLabel">CATEGORY</div>
+                    <h1 id="lbLookTitle">Collection</h1>
+                </div>
+                <div class="lb-rail-divider"></div>
+                <div class="lb-piece-grid" id="lbPieceGrid"></div>
+                <div class="lb-rail-footer">
+                    <div>
+                        <div style="font-size:11px; color:#999;">Total value</div>
+                        <div class="lb-total-value" id="lbTotalValue">GHS 0</div>
+                    </div>
+                    <button class="lb-shop-all-btn" id="lbShopAllBtn" onclick="lookbookShopSelected()">View This Item</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3790,8 +3933,16 @@ const filtered = items.filter(item => {
         });
     }
 
-   function renderPromotedRow() {
+ function updateLookbookEntryVisibility() {
+        const section = document.getElementById('lookbookEntrySection');
+        const hasDresses = items.some(it => it.category === 'Clothes' && it.title && it.title.toLowerCase().includes('dress'));
+        if (section) section.style.display = hasDresses ? 'block' : 'none';
+    }
+
+    function renderPromotedRow() {
+        updateLookbookEntryVisibility();
         const section = document.getElementById('promotedSection');
+
         const row = document.getElementById('promotedRow');
         const promoted = items.filter(item => item.promoted === true);
 
@@ -4399,6 +4550,275 @@ if (promoteBtn) {
         });
         saveCart();
         alert("Bundle added to cart!");
+    }
+
+/* ============================================================
+       SHOP THE LOOK — groups real KayaMart items by category
+       ============================================================ */
+    let lbCategories = [];
+    let lbCurrentCatIndex = 0;
+    let lbCurrentPieceIndex = 0;
+
+   function buildLookbookCategories() {
+        const dresses = items.filter(it =>
+            it.category === 'Clothes' && it.title && it.title.toLowerCase().includes('dress')
+        );
+        lbCategories = dresses.length > 0 ? [{ title: 'Dresses', entries: dresses }] : [];
+    }
+
+  function openLookbookModal() {
+        buildLookbookCategories();
+        if (lbCategories.length === 0) {
+            alert("No dresses available to browse yet.");
+            return;
+        }
+        lbCurrentCatIndex = 0;
+        lbCurrentPieceIndex = 0;
+        const hint = document.getElementById('lbDragHint');
+        if (hint) {
+            hint.classList.remove('lb-hint-fade');
+            hint.style.display = '';
+        }
+        renderLbLookSwitch();
+        renderLbRail();
+        renderLbStage(true);
+        document.getElementById('lookbookModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        if (lb3dAvailable === false && !localStorage.getItem('kayaLb3dNoticeShown')) {
+            localStorage.setItem('kayaLb3dNoticeShown', 'true');
+            setTimeout(() => alert("3D view isn't available on this device/network — showing photos instead."), 300);
+        }
+    }
+
+   function closeLookbookModal() {
+        document.getElementById('lookbookModal').style.display = 'none';
+        document.body.style.overflow = '';
+        if (lbAnimFrame) cancelAnimationFrame(lbAnimFrame);
+        if (lbRenderer) {
+            lbRenderer.dispose();
+            const mount = document.getElementById('lbMannequinMount');
+            if (mount) mount.innerHTML = '';
+            lbRenderer = null;
+        }
+    }
+
+    function renderLbLookSwitch() {
+        const wrap = document.getElementById('lbLookSwitch');
+        wrap.innerHTML = lbCategories.map((cat, i) => `
+            <button class="lb-look-pill ${i === lbCurrentCatIndex ? 'lb-pill-active' : ''}" onclick="lbSelectCategory(${i})">${categoryEmoji(cat.title)} ${cat.title}</button>
+        `).join('');
+    }
+
+    function lbSelectCategory(catIdx) {
+        lbCurrentCatIndex = catIdx;
+        lbCurrentPieceIndex = 0;
+        renderLbLookSwitch();
+        renderLbRail();
+        renderLbStage(true);
+    }
+
+    function renderLbRail() {
+        const cat = lbCategories[lbCurrentCatIndex];
+        document.getElementById('lbLookLabel').innerText = cat.title.toUpperCase();
+        document.getElementById('lbLookTitle').innerText = cat.title;
+
+        const grid = document.getElementById('lbPieceGrid');
+        grid.innerHTML = cat.entries.map((it, i) => {
+            const thumb = (it.images && it.images[0]) || it.image || 'https://via.placeholder.com/58x58?text=No+Image';
+            return `
+                <div class="lb-piece ${i === lbCurrentPieceIndex ? 'lb-active' : ''}" onclick="lbSelectPiece(${i})">
+                    <div class="lb-piece-thumb">
+                        <img src="${thumb}">
+                        <span class="lb-piece-num">${String(i + 1).padStart(2,'0')}</span>
+                    </div>
+                    <div class="lb-piece-body">
+                        <div class="lb-piece-name">${it.title}</div>
+                        <div class="lb-piece-price">GHS ${it.price}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const total = cat.entries.reduce((sum, it) => sum + Number(it.price || 0), 0);
+        document.getElementById('lbTotalValue').innerText = 'GHS ' + total;
+    }
+
+    function lbSelectPiece(pieceIdx) {
+        lbCurrentPieceIndex = pieceIdx;
+        document.querySelectorAll('.lb-piece').forEach((el, i) => el.classList.toggle('lb-active', i === pieceIdx));
+        renderLbStage(false);
+    }
+
+  /* ---- 3D mannequin viewer (Three.js) ---- */
+    let lbScene, lbCamera, lbRenderer, lbMannequinGroup, lbDressMesh, lbAnimFrame;
+    let lbRotationY = 0, lbAutoRotate = true;
+    let lbDragging = false, lbLastX = 0, lbDragVelocity = 0;
+
+    function initLbMannequin() {
+        if (lbRenderer) return; // already built
+
+        const mount = document.getElementById('lbMannequinMount');
+        const width = mount.clientWidth, height = mount.clientHeight;
+
+        lbScene = new THREE.Scene();
+        lbCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100);
+        lbCamera.position.set(0, 1.05, 4.2);
+
+        lbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        lbRenderer.setSize(width, height);
+        lbRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        mount.appendChild(lbRenderer.domElement);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+        keyLight.position.set(2, 4, 3);
+        lbScene.add(keyLight);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(-3, 1, -2);
+        lbScene.add(fillLight);
+        lbScene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+        lbMannequinGroup = new THREE.Group();
+
+        const formMat = new THREE.MeshStandardMaterial({ color: 0xEDE6D8, roughness: 0.85 });
+
+        // Neck
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.28, 24), formMat);
+        neck.position.y = 1.62;
+        lbMannequinGroup.add(neck);
+
+        // Head (simple oval, mannequin-style, no face)
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), formMat);
+        head.scale.set(0.85, 1.05, 0.9);
+        head.position.y = 2.0;
+        lbMannequinGroup.add(head);
+
+        // Shoulders / upper bodice
+        const bodice = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 0.55, 32), formMat);
+        bodice.position.y = 1.25;
+        lbMannequinGroup.add(bodice);
+
+        // Dress mesh — this is what gets the product photo as a texture
+        lbDressMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.42, 0.62, 1.55, 40, 1, true),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, side: THREE.DoubleSide })
+        );
+        lbDressMesh.position.y = 0.35;
+        lbMannequinGroup.add(lbDressMesh);
+
+        // Mannequin stand (base + pole), classic retail dress-form look
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.9, 12), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        pole.position.y = -0.85;
+        lbMannequinGroup.add(pole);
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.06, 24), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
+        base.position.y = -1.3;
+        lbMannequinGroup.add(base);
+
+        lbScene.add(lbMannequinGroup);
+
+        // Drag-to-rotate
+        const mountEl = mount;
+        const onDown = (x) => { lbDragging = true; lbLastX = x; lbAutoRotate = false; document.getElementById('lbDragHint').classList.add('lb-hint-fade'); };
+        const onMove = (x) => { if (!lbDragging) return; const dx = x - lbLastX; lbRotationY += dx * 0.008; lbDragVelocity = dx * 0.008; lbLastX = x; };
+        const onUp = () => { lbDragging = false; };
+
+        mountEl.addEventListener('mousedown', e => onDown(e.clientX));
+        window.addEventListener('mousemove', e => onMove(e.clientX));
+        window.addEventListener('mouseup', onUp);
+        mountEl.addEventListener('touchstart', e => onDown(e.touches[0].clientX), { passive: true });
+        mountEl.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
+        mountEl.addEventListener('touchend', onUp);
+
+        animateLbMannequin();
+        window.addEventListener('resize', resizeLbMannequin);
+    }
+
+    function resizeLbMannequin() {
+        const mount = document.getElementById('lbMannequinMount');
+        if (!mount || !lbRenderer) return;
+        const width = mount.clientWidth, height = mount.clientHeight;
+        lbRenderer.setSize(width, height);
+        lbCamera.aspect = width / height;
+        lbCamera.updateProjectionMatrix();
+    }
+
+    function animateLbMannequin() {
+        lbAnimFrame = requestAnimationFrame(animateLbMannequin);
+        if (!lbDragging) {
+            if (Math.abs(lbDragVelocity) > 0.0002) {
+                lbRotationY += lbDragVelocity;
+                lbDragVelocity *= 0.94;
+            } else if (lbAutoRotate) {
+                lbRotationY += 0.0035;
+            }
+        }
+        lbMannequinGroup.rotation.y = lbRotationY;
+        lbRenderer.render(lbScene, lbCamera);
+    }
+
+    function updateLbDressTexture(imageUrl) {
+        const loader = new THREE.TextureLoader();
+        loader.load(imageUrl, (texture) => {
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.repeat.x = -1; // mirror so the print reads correctly wrapped around the cylinder
+            lbDressMesh.material.map = texture;
+            lbDressMesh.material.color.set(0xffffff);
+            lbDressMesh.material.needsUpdate = true;
+        }, undefined, () => {
+            // fallback: if the photo can't load as a texture, tint the dress form a neutral color instead
+            lbDressMesh.material.map = null;
+            lbDressMesh.material.color.set(0xcccccc);
+            lbDressMesh.material.needsUpdate = true;
+        });
+    }
+
+   let lb3dAvailable = null; // cached after first check: true, false, or null (not checked yet)
+
+    function renderLbStage(isNewCategory) {
+        const cat = lbCategories[lbCurrentCatIndex];
+        const piece = cat.entries[lbCurrentPieceIndex];
+        const ghost = document.getElementById('lbGhostNumber');
+        const imageUrl = (piece.images && piece.images[0]) || piece.image || '';
+
+        if (lb3dAvailable === null) {
+            lb3dAvailable = (typeof THREE !== 'undefined');
+        }
+
+        if (lb3dAvailable) {
+            try {
+                initLbMannequin();
+                if (imageUrl) updateLbDressTexture(imageUrl);
+                lbAutoRotate = true;
+                setTimeout(resizeLbMannequin, 60);
+            } catch (err) {
+                console.error('3D mannequin failed, falling back to flat photo:', err);
+                lb3dAvailable = false;
+                showLbFlatFallback(imageUrl);
+            }
+        } else {
+            showLbFlatFallback(imageUrl);
+        }
+
+        document.getElementById('lbCapEyebrow').innerText = 'Item ' + String(lbCurrentPieceIndex + 1).padStart(2,'0') + ' of ' + String(cat.entries.length).padStart(2,'0');
+        document.getElementById('lbCapName').innerText = piece.title;
+        document.getElementById('lbCapPrice').innerText = 'GHS ' + piece.price;
+        ghost.innerText = String(lbCurrentPieceIndex + 1).padStart(2,'0');
+    }
+
+    function showLbFlatFallback(imageUrl) {
+        const mount = document.getElementById('lbMannequinMount');
+        const hint = document.getElementById('lbDragHint');
+        if (hint) hint.style.display = 'none';
+        if (!mount) return;
+        mount.innerHTML = `<img src="${imageUrl || 'https://via.placeholder.com/500x600?text=No+Image'}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:white;">`;
+    }
+
+    function lookbookShopSelected() {
+        const cat = lbCategories[lbCurrentCatIndex];
+        const piece = cat.entries[lbCurrentPieceIndex];
+        const realIndex = items.indexOf(piece);
+        closeLookbookModal();
+        if (realIndex > -1) openDetail(realIndex);
     }
 
     function renderMoreFromSeller(item) {
