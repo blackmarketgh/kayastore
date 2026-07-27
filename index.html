@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/128/three.min.js"></script>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <script>
     emailjs.init("b6-xDbaelZ0QnrUvB");
 </script>
@@ -1551,13 +1551,15 @@ body.dark-mode .top-bell-btn svg {
 }
 .pd-icon-btn:active { transform: scale(0.9); }
 .pd-back-btn {
-    right: 16px;
+    left: auto !important;
+    right: 16px !important;
     background: transparent;
     box-shadow: none;
     backdrop-filter: none;
     color: white;
     font-size: 22px;
     text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    z-index: 6;
 }
 .pd-fav-btn { right: 16px; }
 .pd-fav-btn-small {
@@ -2019,6 +2021,94 @@ body {
 }
 
 /* ============================================================
+   PRODUCT DETAIL — editorial split-screen redesign
+   ============================================================ */
+@media (min-width: 900px) {
+    #detailModal .modal-content {
+        flex-direction: row;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+}
+.lb-stage {
+    position: relative;
+    width: 100%;
+    background: radial-gradient(120% 90% at 30% 0%, #FBFAF6 0%, #F6F4EE 55%);
+    overflow: hidden;
+}
+@media (min-width: 900px) {
+    .lb-stage { width: 62%; flex-shrink: 0; }
+}
+.lb-ghost-number {
+    position: absolute; left: 50%; top: 44%; transform: translate(-50%,-50%);
+    font-family: 'Fraunces', serif; font-weight: 300;
+    font-size: min(40vw, 320px); line-height: 1; color: #15171A;
+    opacity: 0.05; letter-spacing: -0.04em; user-select: none; pointer-events: none; z-index: 0;
+}
+.lb-rail-name {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; margin: 4px 0 0;
+}
+.lb-rail-eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #888;
+}
+.lb-section-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent); font-weight: 500;
+    margin: 22px 0 10px;
+}
+.lb-section-title:first-child { margin-top: 4px; }
+.lb-piece-row {
+    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+}
+.lb-piece {
+    flex: 0 0 auto; width: 84px; cursor: pointer; text-align: left;
+}
+.lb-piece-thumb {
+    position: relative; width: 84px; height: 84px; border-radius: 12px; overflow: hidden;
+    background: #eee; border: 2px solid transparent; transition: border-color .15s ease, transform .15s ease;
+}
+.lb-piece:hover .lb-piece-thumb { transform: translateY(-2px); }
+.lb-piece.lb-active .lb-piece-thumb { border-color: var(--accent); }
+.lb-piece-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-piece-num {
+    position: absolute; left: 4px; top: 4px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 500; background: rgba(255,255,255,0.9); padding: 1px 5px; border-radius: 5px;
+}
+.lb-piece.lb-active .lb-piece-num { background: var(--accent); color: white; }
+.lb-piece-label {
+    font-size: 11px; margin-top: 5px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lb-piece-sub { font-size: 10.5px; color: #999; margin-top: 1px; }
+body.dark-mode .lb-section-title { color: #6ab0de; }
+body.dark-mode .lb-piece-thumb { background: #383838; }
+
+.pd-rail-piece {
+    flex: 0 0 auto; width: 84px; cursor: pointer; text-align: left;
+}
+.pd-rail-thumb {
+    position: relative; width: 84px; height: 84px; border-radius: 12px; overflow: hidden;
+    background: #eee; border: 2px solid transparent; transition: border-color .15s ease, transform .15s ease;
+}
+.pd-rail-piece:hover .pd-rail-thumb { transform: translateY(-2px); }
+.pd-rail-piece.lb-active .pd-rail-thumb { border-color: var(--accent); }
+.pd-rail-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pd-rail-num {
+    position: absolute; left: 4px; top: 4px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 500; background: rgba(255,255,255,0.9); padding: 1px 5px; border-radius: 5px;
+}
+.pd-rail-piece.lb-active .pd-rail-num { background: var(--accent); color: white; }
+.pd-rail-label {
+    font-size: 11px; margin-top: 5px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pd-rail-sub { font-size: 10.5px; color: #999; margin-top: 1px; }
+body.dark-mode .pd-rail-thumb { background: #383838; }
+/* ============================================================
    SHOP THE LOOK — split-screen category viewer
    ============================================================ */
 #lookbookModal .modal-content{
@@ -2048,9 +2138,65 @@ body {
     position:absolute; inset:0;
     cursor:grab;
     touch-action:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 .lb-mannequin-mount:active{ cursor:grabbing; }
-.lb-mannequin-mount canvas{ display:block; width:100%; height:100%; }
+.lb-3d-scene{ width:min(60%, 240px); height:70%; perspective:1000px; }
+.lb-3d-cylinder{
+    position:relative; width:100%; height:100%;
+    transform-style:preserve-3d;
+}
+.lb-3d-panel{
+    position:absolute; top:0; left:50%;
+    height:100%;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    backface-visibility:hidden;
+    border-radius:8px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.18);
+}
+.lb-3d-head{
+    position:absolute; top:-15%; left:50%;
+    width:34%; height:16%;
+    transform:translateX(-50%);
+    background:#EDE6D8;
+    border-radius:50%;
+}
+.lb-3d-neck{
+    position:absolute; top:-3%; left:50%;
+    width:16%; height:8%;
+    transform:translateX(-50%);
+    background:#EDE6D8;
+    border-radius:4px;
+}
+.lb-3d-stand{
+    position:absolute; bottom:-6%; left:50%;
+    width:50%; height:4%;
+    transform:translateX(-50%);
+    background:#1a1a1a;
+    border-radius:50%;
+    opacity:0.85;
+}
+.lb-3d-stand{
+    position:absolute; bottom:-6%; left:50%;
+    width:50%; height:4%;
+    transform:translateX(-50%);
+    background:#1a1a1a;
+    border-radius:50%;
+    opacity:0.85;
+}
+.lb-model-viewer{
+    position:absolute; inset:0; width:100%; height:100%;
+    --poster-color: transparent;
+    background:transparent;
+}
+.lb-model-loading{
+    display:flex; align-items:center; justify-content:center; height:100%;
+    font-size:13px; color:#888; font-family:'IBM Plex Mono', monospace;
+}
 .lb-drag-hint{
     position:absolute; top:16px; left:16px; z-index:3;
     font-size:11px; font-weight:600; color:#777;
@@ -2072,9 +2218,17 @@ body {
 .lb-stage-caption h2{ font-size:16px; margin:0 0 3px; font-weight:700; }
 .lb-stage-caption .lb-cap-price{ font-weight:800; font-size:15px; }
 .lb-close-btn{
-    position:absolute; top:14px; right:14px; z-index:5;
+    position:absolute !important;
+    top:14px !important;
+    right:14px !important;
+    left:auto !important;
+    bottom:auto !important;
+    transform:none !important;
+    margin:0 !important;
+    z-index:6;
     width:36px; height:36px; border-radius:50%; border:none;
-    background:rgba(255,255,255,0.9); font-size:16px; cursor:pointer;
+    background:transparent; color:#1a1a1a; font-size:20px; cursor:pointer;
+    text-shadow:0 1px 3px rgba(255,255,255,0.6);
 }
 .lb-rail{
     flex:1; background:white; padding:16px; overflow-y:auto;
@@ -2310,7 +2464,20 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <div class="modal-content">
            <div class="lb-stage">
                 <div class="lb-ghost-number" id="lbGhostNumber">01</div>
-                <div id="lbMannequinMount" class="lb-mannequin-mount"></div>
+            <model-viewer id="lbModelViewer" class="lb-model-viewer"
+                    camera-controls
+                    auto-rotate
+                    auto-rotate-delay="0"
+                    rotation-per-second="16deg"
+                    interaction-prompt="none"
+                    shadow-intensity="1"
+                    camera-orbit="0deg 78deg 105%"
+                    min-camera-orbit="auto 45deg auto"
+                    max-camera-orbit="auto 105deg auto"
+                    disable-zoom>
+                    <div slot="poster" class="lb-model-loading">Loading model…</div>
+                </model-viewer>
+
                 <div class="lb-drag-hint" id="lbDragHint">↔ Drag to rotate</div>
                 <button class="lb-close-btn" onclick="closeLookbookModal()">✕</button>
                 <div class="lb-stage-caption" id="lbCaption">
@@ -2338,8 +2505,9 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         </div>
     </div>
 
-   <div class="modal" id="detailModal">
+  <div class="modal" id="detailModal">
         <div class="modal-content">
+            <div class="lb-stage">
             <div class="pd-gallery-wrap">
                 <img id="detailImage" class="pd-gallery-img" onclick="nextGalleryImage()">
                 <div class="pd-gallery-fade"></div>
@@ -2347,10 +2515,20 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
                 <button class="detail-gallery-arrow prev" onclick="prevGalleryImage()">‹</button>
                 <button class="detail-gallery-arrow next" onclick="nextGalleryImage()">›</button>
                 <div class="pd-condition-wrap" id="pdConditionWrap"></div>
-                <div class="detail-gallery-dots" id="detailGalleryDots"></div>
+               <div class="detail-gallery-dots" id="detailGalleryDots"></div>
+                <div class="lb-ghost-number" id="detailGhostNumber">01</div>
+            </div>
             </div>
 
             <div class="pd-content">
+                <div id="detailPhotosSection" style="display:none;">
+                    <div class="lb-section-title">Photos</div>
+                    <div class="lb-piece-row" id="detailPhotosRow"></div>
+                </div>
+                <div id="detailSimilarPiecesSection" style="display:none;">
+                    <div class="lb-section-title">Similar Items</div>
+                    <div class="lb-piece-row" id="detailSimilarPiecesRow"></div>
+                </div>
                 <div class="pd-title-row">
                     <h3 id="detailTitle" class="pd-title"></h3>
                     <div class="price pd-price" id="detailPrice"></div>
@@ -2747,6 +2925,9 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
     if (isOwner) {
         window.location.href = 'analytics.html';
     }
+
+   // Path or full URL to the mannequin .glb — change this one line for whichever hosting option you use.
+    const MANNEQUIN_GLB_URL = "mannequin.glb";
 
     const THEME_SWATCHES = ['#2980b9', '#8e44ad', '#e74c3c', '#16a085', '#e67e22', '#c0392b', '#34495e', '#d63384'];
     const COLOR_NAME_TO_HEX = {
@@ -4098,8 +4279,7 @@ const CATEGORY_ICONS = {
             `<span class="detail-gallery-dot ${i === currentGalleryIndex ? 'active' : ''}" onclick="setGalleryIndex(${i})"></span>`
         ).join('');
     }
-
-   function setGalleryIndex(i) {
+function setGalleryIndex(i) {
         currentGalleryIndex = i;
         const img = document.getElementById('detailImage');
         img.classList.add('pd-img-fading');
@@ -4108,8 +4288,9 @@ const CATEGORY_ICONS = {
             img.classList.remove('pd-img-fading');
         }, 180);
         renderGalleryDots();
+        const detailGhost = document.getElementById('detailGhostNumber');
+        if (detailGhost) detailGhost.innerText = String(i + 1).padStart(2, '0');
     }
-
     function nextGalleryImage() {
         if (currentGalleryImages.length <= 1) return;
         setGalleryIndex((currentGalleryIndex + 1) % currentGalleryImages.length);
@@ -4373,11 +4554,16 @@ if (promoteBtn) {
         document.getElementById('detailPrice').innerText = 'GHS ' + item.price;
        document.getElementById('detailCategory').innerText = item.category;
        document.getElementById('detailDescription').innerText = item.description || 'No description provided.';
-       renderSpecsSection(item);
+     renderDetailPhotosRail(item);
+        renderDetailSimilarPiecesRail(item);
+        renderSpecsSection(item);
         renderReviewsSection(item);
         renderSimilarProducts(item);
         renderFbtSection(item);
         renderMoreFromSeller(item);
+
+        const detailGhost = document.getElementById('detailGhostNumber');
+        if (detailGhost) detailGhost.innerText = String(currentGalleryIndex + 1).padStart(2, '0');
 
         document.querySelectorAll('#detailModal .pd-fade-section').forEach(el => {
             el.style.animation = 'none';
@@ -4390,6 +4576,45 @@ if (promoteBtn) {
         document.body.style.overflow = 'hidden';
     }
 
+function renderDetailPhotosRail(item) {
+        const section = document.getElementById('detailPhotosSection');
+        const row = document.getElementById('detailPhotosRow');
+        if (!currentGalleryImages || currentGalleryImages.length <= 1) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        row.innerHTML = currentGalleryImages.map((img, i) => `
+            <div class="pd-rail-piece ${i === currentGalleryIndex ? 'lb-active' : ''}" onclick="setGalleryIndex(${i}); renderDetailPhotosRail(items[currentDetailIndex]);">
+                <div class="pd-rail-thumb">
+                    <img src="${img}">
+                    <span class="pd-rail-num">${String(i + 1).padStart(2,'0')}</span>
+                </div>
+                <div class="pd-rail-label">Photo ${i + 1}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderDetailSimilarPiecesRail(item) {
+        const section = document.getElementById('detailSimilarPiecesSection');
+        const row = document.getElementById('detailSimilarPiecesRow');
+        const similar = items.filter(it => it.category === item.category && it.firestoreId !== item.firestoreId).slice(0, 10);
+        if (similar.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        row.innerHTML = similar.map((it) => {
+            const thumb = (it.images && it.images[0]) || it.image || 'https://via.placeholder.com/84x84?text=No+Image';
+            return `
+                <div class="pd-rail-piece" onclick="openDetail(${items.indexOf(it)})">
+                    <div class="pd-rail-thumb"><img src="${thumb}"></div>
+                    <div class="pd-rail-label">${it.title}</div>
+                    <div class="pd-rail-sub">GHS ${it.price}</div>
+                </div>
+            `;
+        }).join('');
+    }
     function renderSpecsSection(item) {
         const section = document.getElementById('pdSpecsSection');
         const grid = document.getElementById('pdSpecsGrid');
@@ -4579,28 +4804,16 @@ if (promoteBtn) {
             hint.classList.remove('lb-hint-fade');
             hint.style.display = '';
         }
-        renderLbLookSwitch();
+       renderLbLookSwitch();
         renderLbRail();
         renderLbStage(true);
         document.getElementById('lookbookModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';
-
-        if (lb3dAvailable === false && !localStorage.getItem('kayaLb3dNoticeShown')) {
-            localStorage.setItem('kayaLb3dNoticeShown', 'true');
-            setTimeout(() => alert("3D view isn't available on this device/network — showing photos instead."), 300);
-        }
     }
 
-   function closeLookbookModal() {
+ function closeLookbookModal() {
         document.getElementById('lookbookModal').style.display = 'none';
         document.body.style.overflow = '';
-        if (lbAnimFrame) cancelAnimationFrame(lbAnimFrame);
-        if (lbRenderer) {
-            lbRenderer.dispose();
-            const mount = document.getElementById('lbMannequinMount');
-            if (mount) mount.innerHTML = '';
-            lbRenderer = null;
-        }
     }
 
     function renderLbLookSwitch() {
@@ -4618,14 +4831,14 @@ if (promoteBtn) {
         renderLbStage(true);
     }
 
-    function renderLbRail() {
+   function renderLbRail() {
         const cat = lbCategories[lbCurrentCatIndex];
         document.getElementById('lbLookLabel').innerText = cat.title.toUpperCase();
         document.getElementById('lbLookTitle').innerText = cat.title;
 
         const grid = document.getElementById('lbPieceGrid');
-        grid.innerHTML = cat.entries.map((it, i) => {
-            const thumb = (it.images && it.images[0]) || it.image || 'https://via.placeholder.com/58x58?text=No+Image';
+        grid.innerHTML = cat.entries.map((piece, i) => {
+            const thumb = (piece.images && piece.images[0]) || piece.image || 'https://via.placeholder.com/58x58?text=No+Image';
             return `
                 <div class="lb-piece ${i === lbCurrentPieceIndex ? 'lb-active' : ''}" onclick="lbSelectPiece(${i})">
                     <div class="lb-piece-thumb">
@@ -4633,14 +4846,14 @@ if (promoteBtn) {
                         <span class="lb-piece-num">${String(i + 1).padStart(2,'0')}</span>
                     </div>
                     <div class="lb-piece-body">
-                        <div class="lb-piece-name">${it.title}</div>
-                        <div class="lb-piece-price">GHS ${it.price}</div>
+                        <div class="lb-piece-name">${piece.title}</div>
+                        <div class="lb-piece-price">GHS ${piece.price}</div>
                     </div>
                 </div>
             `;
         }).join('');
 
-        const total = cat.entries.reduce((sum, it) => sum + Number(it.price || 0), 0);
+        const total = cat.entries.reduce((sum, p) => sum + Number(p.price), 0);
         document.getElementById('lbTotalValue').innerText = 'GHS ' + total;
     }
 
@@ -4650,169 +4863,35 @@ if (promoteBtn) {
         renderLbStage(false);
     }
 
-  /* ---- 3D mannequin viewer (Three.js) ---- */
-    let lbScene, lbCamera, lbRenderer, lbMannequinGroup, lbDressMesh, lbAnimFrame;
-    let lbRotationY = 0, lbAutoRotate = true;
-    let lbDragging = false, lbLastX = 0, lbDragVelocity = 0;
+/* ---- Real 3D mannequin, powered by <model-viewer> ---- */
+    let lbModelInitialized = false;
 
-    function initLbMannequin() {
-        if (lbRenderer) return; // already built
-
-        const mount = document.getElementById('lbMannequinMount');
-        const width = mount.clientWidth, height = mount.clientHeight;
-
-        lbScene = new THREE.Scene();
-        lbCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 100);
-        lbCamera.position.set(0, 1.05, 4.2);
-
-        lbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        lbRenderer.setSize(width, height);
-        lbRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        mount.appendChild(lbRenderer.domElement);
-
-        const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
-        keyLight.position.set(2, 4, 3);
-        lbScene.add(keyLight);
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        fillLight.position.set(-3, 1, -2);
-        lbScene.add(fillLight);
-        lbScene.add(new THREE.AmbientLight(0xffffff, 0.55));
-
-        lbMannequinGroup = new THREE.Group();
-
-        const formMat = new THREE.MeshStandardMaterial({ color: 0xEDE6D8, roughness: 0.85 });
-
-        // Neck
-        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.28, 24), formMat);
-        neck.position.y = 1.62;
-        lbMannequinGroup.add(neck);
-
-        // Head (simple oval, mannequin-style, no face)
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 24, 24), formMat);
-        head.scale.set(0.85, 1.05, 0.9);
-        head.position.y = 2.0;
-        lbMannequinGroup.add(head);
-
-        // Shoulders / upper bodice
-        const bodice = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 0.55, 32), formMat);
-        bodice.position.y = 1.25;
-        lbMannequinGroup.add(bodice);
-
-        // Dress mesh — this is what gets the product photo as a texture
-        lbDressMesh = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.42, 0.62, 1.55, 40, 1, true),
-            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, side: THREE.DoubleSide })
-        );
-        lbDressMesh.position.y = 0.35;
-        lbMannequinGroup.add(lbDressMesh);
-
-        // Mannequin stand (base + pole), classic retail dress-form look
-        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.9, 12), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-        pole.position.y = -0.85;
-        lbMannequinGroup.add(pole);
-        const base = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 0.06, 24), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
-        base.position.y = -1.3;
-        lbMannequinGroup.add(base);
-
-        lbScene.add(lbMannequinGroup);
-
-        // Drag-to-rotate
-        const mountEl = mount;
-        const onDown = (x) => { lbDragging = true; lbLastX = x; lbAutoRotate = false; document.getElementById('lbDragHint').classList.add('lb-hint-fade'); };
-        const onMove = (x) => { if (!lbDragging) return; const dx = x - lbLastX; lbRotationY += dx * 0.008; lbDragVelocity = dx * 0.008; lbLastX = x; };
-        const onUp = () => { lbDragging = false; };
-
-        mountEl.addEventListener('mousedown', e => onDown(e.clientX));
-        window.addEventListener('mousemove', e => onMove(e.clientX));
-        window.addEventListener('mouseup', onUp);
-        mountEl.addEventListener('touchstart', e => onDown(e.touches[0].clientX), { passive: true });
-        mountEl.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
-        mountEl.addEventListener('touchend', onUp);
-
-        animateLbMannequin();
-        window.addEventListener('resize', resizeLbMannequin);
-    }
-
-    function resizeLbMannequin() {
-        const mount = document.getElementById('lbMannequinMount');
-        if (!mount || !lbRenderer) return;
-        const width = mount.clientWidth, height = mount.clientHeight;
-        lbRenderer.setSize(width, height);
-        lbCamera.aspect = width / height;
-        lbCamera.updateProjectionMatrix();
-    }
-
-    function animateLbMannequin() {
-        lbAnimFrame = requestAnimationFrame(animateLbMannequin);
-        if (!lbDragging) {
-            if (Math.abs(lbDragVelocity) > 0.0002) {
-                lbRotationY += lbDragVelocity;
-                lbDragVelocity *= 0.94;
-            } else if (lbAutoRotate) {
-                lbRotationY += 0.0035;
+    function initLbModel() {
+        if (lbModelInitialized) return;
+        const mv = document.getElementById('lbModelViewer');
+        if (!mv) return;
+        mv.src = MANNEQUIN_GLB_URL;
+        const hint = document.getElementById('lbDragHint');
+        mv.addEventListener('camera-change', (e) => {
+            if (e.detail && e.detail.source === 'user-interaction' && hint) {
+                hint.classList.add('lb-hint-fade');
             }
-        }
-        lbMannequinGroup.rotation.y = lbRotationY;
-        lbRenderer.render(lbScene, lbCamera);
-    }
-
-    function updateLbDressTexture(imageUrl) {
-        const loader = new THREE.TextureLoader();
-        loader.load(imageUrl, (texture) => {
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.repeat.x = -1; // mirror so the print reads correctly wrapped around the cylinder
-            lbDressMesh.material.map = texture;
-            lbDressMesh.material.color.set(0xffffff);
-            lbDressMesh.material.needsUpdate = true;
-        }, undefined, () => {
-            // fallback: if the photo can't load as a texture, tint the dress form a neutral color instead
-            lbDressMesh.material.map = null;
-            lbDressMesh.material.color.set(0xcccccc);
-            lbDressMesh.material.needsUpdate = true;
         });
+        lbModelInitialized = true;
     }
-
-   let lb3dAvailable = null; // cached after first check: true, false, or null (not checked yet)
 
     function renderLbStage(isNewCategory) {
         const cat = lbCategories[lbCurrentCatIndex];
         const piece = cat.entries[lbCurrentPieceIndex];
         const ghost = document.getElementById('lbGhostNumber');
-        const imageUrl = (piece.images && piece.images[0]) || piece.image || '';
 
-        if (lb3dAvailable === null) {
-            lb3dAvailable = (typeof THREE !== 'undefined');
-        }
-
-        if (lb3dAvailable) {
-            try {
-                initLbMannequin();
-                if (imageUrl) updateLbDressTexture(imageUrl);
-                lbAutoRotate = true;
-                setTimeout(resizeLbMannequin, 60);
-            } catch (err) {
-                console.error('3D mannequin failed, falling back to flat photo:', err);
-                lb3dAvailable = false;
-                showLbFlatFallback(imageUrl);
-            }
-        } else {
-            showLbFlatFallback(imageUrl);
-        }
+        initLbModel();
 
         document.getElementById('lbCapEyebrow').innerText = 'Item ' + String(lbCurrentPieceIndex + 1).padStart(2,'0') + ' of ' + String(cat.entries.length).padStart(2,'0');
         document.getElementById('lbCapName').innerText = piece.title;
         document.getElementById('lbCapPrice').innerText = 'GHS ' + piece.price;
         ghost.innerText = String(lbCurrentPieceIndex + 1).padStart(2,'0');
     }
-
-    function showLbFlatFallback(imageUrl) {
-        const mount = document.getElementById('lbMannequinMount');
-        const hint = document.getElementById('lbDragHint');
-        if (hint) hint.style.display = 'none';
-        if (!mount) return;
-        mount.innerHTML = `<img src="${imageUrl || 'https://via.placeholder.com/500x600?text=No+Image'}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:white;">`;
-    }
-
     function lookbookShopSelected() {
         const cat = lbCategories[lbCurrentCatIndex];
         const piece = cat.entries[lbCurrentPieceIndex];
@@ -5730,9 +5809,9 @@ function anyModalOpen() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function handleNavCategories() {
+  function handleNavCategories() {
         setActiveNav('navCategories');
-        document.querySelector('.controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('allListingsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function handleNavSell() {
@@ -5785,13 +5864,14 @@ function anyModalOpen() {
         modalScrollObserver.observe(modal, { attributes: true, attributeFilter: ['style'] });
     });
 
- renderBanners();
+renderBanners();
     setActiveBanner(0);
     restartProgress();
     initBannerSwipe();
     initGallerySwipe();
     resetBannerAutoplay();
     renderCategoryIconRow();
+   
 loadItemsFromFirestore();
     updateCartCount();
     checkSellerStatus()
