@@ -1484,14 +1484,21 @@ body.dark-mode .bottom-nav-item {
 }
 .top-bell-dot {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
     background: #e74c3c;
+    color: white;
+    font-size: 10.5px;
+    font-weight: 700;
     display: none;
+    align-items: center;
+    justify-content: center;
     border: 2px solid white;
+    box-sizing: border-box;
 }
 body.dark-mode .top-bell-btn {
     background: #2c2c2c;
@@ -2337,7 +2344,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <div class="banner-dots" id="bannerDots"></div>
         </div>
 
-  <div class="market-section">
+ <div class="market-section">
        <div class="search-bar-wrap">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input type="text" id="searchInput" placeholder="Search for products..." onkeyup="renderItems(); renderSearchSuggestions();" onfocus="renderSearchSuggestions();">
@@ -2350,21 +2357,20 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
                 <div class="market-section-title">Categories</div>
                 <span class="section-see-all" onclick="handleNavCategories()">See all ›</span>
             </div>
-            <div class="category-icon-row" id="categoryIconRow"></div>
+           <div class="category-icon-row" id="categoryIconRow"></div>
         </div>
 
-<div class="market-section" id="lookbookEntrySection" style="display:none;">
-            <div style="background:linear-gradient(135deg,#1a1a1a,#2c2c2c); border-radius:16px; padding:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer;" onclick="openLookbookModal()">
+       <div class="market-section" id="lookbookEntrySection" style="display:none;">
+            <div style="background:linear-gradient(135deg,#1a1a1a,#2c2c2c); border-radius:16px; padding:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:default;">
                 <div>
-                    <div style="color:#e67e22; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">New</div>
+                    <div style="color:#e67e22; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Coming Soon</div>
                    <div style="color:white; font-weight:700; font-size:17px; margin-top:2px;">👗 View Dresses in 3D</div>
                     <div style="color:#bbb; font-size:12.5px; margin-top:2px;">Spin the mannequin to see every angle</div>
                 </div>
-                <div style="color:white; font-size:22px;">›</div>
             </div>
         </div>
 
-        <div class="market-section" id="promotedSection" style="display:none;">
+      <div class="market-section" id="promotedSection" style="display:none;">
             <div class="market-section-title">🔥 Promoted</div>
             <div class="scroll-row" id="promotedRow"></div>
         </div>
@@ -2381,7 +2387,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             </div>
 
             <div class="filter-row" style="margin-bottom:14px;">
-              <select id="categoryFilter" onchange="renderItems()">
+             <select id="categoryFilter" onchange="renderItems()">
         <option value="All">All Categories</option>
         <option value="Favorites">Favorites</option>
         <option value="MyListings" id="myListingsOption" style="display:none;">My Listings</option>
@@ -2390,18 +2396,32 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <option value="Furniture">Furniture</option>
         <option value="Cars">Cars</option>
         <option value="Houses">Houses</option>
+        <option value="Wigs">Wigs</option>
+        <option value="Beverages">Beverages</option>
+        <option value="Groceries">Groceries</option>
+        <option value="Cosmetics">Cosmetics</option>
+        <option value="Jewelries">Jewelries</option>
+        <option value="Accessories">Accessories</option>
         <option value="Other">Other</option>
     </select>
-    <select id="locationFilter" onchange="renderItems()">
+   <select id="locationFilter" onchange="renderItems()">
         <option value="All">All Locations</option>
         <option value="Accra">Accra</option>
         <option value="Kumasi">Kumasi</option>
-        <option value="Tamale">Tamale</option>
-        <option value="Takoradi">Takoradi</option>
+        <option value="Sekondi-Takoradi">Sekondi-Takoradi</option>
         <option value="Cape Coast">Cape Coast</option>
-        <option value="Ho">Ho</option>
         <option value="Koforidua">Koforidua</option>
+        <option value="Ho">Ho</option>
+        <option value="Tamale">Tamale</option>
+        <option value="Bolgatanga">Bolgatanga</option>
+        <option value="Wa">Wa</option>
         <option value="Sunyani">Sunyani</option>
+        <option value="Techiman">Techiman</option>
+        <option value="Goaso">Goaso</option>
+        <option value="Sefwi Wiawso">Sefwi Wiawso</option>
+        <option value="Dambai">Dambai</option>
+        <option value="Nalerigu">Nalerigu</option>
+        <option value="Damongo">Damongo</option>
         <option value="Other">Other</option>
     </select>
             </div>
@@ -2433,12 +2453,18 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
            <input type="text" id="itemTitle" placeholder="Item name *">
             <input type="number" id="itemPrice" placeholder="Price (GHS) *">
             <input type="number" id="itemStock" placeholder="Stock quantity *" min="0">
-        <select id="itemCategory">
+      <select id="itemCategory">
                 <option value="Clothes">Clothes</option>
                 <option value="Electronics">Electronics</option>
                 <option value="Furniture">Furniture</option>
                 <option value="Cars">Cars</option>
                 <option value="Houses">Houses</option>
+                <option value="Wigs">Wigs</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Groceries">Groceries</option>
+                <option value="Cosmetics">Cosmetics</option>
+                <option value="Jewelries">Jewelries</option>
+                <option value="Accessories">Accessories</option>
                 <option value="Other">Other</option>
             </select>
             <select id="itemCondition">
@@ -2647,16 +2673,24 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             </div>
             <input type="hidden" id="orderDeliveryMethod" value="Pickup">
 
-            <select id="orderLocationSelect">
+          <select id="orderLocationSelect">
                 <option value="">Select your location</option>
                 <option value="Accra">Accra</option>
                 <option value="Kumasi">Kumasi</option>
-                <option value="Tamale">Tamale</option>
-                <option value="Takoradi">Takoradi</option>
+                <option value="Sekondi-Takoradi">Sekondi-Takoradi</option>
                 <option value="Cape Coast">Cape Coast</option>
-                <option value="Ho">Ho</option>
                 <option value="Koforidua">Koforidua</option>
+                <option value="Ho">Ho</option>
+                <option value="Tamale">Tamale</option>
+                <option value="Bolgatanga">Bolgatanga</option>
+                <option value="Wa">Wa</option>
                 <option value="Sunyani">Sunyani</option>
+                <option value="Techiman">Techiman</option>
+                <option value="Goaso">Goaso</option>
+                <option value="Sefwi Wiawso">Sefwi Wiawso</option>
+                <option value="Dambai">Dambai</option>
+                <option value="Nalerigu">Nalerigu</option>
+                <option value="Damongo">Damongo</option>
                 <option value="Other">Other</option>
             </select>
 
@@ -2697,12 +2731,11 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
        <p id="sdAddress" style="color:#777; font-size:13px;"></p>
         <p id="sdLocation" style="color:#777; font-size:13px;"></p>
 
-        <div style="text-align:left; margin-top:12px; padding-top:12px; border-top:1px solid #eee;">
+       <div style="text-align:left; margin-top:12px; padding-top:12px; border-top:1px solid #eee;">
             <p style="font-size:13px; color:#777; margin-bottom:5px;">Ghana Card Number</p>
             <p id="sdGhanaCard" style="font-weight:bold; font-size:14px;"></p>
-            <p style="font-size:13px; color:#777; margin-bottom:5px;">Ghana Card Photo</p>
-            <img id="sdGhanaCardPhoto" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px; display:none;">
-        </div>        <div style="display:flex; justify-content:space-around; margin:15px 0; padding:10px 0; border-top:1px solid #eee; border-bottom:1px solid #eee;">
+        </div>
+      <div style="display:flex; justify-content:space-around; margin:15px 0; padding:10px 0; border-top:1px solid #eee; border-bottom:1px solid #eee;">
             <div>
                 <div style="font-weight:bold; font-size:18px;" id="sdRating">-</div>
                 <div style="font-size:12px; color:#777;">Rating</div>
@@ -2858,19 +2891,24 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
     <option value="">Select your location</option>
     <option value="Accra">Accra</option>
     <option value="Kumasi">Kumasi</option>
-    <option value="Tamale">Tamale</option>
-    <option value="Takoradi">Takoradi</option>
+    <option value="Sekondi-Takoradi">Sekondi-Takoradi</option>
     <option value="Cape Coast">Cape Coast</option>
-    <option value="Ho">Ho</option>
     <option value="Koforidua">Koforidua</option>
+    <option value="Ho">Ho</option>
+    <option value="Tamale">Tamale</option>
+    <option value="Bolgatanga">Bolgatanga</option>
+    <option value="Wa">Wa</option>
     <option value="Sunyani">Sunyani</option>
+    <option value="Techiman">Techiman</option>
+    <option value="Goaso">Goaso</option>
+    <option value="Sefwi Wiawso">Sefwi Wiawso</option>
+    <option value="Dambai">Dambai</option>
+    <option value="Nalerigu">Nalerigu</option>
+    <option value="Damongo">Damongo</option>
     <option value="Other">Other</option>
 </select>
 <input type="text" id="regGhanaCard" placeholder="Ghana Card number (e.g. GHA-123456789-0)">
 <input type="text" id="regAddress" placeholder="Residential address">
-<label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Ghana Card Photo (front)</label>
-<input type="file" id="regGhanaCardPhoto" accept="image/*">
-<img id="regGhanaCardPreview">
 <input type="password" id="regPassword" placeholder="Create a password">
 <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Choose a profile avatar</label>                <div id="avatarPickerRow" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
                 <input type="hidden" id="regSelectedAvatar">
@@ -3200,8 +3238,9 @@ const introSlidesData = [
         localStorage.setItem('kayaBuyerPhone', phone);
         if (email) localStorage.setItem('kayaBuyerEmail', email);
 
-        document.getElementById('getStartedModal').style.display = 'none';
+       document.getElementById('getStartedModal').style.display = 'none';
         showGreetingToast(name, '🛍️');
+        listenForBuyerMessages();
 
         const buyerLogoutLink = document.getElementById('buyerLogoutLink');
         if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
@@ -3299,18 +3338,6 @@ function filterToCategoryFromBanner(event, category) {
         renderItems();
         document.getElementById('allListingsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-document.getElementById('regGhanaCardPhoto').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        const preview = document.getElementById('regGhanaCardPreview');
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                preview.src = event.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
 
 const AVATAR_OPTIONS = [
         'https://api.dicebear.com/7.x/avataaars/svg?seed=Kwame&backgroundColor=b6e3f4',
@@ -3395,7 +3422,6 @@ function submitSellerRegister() {
     const password = document.getElementById('regPassword').value;
     const ghanaCard = document.getElementById('regGhanaCard').value.trim().toUpperCase();
     const address = document.getElementById('regAddress').value.trim();
-    const ghanaCardPhotoFile = document.getElementById('regGhanaCardPhoto').files[0];
     const photoData = selectedAvatarUrl || AVATAR_OPTIONS[0];
 
     if (!name || !phone || !email || !location || !password || !ghanaCard) {
@@ -3408,10 +3434,6 @@ function submitSellerRegister() {
         alert("Please enter a valid Ghana Card number in the format GHA-123456789-0.");
         return;
     }
-    if (!ghanaCardPhotoFile) {
-        alert("Please upload a photo of your Ghana Card.");
-        return;
-    }
 
     const btn = document.getElementById('submitRegisterBtn');
     btn.disabled = true;
@@ -3422,24 +3444,22 @@ function submitSellerRegister() {
         btn.innerText = "Submit Request";
     }
 
-   compressImage(ghanaCardPhotoFile).then((ghanaCardPhotoData) => {
-        return hashPassword(password).then((hashedPassword) => {
-          return db.collection('sellers').add({
-                name, businessName: businessName || name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
-                photo: photoData, ghanaCard, address, ghanaCardPhoto: ghanaCardPhotoData,
-                followerCount: 0,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then((docRef) => {
-                localStorage.setItem('kayaSellerId', docRef.id);
-                localStorage.setItem('kayaSellerLocation', location);
-                localStorage.setItem('kayaSellerName', name);
-                sellerId = docRef.id;
-                alert("Registration submitted! Waiting for owner approval before you can post items.");
-                closeSellerAuth();
-                updateSellerLinkText();
-                startGuestPromptTimer();
-                showGreetingToast(name, '🏪');
-            });
+    hashPassword(password).then((hashedPassword) => {
+        return db.collection('sellers').add({
+            name, businessName: businessName || name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
+            photo: photoData, ghanaCard, address,
+            followerCount: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then((docRef) => {
+            localStorage.setItem('kayaSellerId', docRef.id);
+            localStorage.setItem('kayaSellerLocation', location);
+            localStorage.setItem('kayaSellerName', name);
+            sellerId = docRef.id;
+            alert("Registration submitted! Waiting for owner approval before you can post items.");
+            closeSellerAuth();
+            updateSellerLinkText();
+            startGuestPromptTimer();
+            showGreetingToast(name, '🏪');
         });
     }).catch((err) => {
         alert("Registration failed: " + err.message);
@@ -3447,7 +3467,6 @@ function submitSellerRegister() {
         resetButton();
     });
 }
-
 function submitSellerLogin() {   
  const phone = document.getElementById('loginPhone').value;
     const password = document.getElementById('loginPassword').value;
@@ -3715,15 +3734,7 @@ function openSellerDetail(sellerDocId) {
 
       document.getElementById('sdAddress').innerText = s.address ? '🏠 ' + s.address : '';
         document.getElementById('sdLocation').innerText = s.location ? '📍 ' + s.location : '';
-        document.getElementById('sdGhanaCard').innerText = s.ghanaCard || 'Not provided';
-
-        const gcPhoto = document.getElementById('sdGhanaCardPhoto');
-        if (s.ghanaCardPhoto) {
-            gcPhoto.src = s.ghanaCardPhoto;
-            gcPhoto.style.display = 'block';
-        } else {
-            gcPhoto.style.display = 'none';
-        }
+      document.getElementById('sdGhanaCard').innerText = s.ghanaCard || 'Not provided';
 
         document.getElementById('sdRating').innerText = s.avgRating ? s.avgRating.toFixed(1) + ' ★' : 'No ratings yet';
         document.getElementById('sdCommission').innerText = 'GHS ' + (s.commissionEarned || 0);
@@ -3816,8 +3827,7 @@ function closeSellerDetail() {
         const closedDealsLink = document.getElementById('closedDealsLink');
         if (closedDealsLink) closedDealsLink.style.display = isOwner ? 'block' : 'none';
 const messagesBtn = document.getElementById('messagesBtn');
-if (messagesBtn) messagesBtn.style.display = (sellerId && sellerStatus === 'approved') ? 'inline-block' : 'none';
-
+if (messagesBtn) messagesBtn.style.display = 'none';
 const sellerAnalyticsLink = document.getElementById('sellerAnalyticsLink');
 if (sellerAnalyticsLink) sellerAnalyticsLink.style.display = (sellerId && sellerStatus === 'approved') ? 'block' : 'none';
 
@@ -4041,10 +4051,11 @@ function trackVisit() {
         const search = document.getElementById('searchInput').value.toLowerCase();
         const category = document.getElementById('categoryFilter').value;
 
-      grid.innerHTML = "";
+    grid.innerHTML = "";
         renderPromotedRow();
         renderRecommendedRow();
         renderCategoryRows();
+        
 
        const locationFilterValue = document.getElementById('locationFilter').value;
 const filtered = items.filter(item => {
@@ -4066,55 +4077,90 @@ const filtered = items.filter(item => {
             return;
         }
 
-    filtered.forEach((item) => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            const canManageThis = isOwner || (item.postedBy && item.postedBy === sellerId);
-         const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
-            const isSoldOut = stockNum !== null && stockNum <= 0;
-            let stockLineHtml = '';
-            if (stockNum !== null) {
-                if (isSoldOut) {
-                    stockLineHtml = ' • <span style="color:#e74c3c; font-weight:700;">Sold Out</span>';
-                } else if (stockNum <= 5) {
-                    stockLineHtml = ` • <span style="color:#e67e22; font-weight:700;">${stockNum} left</span>`;
-                } else {
-                    stockLineHtml = ' • ' + stockNum + ' left';
-                }
-            }
-
-           card.innerHTML = `
-                <div style="position:relative;">
-                  <img src="${(item.images && item.images.length > 0 ? item.images[0] : item.image) || 'https://via.placeholder.com/200x150?text=No+Image'}"
-     alt="${item.title}"
-     onclick="openDetail(${items.indexOf(item)})"
-     style="cursor:pointer; ${isSoldOut ? 'filter:grayscale(60%); opacity:0.7;' : ''}">
-
-                    ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : (item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>` : '')}
-                    <span onclick="toggleFavorite(${items.indexOf(item)})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(items.indexOf(item)) ? '❤️' : '🤍'}</span>
-                </div>
-               <div class="item-info">
-                    <h3 onclick="openDetail(${items.indexOf(item)})" style="cursor:pointer;">${item.title}</h3>
-                    <div class="price">GHS ${item.price}</div>
-                    <div class="item-card-footer">
-                        <button class="item-card-order-btn" onclick="handleOrderClick(${items.indexOf(item)})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>${isSoldOut ? 'Sold Out' : 'Order Now'}</button>
-                        <button class="item-card-cart-btn" onclick="addToCart(${items.indexOf(item)})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
-                            <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.6a2 2 0 002-1.6L23 6H6"/></svg>
-                        </button>
-                    </div>
-                    <div class="item-card-location">📍 ${item.sellerLocation || 'Other'}${item.condition && item.condition !== 'Used' ? ' • ' + item.condition : ''}${stockLineHtml}</div>
-                    ${canManageThis ? `
-                    <div style="display:flex; gap:6px; margin-top:8px;">
-                        <button class="order-btn" style="background-color:#2980b9; border:none; margin-top:0; font-size:11px; padding:5px;" onclick="event.stopPropagation(); quickEditItem(${items.indexOf(item)})">✏️ Edit</button>
-                        <button class="order-btn" style="background-color:#e74c3c; border:none; margin-top:0; font-size:11px; padding:5px;" onclick="event.stopPropagation(); quickDeleteItem(${items.indexOf(item)})">🗑️ Delete</button>
-                    </div>` : ''}
-                </div>
-            `;
-            grid.appendChild(card);
+  filtered.forEach((item) => {
+            grid.appendChild(buildItemCardElement(item));
         });
     }
 
- function updateLookbookEntryVisibility() {
+    function buildItemCardElement(item) {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        const idx = items.indexOf(item);
+        const canManageThis = isOwner || (item.postedBy && item.postedBy === sellerId);
+        const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
+        const isSoldOut = stockNum !== null && stockNum <= 0;
+        let stockLineHtml = '';
+        if (stockNum !== null) {
+            if (isSoldOut) {
+                stockLineHtml = ' • <span style="color:#e74c3c; font-weight:700;">Sold Out</span>';
+            } else if (stockNum <= 5) {
+                stockLineHtml = ` • <span style="color:#e67e22; font-weight:700;">${stockNum} left</span>`;
+            } else {
+                stockLineHtml = ' • ' + stockNum + ' left';
+            }
+        }
+
+        card.innerHTML = `
+            <div style="position:relative;">
+              <img src="${(item.images && item.images.length > 0 ? item.images[0] : item.image) || 'https://via.placeholder.com/200x150?text=No+Image'}"
+ alt="${item.title}"
+ onclick="openDetail(${idx})"
+ style="cursor:pointer; ${isSoldOut ? 'filter:grayscale(60%); opacity:0.7;' : ''}">
+
+                ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : (item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>` : '')}
+                <span onclick="toggleFavorite(${idx})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(idx) ? '❤️' : '🤍'}</span>
+            </div>
+           <div class="item-info">
+                <h3 onclick="openDetail(${idx})" style="cursor:pointer;">${item.title}</h3>
+                <div class="price">GHS ${item.price}</div>
+                <div class="item-card-footer">
+                    <button class="item-card-order-btn" onclick="handleOrderClick(${idx})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>${isSoldOut ? 'Sold Out' : 'Order Now'}</button>
+                    <button class="item-card-cart-btn" onclick="addToCart(${idx})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 002 1.6h9.6a2 2 0 002-1.6L23 6H6"/></svg>
+                    </button>
+                </div>
+                <div class="item-card-location">📍 ${item.sellerLocation || 'Other'}${item.condition && item.condition !== 'Used' ? ' • ' + item.condition : ''}${stockLineHtml}</div>
+                ${canManageThis ? `
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                    <button class="order-btn" style="background-color:#2980b9; border:none; margin-top:0; font-size:11px; padding:5px;" onclick="event.stopPropagation(); quickEditItem(${idx})">✏️ Edit</button>
+                    <button class="order-btn" style="background-color:#e74c3c; border:none; margin-top:0; font-size:11px; padding:5px;" onclick="event.stopPropagation(); quickDeleteItem(${idx})">🗑️ Delete</button>
+                </div>` : ''}
+            </div>
+        `;
+        return card;
+    }
+
+function renderCategoryFullList() {
+        const container = document.getElementById('categoryFullListContainer');
+        if (!container) return;
+        const categories = ['Clothes', 'Electronics', 'Furniture', 'Cars', 'Houses', 'Wigs', 'Beverages', 'Groceries', 'Cosmetics', 'Jewelries', 'Accessories', 'Other'];
+        let html = '';
+
+        categories.forEach(cat => {
+            const catItems = items.filter(item => item.category === cat);
+            if (catItems.length === 0) return;
+
+            html += `
+                <div class="market-section">
+                    <div class="market-section-title">${categoryEmoji(cat)} ${cat}</div>
+                    <div class="grid" id="catGrid_${cat.replace(/\s+/g,'')}"></div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        categories.forEach(cat => {
+            const catItems = items.filter(item => item.category === cat);
+            if (catItems.length === 0) return;
+            const gridEl = document.getElementById('catGrid_' + cat.replace(/\s+/g,''));
+            if (!gridEl) return;
+            catItems.forEach(item => gridEl.appendChild(buildItemCardElement(item)));
+        });
+    }
+
+    function updateLookbookEntryVisibility() {
+
         const section = document.getElementById('lookbookEntrySection');
         const hasDresses = items.some(it => it.category === 'Clothes' && it.title && it.title.toLowerCase().includes('dress'));
         if (section) section.style.display = hasDresses ? 'block' : 'none';
@@ -4198,12 +4244,14 @@ const filtered = items.filter(item => {
         });
     }
 
-   function renderCategoryRows() {
+function renderCategoryRows() {
         const container = document.getElementById('categoryRowsContainer');
-        const categories = ['Clothes', 'Electronics', 'Furniture', 'Cars', 'Houses', 'Other'];
+        const categories = ['Clothes', 'Electronics', 'Furniture', 'Cars', 'Houses', 'Wigs', 'Beverages', 'Groceries', 'Cosmetics', 'Jewelries', 'Accessories', 'Other'];
+        const activeFilter = document.getElementById('categoryFilter').value;
         let html = '';
 
         categories.forEach(cat => {
+            if (activeFilter !== 'All' && activeFilter !== 'Favorites' && activeFilter !== 'MyListings' && activeFilter !== cat) return;
             const catItems = items.filter(item => item.category === cat);
             if (catItems.length === 0) return;
 
@@ -4222,32 +4270,46 @@ const filtered = items.filter(item => {
                             </div>
                         `).join('')}
                     </div>
+                    <div class="grid" id="catRowGrid_${cat.replace(/\s+/g,'')}" style="margin-top:12px;"></div>
                 </div>
             `;
         });
 
         container.innerHTML = html;
-    }
 
-   function categoryEmoji(cat) {
-        const map = { 'Clothes': '👕', 'Electronics': '🔌', 'Furniture': '🛋️', 'Cars': '🚗', 'Houses': '🏠', 'Other': '📦' };
+        categories.forEach(cat => {
+            if (activeFilter !== 'All' && activeFilter !== 'Favorites' && activeFilter !== 'MyListings' && activeFilter !== cat) return;
+            const catItems = items.filter(item => item.category === cat);
+            if (catItems.length === 0) return;
+            const gridEl = document.getElementById('catRowGrid_' + cat.replace(/\s+/g,''));
+            if (!gridEl) return;
+            catItems.forEach(item => gridEl.appendChild(buildItemCardElement(item)));
+        });
+    } function categoryEmoji(cat) {
+        const map = { 'Clothes': '👕', 'Electronics': '🔌', 'Furniture': '🛋️', 'Cars': '🚗', 'Houses': '🏠', 'Wigs': '💇', 'Beverages': '🥤', 'Groceries': '🛒', 'Cosmetics': '💄', 'Jewelries': '💍', 'Accessories': '👜', 'Other': '📦' };
         return map[cat] || '🛍️';
     }
+
 const CATEGORY_ICONS = {
         'Electronics': '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/></svg>',
         'Clothes': '<svg viewBox="0 0 24 24"><path d="M9 4l3-1 3 1 3 3-2 2v11H8V9L6 7l3-3z"/></svg>',
         'Furniture': '<svg viewBox="0 0 24 24"><path d="M4 13v6M20 13v6M4 13a2 2 0 012-2h12a2 2 0 012 2M4 9V7a2 2 0 012-2h12a2 2 0 012 2v2"/></svg>',
         'Cars': '<svg viewBox="0 0 24 24"><path d="M3 13l1.5-4.5A2 2 0 016.4 7h11.2a2 2 0 011.9 1.5L21 13"/><rect x="3" y="13" width="18" height="5" rx="1.5"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/></svg>',
         'Houses': '<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg>',
+        'Wigs': '<svg viewBox="0 0 24 24"><path d="M4 18c0-6.5 3.5-11 8-11s8 4.5 8 11"/><path d="M4 18v2M20 18v2"/><path d="M8 14c1-1 2-1 4-1s3 0 4 1"/></svg>',
+        'Beverages': '<svg viewBox="0 0 24 24"><path d="M6 2h12l-1.4 16.5a2 2 0 01-2 1.5H9.4a2 2 0 01-2-1.5L6 2z"/><path d="M6.6 8h10.8"/></svg>',
+        'Groceries': '<svg viewBox="0 0 24 24"><path d="M4 8h16l-1.5 11.2a2 2 0 01-2 1.8H7.5a2 2 0 01-2-1.8L4 8z"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>',
+        'Cosmetics': '<svg viewBox="0 0 24 24"><rect x="9" y="10" width="6" height="10" rx="1"/><path d="M10 10V7a2 2 0 014 0v3"/><path d="M9 7l1-3h4l1 3"/></svg>',
+        'Jewelries': '<svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="5"/><path d="M9 10l3-7 3 7"/></svg>',
+        'Accessories': '<svg viewBox="0 0 24 24"><circle cx="7" cy="13" r="3"/><circle cx="17" cy="13" r="3"/><path d="M10 13h4M4 13l1-4h2M20 13l-1-4h-2"/></svg>',
         'Other': '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
     };
-    const CATEGORY_LABELS = { 'Electronics': 'Electronics', 'Clothes': 'Fashion', 'Furniture': 'Home', 'Cars': 'Cars', 'Houses': 'Houses', 'Other': 'More' };
+    const CATEGORY_LABELS = { 'Electronics': 'Electronics', 'Clothes': 'Fashion', 'Furniture': 'Home', 'Cars': 'Cars', 'Houses': 'Houses', 'Wigs': 'Wigs', 'Beverages': 'Beverages', 'Groceries': 'Groceries', 'Cosmetics': 'Cosmetics', 'Jewelries': 'Jewelry', 'Accessories': 'Accessories', 'Other': 'More' };
 
     function renderCategoryIconRow() {
         const row = document.getElementById('categoryIconRow');
         if (!row) return;
-       const cats = ['Electronics', 'Clothes', 'Furniture', 'Cars', 'Houses', 'Other'];
-        row.innerHTML = cats.map(cat => `
+       const cats = ['Electronics', 'Clothes', 'Furniture', 'Cars', 'Houses', 'Wigs', 'Beverages', 'Groceries', 'Cosmetics', 'Jewelries', 'Accessories', 'Other'];        row.innerHTML = cats.map(cat => `
             <button class="category-icon-item" onclick="filterToCategoryFromBanner(event, '${cat}')">
                 <div class="category-icon-circle">${CATEGORY_ICONS[cat]}</div>
                 <span>${CATEGORY_LABELS[cat]}</span>
@@ -5053,6 +5115,7 @@ function saveBuyerName() {
     localStorage.setItem('kayaBuyerName', name);
     document.getElementById('buyerNameModal').style.display = 'none';
     showGreetingToast(name, '🛍️');
+    listenForBuyerMessages();
     const buyerLogoutLink = document.getElementById('buyerLogoutLink');
     if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
 
@@ -5144,10 +5207,12 @@ function openChatWindow(item) {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
 
-    db.collection('chats').doc(currentChatId).set({
+   db.collection('chats').doc(currentChatId).set({
         itemTitle: item.title,
         sellerId: item.postedBy,
+        sellerName: item.sellerName || null,
         buyerName: buyerName,
+        buyerId: localStorage.getItem('kayaBuyerId') || null,
         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 }
@@ -5181,15 +5246,23 @@ function closeChatWindow() {
     document.getElementById('chatModal').style.display = 'none';
 }
 let sellerChatListenerUnsub = null;
+let buyerChatListenerUnsub = null;
 let unreadChatIds = new Set();
 
 function updateMessagesBadge() {
-    const badge = document.getElementById('messagesCount');
+    updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById('announcementsDot');
     if (!badge) return;
-    const count = unreadChatIds.size;
-    if (count > 0) {
+    const read = JSON.parse(localStorage.getItem('kayaAnnouncementsRead') || '[]');
+    const relevant = announcementsData.filter(isAnnouncementRelevant);
+    const unreadAnnouncementsCount = relevant.filter(a => !read.includes(a.id)).length;
+    const total = unreadChatIds.size + unreadAnnouncementsCount;
+    if (total > 0) {
         badge.style.display = 'flex';
-        badge.innerText = count;
+        badge.innerText = total > 9 ? '9+' : String(total);
     } else {
         badge.style.display = 'none';
     }
@@ -5233,6 +5306,29 @@ function listenForSellerMessages() {
                     unreadChatIds.add(change.doc.id);
                     updateMessagesBadge();
                     showChatToast('New message from ' + (chat.buyerName || 'a buyer') + ' about ' + chat.itemTitle, change.doc.id, chat.itemTitle);
+                }
+            });
+            isFirstSnapshot = false;
+        });
+}
+
+function listenForBuyerMessages() {
+    const currentBuyerId = localStorage.getItem('kayaBuyerId');
+    if (!currentBuyerId) return;
+    if (buyerChatListenerUnsub) buyerChatListenerUnsub();
+
+    let isFirstSnapshot = true;
+
+    buyerChatListenerUnsub = db.collection('chats').where('buyerId', '==', currentBuyerId)
+        .onSnapshot((snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                const chat = change.data();
+                if (!chat.lastSender || isFirstSnapshot) return;
+
+                if (chat.lastSender === 'seller' && change.doc.id !== currentChatId) {
+                    unreadChatIds.add(change.doc.id);
+                    updateMessagesBadge();
+                    showChatToast('New reply from ' + (chat.sellerName || 'the seller') + ' about ' + chat.itemTitle, change.doc.id, chat.itemTitle);
                 }
             });
             isFirstSnapshot = false;
@@ -5324,38 +5420,89 @@ function showAnnouncementToast(text) {
 }
 
 function updateAnnouncementsDot() {
-    const read = JSON.parse(localStorage.getItem('kayaAnnouncementsRead') || '[]');
-    const relevant = announcementsData.filter(isAnnouncementRelevant);
-    const hasUnread = relevant.some(a => !read.includes(a.id));
-    const dot = document.getElementById('announcementsDot');
-    if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+    updateNotificationBadge();
 }
-
 function openAnnouncementsPanel() {
     document.getElementById('tabsMenu').style.display = 'none';
-    const list = document.getElementById('announcementsPanelList');
-    const relevant = announcementsData.filter(isAnnouncementRelevant);
+    document.getElementById('announcementsPanelModal').style.display = 'flex';
+    renderNotificationsPanel();
+}
 
-    if (relevant.length === 0) {
-        list.innerHTML = '<p style="color:#999;">No notifications yet.</p>';
-    } else {
-        list.innerHTML = relevant.map(a => {
-            const dateStr = a.createdAt ? a.createdAt.toDate().toLocaleString() : '';
-            return `
-                <div class="announcement-item">
-                    <div class="announcement-item-text">${a.message}</div>
-                    <div class="announcement-item-time">${dateStr}</div>
-                </div>
-            `;
-        }).join('');
+function renderNotificationsPanel() {
+    const list = document.getElementById('announcementsPanelList');
+    list.innerHTML = '<p style="color:#999;">Loading...</p>';
+
+    const currentBuyerId = localStorage.getItem('kayaBuyerId');
+    let chatsQuery = null;
+    if (sellerId) {
+        chatsQuery = db.collection('chats').where('sellerId', '==', sellerId);
+    } else if (currentBuyerId) {
+        chatsQuery = db.collection('chats').where('buyerId', '==', currentBuyerId);
     }
 
-    const read = JSON.parse(localStorage.getItem('kayaAnnouncementsRead') || '[]');
-    const newRead = Array.from(new Set(read.concat(relevant.map(a => a.id))));
-    localStorage.setItem('kayaAnnouncementsRead', JSON.stringify(newRead));
-    updateAnnouncementsDot();
+    const chatsPromise = chatsQuery ? chatsQuery.get() : Promise.resolve(null);
 
-    document.getElementById('announcementsPanelModal').style.display = 'flex';
+    chatsPromise.then((snapshot) => {
+        let chatsHtml = '';
+        if (snapshot && !snapshot.empty) {
+            let chats = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                data.chatId = doc.id;
+                chats.push(data);
+            });
+            chats.sort((a, b) => {
+                const aTime = a.lastMessageAt ? a.lastMessageAt.toMillis() : 0;
+                const bTime = b.lastMessageAt ? b.lastMessageAt.toMillis() : 0;
+                return bTime - aTime;
+            });
+
+            chatsHtml += '<div style="font-size:11px; font-weight:700; color:#999; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px;">Messages</div>';
+            chatsHtml += chats.map(chat => {
+                const isUnread = unreadChatIds.has(chat.chatId);
+                const otherPartyName = sellerId ? (chat.buyerName || 'Buyer') : (chat.sellerName || 'Seller');
+                return `
+                    <div onclick="openSellerChatView('${chat.chatId}', '${(chat.itemTitle || '').replace(/'/g, "\\'")}')" class="announcement-item" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="${isUnread ? 'font-weight:800;' : ''}">${otherPartyName}</strong>
+                            <div style="font-size:13px; color:#777;">Re: ${chat.itemTitle || ''}</div>
+                        </div>
+                        ${isUnread ? '<span style="width:9px; height:9px; border-radius:50%; background:#e74c3c; flex-shrink:0;"></span>' : ''}
+                    </div>
+                `;
+            }).join('');
+            chatsHtml += '<div style="height:1px; background:#eee; margin:12px 0;"></div>';
+        }
+
+        const relevant = announcementsData.filter(isAnnouncementRelevant);
+        let announcementsHtml = '<div style="font-size:11px; font-weight:700; color:#999; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px;">Announcements</div>';
+        if (relevant.length === 0) {
+            announcementsHtml += '<p style="color:#999;">No announcements yet.</p>';
+        } else {
+            announcementsHtml += relevant.map(a => {
+                const dateStr = a.createdAt ? a.createdAt.toDate().toLocaleString() : '';
+                return `
+                    <div class="announcement-item">
+                        <div class="announcement-item-text">${a.message}</div>
+                        <div class="announcement-item-time">${dateStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (!chatsHtml && relevant.length === 0) {
+            list.innerHTML = '<p style="color:#999;">No notifications yet.</p>';
+        } else {
+            list.innerHTML = chatsHtml + announcementsHtml;
+        }
+
+        const read = JSON.parse(localStorage.getItem('kayaAnnouncementsRead') || '[]');
+        const newRead = Array.from(new Set(read.concat(relevant.map(a => a.id))));
+        localStorage.setItem('kayaAnnouncementsRead', JSON.stringify(newRead));
+        updateNotificationBadge();
+    }).catch((err) => {
+        list.innerHTML = '<p style="color:red;">Error loading notifications: ' + err.message + '</p>';
+    });
 }
 
 function closeAnnouncementsPanel() {
@@ -5592,8 +5739,18 @@ function quickEditItem(index) {
         openCart();
     }
 
- document.getElementById('itemImage').addEventListener('change', function(e) {
+document.getElementById('itemImage').addEventListener('change', function(e) {
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
     const files = Array.from(e.target.files);
+    const oversized = files.filter(f => f.size > MAX_SIZE);
+
+    if (oversized.length > 0) {
+        alert(`These photo(s) are over 5MB and won't be accepted:\n\n${oversized.map(f => f.name).join('\n')}\n\nPlease choose smaller photos.`);
+        e.target.value = '';
+        document.getElementById('imagePreviewRow').innerHTML = '';
+        return;
+    }
+
     const previewRow = document.getElementById('imagePreviewRow');
     previewRow.innerHTML = '';
     files.forEach(file => {
@@ -5607,16 +5764,6 @@ function quickEditItem(index) {
         reader.readAsDataURL(file);
     });
 });
-
-function fileToDataUrl(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
   function addItem() {
         const title = document.getElementById('itemTitle').value.trim();
         const price = document.getElementById('itemPrice').value;
@@ -5639,7 +5786,15 @@ function fileToDataUrl(file) {
         if (!description) { alert("Please add a description so buyers know what they're getting."); return; }
         if (!sellerName) { alert("Please enter your name."); return; }
         if (!sellerPhoneRaw) { alert("Please enter your WhatsApp number."); return; }
-        if (files.length === 0) { alert("Please add at least one photo."); return; }
+if (files.length === 0) { alert("Please add at least one photo."); return; }
+        const oversizedFiles = files.filter(f => f.size > 5 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            alert("Some photos are over 5MB: " + oversizedFiles.map(f => f.name).join(', ') + ". Please remove or replace them.");
+            return;
+        }
+        const postBtn = document.querySelector('#addModal .add-btn');
+        postBtn.disabled = true;
+        postBtn.innerText = "Posting...";
 
         const sellerPhone = formatPhone(sellerPhoneRaw);
         const postedBy = isOwner ? "OWNER" : sellerId;
@@ -5657,8 +5812,11 @@ function fileToDataUrl(file) {
                 resetForm();
                 alert("Item posted!" + (isOwner ? "" : " It'll appear once approved."));
             });
-        }).catch((err) => {
+      }).catch((err) => {
             alert("Failed to post item: " + err.message);
+        }).finally(() => {
+            postBtn.disabled = false;
+            postBtn.innerText = "Post Item";
         });
     }
 function resetForm() {
@@ -5826,12 +5984,12 @@ function anyModalOpen() {
         }
     }
 
-    function handleNavOrders() {
+   function handleNavOrders() {
         setActiveNav('navOrders');
         if (isOwner) {
             openClosedDealsPanel();
         } else if (sellerId && sellerStatus === 'approved') {
-            openMessagesPanel();
+            openAnnouncementsPanel();
         } else {
             openCart();
         }
@@ -5876,7 +6034,7 @@ loadItemsFromFirestore();
     updateCartCount();
     checkSellerStatus()
     listenForPendingSellers();
- updateSellerLinkText();
+    listenForBuyerMessages(); updateSellerLinkText();
     renderAvatarPicker();
     renderThemeSwatches();
     startIntroSplash();
