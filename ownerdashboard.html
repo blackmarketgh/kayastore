@@ -79,6 +79,17 @@
             gap: 4px;
             color: #555;
         }
+.filter-bar label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #555;
+}
+.checkbox-label {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 5px !important;
+}
         .filter-bar input[type="date"] {
             padding: 6px 8px;
             border: 1px solid #ddd;
@@ -100,6 +111,12 @@
         #clearFilterBtn {
             background: #999;
         }
+#clearFilterBtn {
+    background: #999;
+}
+#exportBtn {
+    background: #2b7de9;
+}
         .filter-bar button:hover {
             opacity: 0.9;
         }
@@ -124,13 +141,13 @@
 </head>
 <body>
     <div class="container">
-     <h1>Owner Dashboard</h1>
-        <div class="filter-bar">
+<h1>Owner Dashboard</h1>
+        <div class="stat-grid" id="statGrid"></div>        <div class="filter-bar">
             <label>From: <input type="date" id="dateFrom"></label>
             <label>To: <input type="date" id="dateTo"></label>
             <button id="applyFilterBtn" onclick="applyDateFilter()">Apply</button>
-            <button id="clearFilterBtn" onclick="clearDateFilter()">Clear</button>
-        </div>
+<button id="clearFilterBtn" onclick="clearDateFilter()">Clear</button>
+            <button id="exportBtn" onclick="exportSalesCSV()">Export CSV</button>        </div>
         <div class="filter-bar">
             <label class="checkbox-label"><input type="checkbox" id="showSales" checked onchange="renderActivityFeed()"> 💰 Sales</label>
             <label class="checkbox-label"><input type="checkbox" id="showSellers" checked onchange="renderActivityFeed()"> 🧑‍💼 New Sellers</label>
