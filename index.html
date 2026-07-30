@@ -4082,11 +4082,11 @@ const filtered = items.filter(item => {
         });
     }
 
-    function buildItemCardElement(item) {
+   function buildItemCardElement(item) {
         const card = document.createElement('div');
         card.className = 'item-card';
         const idx = items.indexOf(item);
-        const canManageThis = isOwner || (item.postedBy && item.postedBy === sellerId);
+        const canManageThis = isOwner;
         const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
         const isSoldOut = stockNum !== null && stockNum <= 0;
         let stockLineHtml = '';
@@ -4604,7 +4604,7 @@ function setGalleryIndex(i) {
                 : '';
         }
 
-   const canManage = isOwner || (item.postedBy && item.postedBy === sellerId);
+   const canManage = isOwner;
 document.getElementById('ownerControls').style.display = canManage ? 'flex' : 'none';
 document.getElementById('markSoldBtn').style.display = isOwner ? 'block' : 'none';
 const promoteBtn = document.getElementById('promoteBtn');
@@ -5618,9 +5618,8 @@ function setRating(stars) {
     }
 function quickEditItem(index) {
         const item = items[index];
-        const canManageThis = isOwner || (item.postedBy && item.postedBy === sellerId);
-        if (!canManageThis) {
-            alert("You can only edit items you posted yourself.");
+        if (!isOwner) {
+            alert("Please edit your listings from Seller Analytics.");
             return;
         }
         const newTitle = prompt("Item name:", item.title);
@@ -5636,11 +5635,10 @@ function quickEditItem(index) {
         });
     }
 
-    function quickDeleteItem(index) {
+   function quickDeleteItem(index) {
         const item = items[index];
-        const canManageThis = isOwner || (item.postedBy && item.postedBy === sellerId);
-        if (!canManageThis) {
-            alert("You can only delete items you posted yourself.");
+        if (!isOwner) {
+            alert("Please delete your listings from Seller Analytics.");
             return;
         }
         if (confirm("Are you sure you want to delete \"" + item.title + "\"?")) {
