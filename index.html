@@ -2958,7 +2958,6 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
 </div>
 
 <script>
-let isOwner = localStorage.getItem('kayaOwner') === 'true';
    // Path or full URL to the mannequin .glb — change this one line for whichever hosting option you use.
     const MANNEQUIN_GLB_URL = "mannequin.glb";
 
@@ -3019,6 +3018,7 @@ let isOwner = localStorage.getItem('kayaOwner') === 'true';
         }, 500);
     }
 const OWNER_PASSWORD_HASH = "98c3607e9532b8e48a3576e0574d2259b866d720afe94d956b3e9b77d4eb0cb5";
+    let isOwner = localStorage.getItem('kayaOwner') === 'true';
     let logoClickCount = 0;
     let logoClickTimer = null;
 
@@ -3030,24 +3030,26 @@ const OWNER_PASSWORD_HASH = "98c3607e9532b8e48a3576e0574d2259b866d720afe94d956b3
     if (logoClickCount === 3) {
         logoClickCount = 0;
 
-        if (isOwner) {
+       if (isOwner) {
             if (confirm("Log out of owner mode?")) {
                 isOwner = false;
                 localStorage.setItem('kayaOwner', 'false');
                 alert("Logged out of owner mode.");
-                renderItems();
-                toggleOwnerControls();
+                location.reload();
             }
         } else {
             const pass = prompt("Enter owner password:");
             if (pass === null) return;
             const hashedInput = await hashPassword(pass);
-            if (hashedInput === OWNER_PASSWORD_HASH) {
-                isOwner = true;
-                localStorage.setItem('kayaOwner', 'true');
-                alert("Owner mode unlocked!");
-                window.location.href = 'analytics.html';
-            } else {
+          if (hashedInput === OWNER_PASSWORD_HASH) {
+    isOwner = true;
+    localStorage.setItem('kayaOwner', 'true');
+    localStorage.removeItem('kayaSellerId');
+    localStorage.removeItem('kayaSellerLocation');
+    localStorage.removeItem('kayaSellerName');
+    alert("Owner mode unlocked!");
+    window.location.href = 'ownerdashboard.html';
+} else {
                 alert("Incorrect password.");
             }
         }
@@ -4064,9 +4066,10 @@ const filtered = items.filter(item => {
         matchesCategory = category === "All" || item.category === category;
     }
     const matchesLocation = category === "MyListings" ? true : (locationFilterValue === "All" || item.sellerLocation === locationFilterValue);
-    return matchesSearch && matchesCategory && matchesLocation;
+    const isMyOwnItem = item.postedBy && item.postedBy === sellerId;
+    const matchesStatus = category === "MyListings" || isOwner || isMyOwnItem || item.status === 'approved';
+    return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
 });
-
         if (filtered.length === 0) {
             grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
             return;
