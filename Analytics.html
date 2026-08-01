@@ -1,743 +1,1072 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>KayaMart Seller Dashboard</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
+        authDomain: "kaya-store-ba45c.firebaseapp.com",
+        projectId: "kaya-store-ba45c",
+        storageBucket: "kaya-store-ba45c.firebasestorage.app",
+        messagingSenderId: "540474076335",
+        appId: "1:540474076335:web:315c5813e764c27417785a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
+    <title>Owner Dashboard - KayaMart</title>
+    <style>
+.section-title-row {
+            display: flex;
+            align-items: center;
+            margin: 24px 0 12px;
+        }
+        .section-title-row h2 {
+            font-size: 17px;
+            margin: 0;
+        }
+        .pending-count-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 9px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+            display: none;
+        }
+        .seller-req-item {
+            padding: 14px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .seller-req-item:last-child { border-bottom: none; }
+        .seller-req-name { font-weight: 700; font-size: 14px; }
+        .seller-req-meta { font-size: 12px; color: #777; margin-top: 2px; }
+        .seller-req-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .seller-req-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12.5px;
+            cursor: pointer;
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+       .seller-req-approve { background: #27ae60; }
+        .seller-req-decline { background: #e74c3c; }
+        .dash-tabs {
+            display: flex;
+            gap: 6px;
+            background: #f0f0f0;
+            padding: 4px;
+            border-radius: 12px;
+            margin: 18px 0;
+        }
+        .dash-tab-btn {
+            flex: 1;
+            padding: 10px 6px;
+            border: none;
+            border-radius: 9px;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: #777;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .dash-tab-btn.active {
+            background: #1a5c3a;
+            color: white;
+        }
+        .dash-tab-panel {
+            display: none;
+        }
+        .dash-tab-panel.active {
+            display: block;
+        }
+       .export-note {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 12px;
+        }
+        .items-subtabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .items-subtab-btn {
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #777;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .items-subtab-btn.active {
+            background: #1a5c3a;
+            color: white;
+            border-color: #1a5c3a;
+        }
+        .items-subpanel { display: none; }
+        .items-subpanel.active { display: block; }
+        .item-review-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .item-review-row:last-child { border-bottom: none; }
+        .item-review-thumb {
+            width: 52px;
+            height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #eee;
+            flex-shrink: 0;
+        }
+        .item-review-info { flex: 1; min-width: 0; }
+        .item-review-title { font-weight: 700; font-size: 13.5px; }
+        .item-review-meta { font-size: 11.5px; color: #999; margin-top: 2px; }
+        .item-review-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .item-review-actions button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .item-btn-approve { background: #27ae60; }
+        .item-btn-decline { background: #e74c3c; }
+        .item-btn-edit { background: #2980b9; }
+        .item-btn-delete { background: #e74c3c; }
+        .item-status-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 3px;
+        }
+      .item-status-tag.approved { background: #e8f8ef; color: #27ae60; }
+.item-status-tag.pending { background: #fff4ea; color: #e67e22; }
 
-<style>
-:root {
-    --accent: #1a5c3a;
-    --accent-dark: #134529;
-    --accent-orange: #e67e22;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-}
-
-body {
-    background: #f5f5f5;
-    color: #222;
-    padding-bottom: 40px;
-}
-
-header {
-    background: white;
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 3px 10px rgba(0,0,0,.08);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: 700;
-}
-.logo span:first-child { color: var(--accent); }
-.logo span:last-child { color: var(--accent-orange); }
-
-.backBtn {
-    background: var(--accent);
-    color: white;
-    padding: 10px 18px;
-    text-decoration: none;
+.seller-subtabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.seller-subtab-btn {
+    padding: 7px 14px;
     border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: transform .15s ease, background-color .15s ease;
-}
-.backBtn:hover { background: var(--accent-dark); transform: translateY(-1px); }
-
-.wrapper {
-    max-width: 1200px;
-    margin: auto;
-    padding: 24px 20px;
-}
-
-.profile {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-bottom: 26px;
+    border: 1px solid #ddd;
     background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 5px 20px rgba(0,0,0,.06);
-}
-.profile img {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: #eee;
-    flex-shrink: 0;
-}
-.profile h2 { font-size: 19px; margin-bottom: 3px; }
-.profile p { font-size: 13px; color: #888; }
-.pending-banner {
-    margin-left: auto;
-    background: #fff4ea;
-    color: #b85c0f;
-    padding: 8px 14px;
-    border-radius: 20px;
+    color: #777;
     font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', Arial, sans-serif;
+}
+.seller-subtab-btn.active {
+    background: #1a5c3a;
+    color: white;
+    border-color: #1a5c3a;
+}
+.seller-subpanel { display: none; }
+.seller-subpanel.active { display: block; }
+.seller-status-tag {
+    font-size: 10px;
     font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 3px;
 }
+.seller-status-tag.approved { background: #e8f8ef; color: #27ae60; }
+.seller-status-tag.pending { background: #fff4ea; color: #e67e22; }
+.seller-status-tag.declined { background: #fdecea; color: #e74c3c; }
+.seller-status-tag.warned { background: #fff4ea; color: #e67e22; }
+.seller-status-tag.suspended { background: #fdecea; color: #e74c3c; }
+.seller-status-tag.banned { background: #2c2c2c; color: white; }
 
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 30px;
-}
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 5px 20px rgba(0,0,0,.06);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.card .card-icon { font-size: 20px; }
-.card h3 { font-size: 12.5px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
-.card h1 { font-size: 28px; color: var(--accent); font-weight: 700; }
-
-.section {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 5px 20px rgba(0,0,0,.06);
-    padding: 22px;
-    margin-bottom: 24px;
-}
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-}
-.section-header h2 { font-size: 17px; }
-.section-sub { font-size: 12.5px; color: #999; }
-
-/* ---- Bar chart ---- */
-.chart-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    height: 180px;
-    padding: 10px 4px 0;
-}
-.chart-bar-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 100%;
-    justify-content: flex-end;
-    gap: 6px;
-}
-.chart-bar {
-    width: 100%;
-    max-width: 42px;
-    background: linear-gradient(180deg, var(--accent-orange), #c0630f);
-    border-radius: 8px 8px 0 0;
-    transition: height .5s ease;
-    min-height: 4px;
-}
-.chart-label { font-size: 11px; color: #999; text-align: center; }
-.chart-value { font-size: 11px; font-weight: 700; color: var(--accent); }
-.chart-empty { text-align: center; color: #999; font-size: 13px; padding: 30px 0; }
-
-/* ---- Donut ---- */
-.donut-row {
-    display: flex;
-    align-items: center;
-    gap: 26px;
-    flex-wrap: wrap;
-}
-.donut {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    position: relative;
-}
-.donut::after {
-    content: "";
-    position: absolute;
-    inset: 18px;
-    background: white;
-    border-radius: 50%;
-}
-.donut-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
+.item-btn-warn { background: #e67e22; }
+.item-btn-suspend { background: #e74c3c; }
+.item-btn-ban { background: #2c2c2c; }
+.item-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--accent);
-    z-index: 2;
+    padding: 20px;
 }
-.donut-legend { display: flex; flex-direction: column; gap: 10px; }
-.donut-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-.donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
-/* ---- Tables ---- */
-table {
+.item-modal-overlay.active { display: flex; }
+.item-modal {
+    background: white;
+    border-radius: 14px;
+    max-width: 480px;
     width: 100%;
-    border-collapse: collapse;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
 }
-th {
-    background: var(--accent);
-    color: white;
-    padding: 12px 10px;
-    font-size: 12.5px;
-    text-align: left;
-    white-space: nowrap;
+.item-modal-images {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 14px;
 }
-th:first-child { border-radius: 10px 0 0 10px; }
-th:last-child { border-radius: 0 10px 10px 0; }
-td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #eee;
-    font-size: 13.5px;
-    vertical-align: middle;
-}
-tr:last-child td { border-bottom: none; }
-.table-wrap { overflow-x: auto; }
-
-.prod-thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
+.item-modal-images img {
+    width: 100px;
+    height: 100px;
     object-fit: cover;
-    background: #eee;
+    border-radius: 8px;
     flex-shrink: 0;
 }
-.prod-cell { display: flex; align-items: center; gap: 10px; }
-.prod-title { font-weight: 600; }
-
-.badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-}
-.badge.in-stock { background: #e8f8ef; color: #27ae60; }
-.badge.low-stock { background: #fff4ea; color: #e67e22; }
-.badge.out-stock { background: #fdecea; color: #e74c3c; }
-.badge.approved { background: #e8f8ef; color: #27ae60; }
-.badge.pending { background: #fff4ea; color: #e67e22; }
-
-.row-actions { display: flex; gap: 6px; }
-.icon-btn {
+.item-modal h2 { margin: 0 0 4px; font-size: 18px; }
+.item-modal .item-modal-price { color: #1a5c3a; font-weight: 700; font-size: 16px; margin-bottom: 12px; }
+.item-modal .item-modal-desc { font-size: 13.5px; color: #555; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; }
+.item-modal .item-modal-seller { font-size: 12.5px; color: #777; border-top: 1px solid #eee; padding-top: 12px; margin-bottom: 16px; }
+.item-modal .item-modal-actions { display: flex; gap: 8px; }
+.item-modal .item-modal-actions button {
+    flex: 1;
+    padding: 10px;
     border: none;
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 11.5px;
-    cursor: pointer;
+    border-radius: 8px;
     font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
     color: white;
+    font-family: 'Poppins', Arial, sans-serif;
 }
-.icon-btn.edit { background: #2980b9; }
-.icon-btn.delete { background: #e74c3c; }
-
-.empty-row td { text-align: center; color: #999; padding: 30px 0; }
-
-@media (max-width: 600px) {
-    .profile { flex-wrap: wrap; }
-    .pending-banner { margin-left: 0; }
-    th, td { font-size: 12px; padding: 10px 6px; }
+.item-modal-close {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
 }
-</style>
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background-color: white;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1a5c3a;
+        }
+       .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: #f8f8f8;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-box .num {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1a5c3a;
+        }
+        .stat-box .label {
+            font-size: 12px;
+            color: #777;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f8f8;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        .filter-bar label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: #555;
+        }
+        .filter-bar input[type="date"] {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .filter-bar button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #1a5c3a;
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            align-self: flex-end;
+        }
+        #clearFilterBtn {
+            background: #999;
+        }
+        .filter-bar button:hover {
+            opacity: 0.9;
+        }
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .activity-icon {
+            font-size: 20px;
+        }
+        .activity-text {
+            font-size: 14px;
+        }
+       .activity-time {
+            font-size: 11px;
+            color: #999;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 700px;
+            margin-bottom: 12px;
+        }
+        .back-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a5c3a;
+            text-decoration: none;
+        }
+       .logout-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e74c3c;
+            text-decoration: none;
+            cursor: pointer;
+            background: #fdecea;
+            border: 1px solid rgba(231,76,60,0.25);
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .logout-link:hover {
+            background: #e74c3c;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(231,76,60,0.3);
+        }
+        .logout-link:active {
+            transform: scale(0.96);
+        }
+        .export-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #2980b9;
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
-
 <body>
+   <div class="top-bar" style="justify-content: flex-end;">
+<a href="#" class="logout-link" onclick="ownerLogout(); return false;">Log out</a>
+    </div>
+    <div class="container">
+     <h1>Owner Dashboard</h1>
+      <div class="stat-grid" id="statGrid"></div>
 
-<header>
-    <div class="logo"><span>Kaya</span><span>Mart</span></div>
-    <a href="index.html" class="backBtn">← Market</a>
-</header>
-
-<div class="wrapper">
-
-    <div class="profile">
-        <img id="sellerPhoto" src="https://via.placeholder.com/72">
-        <div>
-            <h2 id="sellerName">Loading...</h2>
-            <p id="sellerEmail"></p>
-            <p id="sellerPhone"></p>
+       <div class="dash-tabs">
+            <button class="dash-tab-btn active" id="tabBtn-overview" onclick="switchDashTab('overview')">📊 Overview</button>
+         <button class="dash-tab-btn" id="tabBtn-sellers" onclick="switchDashTab('sellers')">🧑‍💼 Sellers <span class="pending-count-badge" id="pendingSellerCount">0</span></button>
+            <button class="dash-tab-btn" id="tabBtn-buyers" onclick="switchDashTab('buyers')">🛍️ Buyers</button>
+            <button class="dash-tab-btn" id="tabBtn-items" onclick="switchDashTab('items')">🛒 Items <span class="pending-count-badge" id="pendingItemCount">0</span></button>
+            <button class="dash-tab-btn" id="tabBtn-export" onclick="switchDashTab('export')">📁 Export</button>
         </div>
-        <div class="pending-banner" id="pendingBanner" style="display:none;">⏳ Approval Pending</div>
+
+        <div class="dash-tab-panel active" id="tab-overview">
+            <div class="filter-bar">
+                <label>From: <input type="date" id="dateFrom"></label>
+                <label>To: <input type="date" id="dateTo"></label>
+                <button id="applyFilterBtn" onclick="applyDateFilter()">Apply</button>
+                <button id="clearFilterBtn" onclick="clearDateFilter()">Clear</button>
+            </div>
+            <div class="filter-bar">
+                <label class="checkbox-label"><input type="checkbox" id="showSales" checked onchange="renderActivityFeed()"> 💰 Sales</label>
+                <label class="checkbox-label"><input type="checkbox" id="showSellers" checked onchange="renderActivityFeed()"> 🧑‍💼 New Sellers</label>
+                <label class="checkbox-label"><input type="checkbox" id="showChats" checked onchange="renderActivityFeed()"> 💬 Messages</label>
+            </div>
+            <div id="activityFeed">Loading...</div>
+        </div>
+
+      <div class="dash-tab-panel" id="tab-buyers">
+            <div id="allBuyersList">Loading...</div>
+        </div>
+
+        <div class="dash-tab-panel" id="tab-sellers">
+            <div class="seller-subtabs">
+                <button class="seller-subtab-btn active" id="sellersSubtab-pending" onclick="switchSellersSubtab('pending')">⏳ Pending</button>
+                <button class="seller-subtab-btn" id="sellersSubtab-all" onclick="switchSellersSubtab('all')">👥 All Sellers</button>
+            </div>
+            <div class="seller-subpanel active" id="sellersPanel-pending">
+                <div id="pendingSellersList">Loading...</div>
+            </div>
+            <div class="seller-subpanel" id="sellersPanel-all">
+                <div id="allSellersList">Loading...</div>
+            </div>
+        </div>
+
+     <div class="dash-tab-panel" id="tab-items">
+            <div class="items-subtabs">
+                <button class="items-subtab-btn active" id="itemsSubtab-pending" onclick="switchItemsSubtab('pending')">⏳ Pending Review</button>
+                <button class="items-subtab-btn" id="itemsSubtab-all" onclick="switchItemsSubtab('all')">📋 All Items</button>
+            </div>
+            <div class="items-subpanel active" id="itemsPanel-pending">
+                <div id="pendingItemsList">Loading...</div>
+            </div>
+            <div class="items-subpanel" id="itemsPanel-all">
+                <div id="allItemsList">Loading...</div>
+            </div>
+        </div>
+
+        <div class="dash-tab-panel" id="tab-export">
+            <p class="export-note">Exports use the date range set in the Overview tab (leave blank to export everything).</p>
+            <button class="export-btn" onclick="exportSalesCSV()">⬇️ Export Sales CSV</button>
+        </div>
+       </div>
     </div>
 
-    <div class="cards">
-        <div class="card">
-            <span class="card-icon">📦</span>
-            <h3>Total Products</h3>
-            <h1 id="totalProducts">0</h1>
-        </div>
-        <div class="card">
-            <span class="card-icon">💰</span>
-            <h3>Total Sales</h3>
-            <h1 id="totalSales">GHS 0</h1>
-        </div>
-        <div class="card">
-            <span class="card-icon">🏦</span>
-            <h3>Commission Earned</h3>
-            <h1 id="commission">GHS 0</h1>
-        </div>
-        <div class="card">
-            <span class="card-icon">⭐</span>
-            <h3>Average Rating</h3>
-            <h1 id="rating">0 ★</h1>
-        </div>
-        <div class="card">
-            <span class="card-icon">🛍️</span>
-            <h3>Pending Orders</h3>
-            <h1 id="pendingOrdersCount">0</h1>
-        </div>
+    <div class="item-modal-overlay" id="itemModalOverlay" onclick="if(event.target===this) closeItemModal()">
+        <div class="item-modal" id="itemModalContent"></div>
     </div>
 
-    <div class="section">
-        <div class="section-header">
-            <h2>📈 Sales Overview</h2>
-            <span class="section-sub">Last 6 months</span>
-        </div>
-        <div class="chart-row" id="salesChart"></div>
-    </div>
+  <script>
+if (localStorage.getItem('kayaOwner') !== 'true') {
+        document.body.innerHTML = '<div style="padding:40px; text-align:center;"><h2>Access Denied</h2><p>Owner login required.</p></div>';
+    } else {
+        loadDashboard();
+    }
 
-    <div class="section">
-        <div class="section-header">
-            <h2>📊 Stock Overview</h2>
-            <span class="section-sub" id="stockTotalLabel"></span>
-        </div>
-        <div class="donut-row" id="stockDonutRow"></div>
-    </div>
+   function ownerLogout() {
+        if (!confirm("Log out of owner mode?")) return;
+        localStorage.setItem('kayaOwner', 'false');
+        window.location.href = 'index.html';
+    }
 
-    <div class="section">
-        <div class="section-header">
-            <h2>🛒 My Products</h2>
-            <span class="section-sub" id="productsCountLabel"></span>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="productsTable">
-                    <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+  function switchDashTab(tab) {
+        document.querySelectorAll('.dash-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.dash-tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tabBtn-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).classList.add('active');
+    }
 
-    <div class="section">
-        <div class="section-header">
-            <h2>📬 Recent Orders</h2>
-            <span class="section-sub">Orders containing your items</span>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Buyer</th>
-                        <th>Item(s)</th>
-                        <th>Subtotal</th>
-                        <th>Delivery</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTable">
-                    <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    function switchItemsSubtab(sub) {
+        document.querySelectorAll('.items-subtab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.items-subpanel').forEach(p => p.classList.remove('active'));
+        document.getElementById('itemsSubtab-' + sub).classList.add('active');
+        document.getElementById('itemsPanel-' + sub).classList.add('active');
+    }
 
-    <div class="section">
-        <div class="section-header">
-            <h2>✅ Sales History</h2>
-            <span class="section-sub" id="salesOutstandingLabel"></span>
-        </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Commission</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="salesHistoryTable">
-                    <tr class="empty-row"><td colspan="5">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    let allItemsData = [];
 
-</div>
+    function loadAllItems() {
+        db.collection('items').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            allItemsData = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                d.firestoreId = doc.id;
+                allItemsData.push(d);
+            });
+            renderPendingItems();
+            renderAllItems();
+        });
+    }
 
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
-    authDomain: "kaya-store-ba45c.firebaseapp.com",
-    projectId: "kaya-store-ba45c",
-    storageBucket: "kaya-store-ba45c.firebasestorage.app",
-    messagingSenderId: "540474076335",
-    appId: "1:540474076335:web:315c5813e764c27417785a"
-};
+    function itemThumb(item) {
+        return (item.images && item.images[0]) || item.image || 'https://via.placeholder.com/52x52?text=No+Image';
+    }
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+   function renderPendingItems() {
+        const list = document.getElementById('pendingItemsList');
+        const badge = document.getElementById('pendingItemCount');
+        const pending = allItemsData.filter(i => i.status === 'pending');
 
-const sellerId = localStorage.getItem("kayaSellerId");
+        badge.style.display = pending.length > 0 ? 'inline-block' : 'none';
+        badge.innerText = pending.length;
 
-if (!sellerId) {
-    alert("Please log in as a seller first.");
-    window.location.href = "index.html";
-}
-
-let currentItems = [];
-
-loadSeller();
-loadProducts();
-loadSalesHistory();
-loadOrders();
-
-function loadSeller() {
-    db.collection("sellers").doc(sellerId).onSnapshot(doc => {
-        if (!doc.exists) {
-            alert("Seller not found.");
-            window.location.href = "index.html";
+        if (pending.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:13px;">No items awaiting review.</p>';
             return;
         }
 
-        const seller = doc.data();
-
-        document.getElementById("sellerName").innerText = seller.businessName || seller.name || "Seller";
-        document.getElementById("sellerEmail").innerText = seller.email || "";
-        document.getElementById("sellerPhone").innerText = seller.phone || "";
-        document.getElementById("sellerPhoto").src = seller.photo || "https://via.placeholder.com/72";
-        document.getElementById("commission").innerText = "GHS " + (seller.commissionEarned || 0);
-        document.getElementById("totalSales").innerText = "GHS " + (seller.totalSales || 0);
-        document.getElementById("rating").innerText = (seller.avgRating || 0).toFixed(1) + " ★";
-
-        document.getElementById("pendingBanner").style.display = seller.status === "pending" ? "inline-block" : "none";
-    });
-}
-
-function categoryEmoji(cat) {
-    const map = { 'Clothes': '👕', 'Electronics': '🔌', 'Furniture': '🛋️', 'Cars': '🚗', 'Houses': '🏠', 'Wigs': '💇', 'Beverages': '🥤', 'Groceries': '🛒', 'Cosmetics': '💄', 'Jewelries': '💍', 'Accessories': '👜', 'Other': '📦' };
-    return map[cat] || '🛍️';
-}
-
-function loadProducts() {
-    db.collection("items")
-        .where("postedBy", "==", sellerId)
-        .onSnapshot(snapshot => {
-            currentItems = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                data.firestoreId = doc.id;
-                currentItems.push(data);
-            });
-
-            document.getElementById("totalProducts").innerText = currentItems.length;
-            document.getElementById("productsCountLabel").innerText = currentItems.length + (currentItems.length === 1 ? " product" : " products");
-
-            renderProductsTable();
-            renderStockDonut();
-        });
-}
-
-function renderProductsTable() {
-    const table = document.getElementById("productsTable");
-
-    if (currentItems.length === 0) {
-        table.innerHTML = "<tr class='empty-row'><td colspan='5'>No products yet. Post your first item from the Market page!</td></tr>";
-        return;
+        list.innerHTML = pending.map(item => `
+            <div class="item-review-row" style="cursor:pointer;" onclick="openItemModal('${item.firestoreId}')">
+                <img class="item-review-thumb" src="${itemThumb(item)}">
+                <div class="item-review-info">
+                    <div class="item-review-title">${item.title}</div>
+                    <div class="item-review-meta">GHS ${item.price} · ${item.sellerName || 'Unknown seller'} · ${item.sellerLocation || ''}</div>
+                </div>
+                <div class="item-review-actions" onclick="event.stopPropagation()">
+                    <button class="item-btn-approve" onclick="setItemStatus('${item.firestoreId}', 'approved')">Approve</button>
+                    <button class="item-btn-decline" onclick="setItemStatus('${item.firestoreId}', 'declined')">Decline</button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    table.innerHTML = currentItems.map(item => {
-        const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
-        let stockBadge = '<span class="badge in-stock">Unlimited</span>';
-        if (stockNum !== null) {
-            if (stockNum <= 0) stockBadge = '<span class="badge out-stock">Sold Out</span>';
-            else if (stockNum <= 5) stockBadge = `<span class="badge low-stock">${stockNum} left</span>`;
-            else stockBadge = `<span class="badge in-stock">${stockNum} in stock</span>`;
-        }
-        const statusBadge = item.status === 'pending'
-            ? '<span class="badge pending">Pending</span>'
-            : '<span class="badge approved">Approved</span>';
-        const thumb = (item.images && item.images[0]) || item.image || 'https://via.placeholder.com/44x44?text=No+Image';
+    function openItemModal(id) {
+        const item = allItemsData.find(i => i.firestoreId === id);
+        if (!item) return;
 
-        return `
-            <tr>
-                <td>
-                    <div class="prod-cell">
-                        <img class="prod-thumb" src="${thumb}">
-                        <div>
-                            <div class="prod-title">${item.title}</div>
-                            <div style="font-size:11px; color:#999;">${categoryEmoji(item.category)} ${item.category || ''}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>GHS ${item.price}</td>
-                <td>${stockBadge}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    <div class="row-actions">
-                        <button class="icon-btn edit" onclick="editProduct('${item.firestoreId}')">Edit</button>
-                        <button class="icon-btn delete" onclick="deleteProduct('${item.firestoreId}')">Delete</button>
-                    </div>
-                </td>
-            </tr>
+        const images = (item.images && item.images.length) ? item.images : (item.image ? [item.image] : []);
+        const imagesHtml = images.length
+            ? `<div class="item-modal-images">${images.map(src => `<img src="${src}">`).join('')}</div>`
+            : '';
+
+        document.getElementById('itemModalContent').innerHTML = `
+            <button class="item-modal-close" onclick="closeItemModal()">✕</button>
+            ${imagesHtml}
+            <h2>${item.title}</h2>
+            <div class="item-modal-price">GHS ${item.price}</div>
+            <div class="item-modal-desc">${item.description || 'No description provided.'}</div>
+            <div class="item-modal-seller">
+                🧑‍💼 ${item.sellerName || 'Unknown seller'}<br>
+                📍 ${item.sellerLocation || 'Unknown location'}
+            </div>
+            <div class="item-modal-actions">
+                <button class="item-btn-approve" onclick="setItemStatus('${item.firestoreId}', 'approved'); closeItemModal();">Approve</button>
+                <button class="item-btn-decline" onclick="setItemStatus('${item.firestoreId}', 'declined'); closeItemModal();">Decline</button>
+            </div>
         `;
-    }).join('');
-}
-
-function editProduct(firestoreId) {
-    const item = currentItems.find(i => i.firestoreId === firestoreId);
-    if (!item) return;
-
-    const newTitle = prompt("Item name:", item.title);
-    if (newTitle === null) return;
-    const newPrice = prompt("Price (GHS):", item.price);
-    if (newPrice === null) return;
-    const newStock = prompt("Stock quantity:", item.stock ?? '');
-    if (newStock === null) return;
-    const newDescription = prompt("Description:", item.description || "");
-
-    db.collection('items').doc(firestoreId).update({
-        title: newTitle,
-        price: newPrice,
-        stock: newStock,
-        description: newDescription
-    });
-}
-
-function deleteProduct(firestoreId) {
-    const item = currentItems.find(i => i.firestoreId === firestoreId);
-    if (!item) return;
-    if (confirm(`Delete "${item.title}"? This can't be undone.`)) {
-        db.collection('items').doc(firestoreId).delete();
-    }
-}
-
-function renderStockDonut() {
-    const row = document.getElementById("stockDonutRow");
-    const totalLabel = document.getElementById("stockTotalLabel");
-
-    if (currentItems.length === 0) {
-        row.innerHTML = '<p style="color:#999; font-size:13px;">No products to show yet.</p>';
-        totalLabel.innerText = '';
-        return;
+        document.getElementById('itemModalOverlay').classList.add('active');
     }
 
-    let inStock = 0, low = 0, out = 0;
-    currentItems.forEach(item => {
-        const s = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
-        if (s === null || s > 5) inStock++;
-        else if (s > 0) low++;
-        else out++;
-    });
+    function closeItemModal() {
+        document.getElementById('itemModalOverlay').classList.remove('active');
+    }
 
-    const total = currentItems.length;
-    totalLabel.innerText = total + ' total';
+    function openSaleModal(saleId) {
+        const sale = allSalesData.find(s => s.firestoreId === saleId);
+        if (!sale) return;
+        const dateStr = sale.time ? new Date(sale.time).toLocaleString() : 'Unknown';
 
-    const inPct = (inStock / total) * 100;
-    const lowPct = (low / total) * 100;
-    const outPct = (out / total) * 100;
+        document.getElementById('itemModalContent').innerHTML = `
+            <button class="item-modal-close" onclick="closeItemModal()">✕</button>
+            <h2>${sale.title}</h2>
+            <div class="item-modal-price">GHS ${sale.price} · commission GHS ${sale.commission.toFixed(2)}</div>
+            <div class="item-modal-desc">
+                🧑‍💼 Seller: ${sale.sellerName || 'Unknown'}<br>
+                🛍️ Buyer: ${sale.buyerName || 'Unknown'}<br>
+                📅 Sold: ${dateStr}
+            </div>
+            <div class="item-modal-seller">
+                <div style="font-weight:700; margin-bottom:8px;">💬 Conversation</div>
+                <div id="saleChatMessages">Loading...</div>
+            </div>
+        `;
+        document.getElementById('itemModalOverlay').classList.add('active');
 
-    const gradient = `conic-gradient(
-        #27ae60 0% ${inPct}%,
-        #e67e22 ${inPct}% ${inPct + lowPct}%,
-        #e74c3c ${inPct + lowPct}% 100%
-    )`;
-
-    row.innerHTML = `
-        <div class="donut" style="background:${gradient};">
-            <div class="donut-center">${total}</div>
-        </div>
-        <div class="donut-legend">
-            <div class="donut-legend-item"><span class="donut-dot" style="background:#27ae60;"></span> In Stock — ${inStock}</div>
-            <div class="donut-legend-item"><span class="donut-dot" style="background:#e67e22;"></span> Low Stock — ${low}</div>
-            <div class="donut-legend-item"><span class="donut-dot" style="background:#e74c3c;"></span> Sold Out — ${out}</div>
-        </div>
-    `;
-}
-
-function loadSalesHistory() {
-    db.collection("sales")
-        .where("sellerId", "==", sellerId)
-        .onSnapshot(snapshot => {
-            let sales = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                sales.push(data);
+        db.collection('chats')
+            .where('itemTitle', '==', sale.title)
+            .where('buyerName', '==', sale.buyerName)
+            .limit(1)
+            .get()
+            .then(snap => {
+                const box = document.getElementById('saleChatMessages');
+                if (!box) return;
+                if (snap.empty) {
+                    box.innerHTML = '<p style="color:#999; font-size:12.5px;">No conversation found.</p>';
+                    return;
+                }
+                const chat = snap.docs[0].data();
+                const messages = chat.messages || [];
+                if (messages.length === 0) {
+                    box.innerHTML = '<p style="color:#999; font-size:12.5px;">No messages in this conversation.</p>';
+                    return;
+                }
+                box.innerHTML = messages.map(m => `
+                    <div style="margin-bottom:8px; font-size:12.5px;">
+                        <span style="font-weight:700;">${m.sender || 'Unknown'}:</span> ${m.text || ''}
+                    </div>
+                `).join('');
+            })
+            .catch(err => {
+                const box = document.getElementById('saleChatMessages');
+                if (box) box.innerHTML = `<p style="color:#e74c3c; font-size:12.5px;">Failed to load: ${err.message}</p>`;
             });
+    }
 
-            sales.sort((a, b) => {
-                const at = a.soldAt ? a.soldAt.toMillis() : 0;
-                const bt = b.soldAt ? b.soldAt.toMillis() : 0;
+    function renderAllItems() {
+        const list = document.getElementById('allItemsList');
+
+        if (allItemsData.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:13px;">No items posted yet.</p>';
+            return;
+        }
+
+        list.innerHTML = allItemsData.map(item => `
+            <div class="item-review-row">
+                <img class="item-review-thumb" src="${itemThumb(item)}">
+                <div class="item-review-info">
+                    <div class="item-review-title">${item.title}</div>
+                    <div class="item-review-meta">GHS ${item.price} · ${item.sellerName || 'Unknown seller'}</div>
+                    <span class="item-status-tag ${item.status === 'approved' ? 'approved' : 'pending'}">${item.status || 'pending'}</span>
+                </div>
+                <div class="item-review-actions">
+                    <button class="item-btn-edit" onclick="editItemFromDashboard('${item.firestoreId}')">Edit</button>
+                    <button class="item-btn-delete" onclick="deleteItemFromDashboard('${item.firestoreId}')">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function setItemStatus(id, status) {
+        if (!confirm(`Mark this item as ${status}?`)) return;
+        db.collection('items').doc(id).update({ status }).catch(err => alert('Failed: ' + err.message));
+    }
+
+    function editItemFromDashboard(id) {
+        const item = allItemsData.find(i => i.firestoreId === id);
+        if (!item) return;
+        const newTitle = prompt("Item name:", item.title);
+        if (newTitle === null) return;
+        const newPrice = prompt("Price (GHS):", item.price);
+        if (newPrice === null) return;
+        const newDescription = prompt("Description:", item.description || "");
+        db.collection('items').doc(id).update({
+            title: newTitle,
+            price: newPrice,
+            description: newDescription
+        }).catch(err => alert('Failed: ' + err.message));
+    }
+
+    function deleteItemFromDashboard(id) {
+        const item = allItemsData.find(i => i.firestoreId === id);
+        if (!item) return;
+        if (confirm(`Delete "${item.title}"? This can't be undone.`)) {
+            db.collection('items').doc(id).delete().catch(err => alert('Failed: ' + err.message));
+        }
+    }
+    // Global raw data caches so filtering doesn't need a re-fetch
+    let allSalesData = [];
+    let allSellersData = [];
+    let allChatsData = [];
+    let activeItemCount = 0;
+    let activeSellerCount = 0;
+    let totalUserCount = 0;
+
+  function switchSellersSubtab(sub) {
+        document.querySelectorAll('.seller-subtab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.seller-subpanel').forEach(p => p.classList.remove('active'));
+        document.getElementById('sellersSubtab-' + sub).classList.add('active');
+        document.getElementById('sellersPanel-' + sub).classList.add('active');
+    }
+
+let allSellersFullList = [];
+    let allBuyersData = [];
+
+    function loadAllBuyers() {
+        db.collection('buyers').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            allBuyersData = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                d.firestoreId = doc.id;
+                allBuyersData.push(d);
+            });
+            renderAllBuyers();
+        });
+    }
+
+    function renderAllBuyers() {
+        const list = document.getElementById('allBuyersList');
+        if (allBuyersData.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:13px;">No registered buyers yet.</p>';
+            return;
+        }
+        list.innerHTML = allBuyersData.map(b => `
+            <div class="seller-req-item" style="cursor:pointer;" onclick="openBuyerModal('${b.firestoreId}')">
+                <div class="seller-req-name">${b.name || 'Unknown buyer'}</div>
+                <div class="seller-req-meta">📍 ${b.location || 'Unknown'} · 📞 ${b.phone || ''}</div>
+            </div>
+        `).join('');
+    }
+
+    function openBuyerModal(id) {
+        const b = allBuyersData.find(x => x.firestoreId === id);
+        if (!b) return;
+        const joined = b.createdAt ? b.createdAt.toDate().toLocaleDateString() : 'Unknown';
+
+        document.getElementById('itemModalContent').innerHTML = `
+            <button class="item-modal-close" onclick="closeItemModal()">✕</button>
+            <h2>${b.name || 'Unknown buyer'}</h2>
+            <div class="item-modal-desc">
+                📍 ${b.location || 'Unknown'}<br>
+                📞 ${b.phone || ''}${b.email ? ' · ✉️ ' + b.email : ''}<br>
+                Joined: ${joined}
+            </div>
+        `;
+        document.getElementById('itemModalOverlay').classList.add('active');
+    }
+    function loadAllSellers() {
+        db.collection('sellers').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            allSellersFullList = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                d.firestoreId = doc.id;
+                allSellersFullList.push(d);
+            });
+            renderAllSellers();
+        });
+    }
+
+function getSellerStats(sellerName) {
+        const itemsPosted = allItemsData.filter(i => i.sellerName === sellerName).length;
+        const sellerSales = allSalesData.filter(s => s.sellerName === sellerName);
+        const salesCount = sellerSales.length;
+        const totalCommission = sellerSales.reduce((sum, s) => sum + s.commission, 0);
+        const totalRevenue = sellerSales.reduce((sum, s) => sum + s.price, 0);
+        const sellerEarnings = totalRevenue - totalCommission;
+        return { itemsPosted, salesCount, totalCommission, totalRevenue, sellerEarnings };
+    }
+
+    function renderAllSellers() {        const list = document.getElementById('allSellersList');
+        if (allSellersFullList.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:13px;">No sellers yet.</p>';
+            return;
+        }
+       list.innerHTML = allSellersFullList.map(s => {
+            const stats = getSellerStats(s.name);
+            return `
+            <div class="seller-req-item" style="cursor:pointer;" onclick="openSellerModal('${s.firestoreId}')">
+                <div class="seller-req-name">${s.businessName || s.name}</div>
+                <div class="seller-req-meta">👤 ${s.name} · 📍 ${s.location || 'Unknown'}</div>
+                <div class="seller-req-meta">📦 ${stats.itemsPosted} items · 💰 ${stats.salesCount} sales · GHS ${stats.sellerEarnings.toFixed(2)} earned</div>
+                <span class="seller-status-tag ${s.status || 'pending'}">${s.status || 'pending'}</span>
+            </div>
+        `;
+        }).join('');
+    }
+
+  function openSellerModal(id) {
+        const s = allSellersFullList.find(x => x.firestoreId === id);
+        if (!s) return;
+        const joined = s.createdAt ? s.createdAt.toDate().toLocaleDateString() : 'Unknown';
+        const stats = getSellerStats(s.name);
+        const status = s.status || 'pending';
+
+        let actionsHtml;
+        if (status === 'pending') {
+            actionsHtml = `
+                <button class="item-btn-approve" onclick="setSellerStatus('${s.firestoreId}', 'approved'); closeItemModal();">Approve</button>
+                <button class="item-btn-decline" onclick="setSellerStatus('${s.firestoreId}', 'declined'); closeItemModal();">Decline</button>
+            `;
+        } else {
+            actionsHtml = `
+                <button class="item-btn-warn" onclick="setSellerStatus('${s.firestoreId}', 'warned'); closeItemModal();">Warn</button>
+                <button class="item-btn-suspend" onclick="setSellerStatus('${s.firestoreId}', 'suspended'); closeItemModal();">Suspend</button>
+                <button class="item-btn-ban" onclick="setSellerStatus('${s.firestoreId}', 'banned'); closeItemModal();">Ban</button>
+                <button class="item-btn-delete" onclick="removeSellerFromDashboard('${s.firestoreId}')">Remove</button>
+            `;
+        }
+
+        document.getElementById('itemModalContent').innerHTML = `
+            <button class="item-modal-close" onclick="closeItemModal()">✕</button>
+            <h2>${s.businessName || s.name}</h2>
+            <div class="item-modal-desc">
+                👤 ${s.name}<br>
+                📍 ${s.location || 'Unknown'}<br>
+                📞 ${s.phone || ''}${s.email ? ' · ✉️ ' + s.email : ''}<br>
+                🪪 ${s.ghanaCard || 'No Ghana Card provided'}<br>
+                Requested: ${joined}
+            </div>
+            <span class="seller-status-tag ${status}">${status}</span>
+            <div class="stat-grid" style="margin-top:14px;">
+                <div class="stat-box"><div class="num">${stats.itemsPosted}</div><div class="label">Items Posted</div></div>
+                <div class="stat-box"><div class="num">${stats.salesCount}</div><div class="label">Items Sold</div></div>
+                <div class="stat-box"><div class="num">GHS ${stats.sellerEarnings.toFixed(0)}</div><div class="label">Seller Earned</div></div>
+            </div>
+            <div class="item-modal-desc" style="margin-top:10px;">
+                💵 Total sales value: GHS ${stats.totalRevenue.toFixed(2)}<br>
+                🏦 Commission paid to KayaMart: GHS ${stats.totalCommission.toFixed(2)}
+            </div>
+            <div class="item-modal-actions" style="margin-top:16px; flex-wrap:wrap;">
+                ${actionsHtml}
+            </div>
+        `;
+        document.getElementById('itemModalOverlay').classList.add('active');
+    }
+
+    function removeSellerFromDashboard(id) {
+        const s = allSellersFullList.find(x => x.firestoreId === id);
+        if (!s) return;
+        if (confirm(`Permanently remove seller "${s.businessName || s.name}"? This can't be undone.`)) {
+            db.collection('sellers').doc(id).delete().catch(err => alert('Failed: ' + err.message));
+            closeItemModal();
+        }
+    }
+
+  function loadDashboard() {
+        loadPendingSellers();
+        loadAllSellers();
+        loadAllBuyers();
+        loadAllItems();
+
+        db.collection('items').get().then(snap => {
+            activeItemCount = snap.size;
+            renderStats();
+        });
+
+     db.collection('sellers').where('status', '==', 'approved').get().then(snap => {
+            activeSellerCount = snap.size;
+            renderStats();
+        });
+
+      db.collection('buyers').get().then(snap => {
+            totalUserCount = snap.size;
+            renderStats();
+        });
+
+   db.collection('sales').orderBy('soldAt', 'desc').get().then(snap => {
+            allSalesData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '💰',
+                    firestoreId: doc.id,
+                    text: `Sale: ${d.title} - GHS ${d.price} (commission GHS ${d.commission?.toFixed(2)})`,
+                    time: d.soldAt ? d.soldAt.toMillis() : 0,
+                    commission: d.commission || 0,
+                    title: d.title || '',
+                    price: d.price || 0,
+                    sellerName: d.sellerName || '',
+                    buyerName: d.buyerName || '',
+                    clickable: true
+                };
+            });
+            renderStats();
+            renderActivityFeed();
+            renderAllSellers();
+        });
+
+        db.collection('sellers').orderBy('createdAt', 'desc').get().then(snap => {
+            allSellersData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '🧑‍💼',
+                    text: `New seller registered: ${d.name} (${d.location || 'Unknown'})`,
+                    time: d.createdAt ? d.createdAt.toMillis() : 0
+                };
+            });
+            renderActivityFeed();
+        });
+
+      db.collection('chats').orderBy('lastMessageAt', 'desc').get().then(snap => {
+            allChatsData = snap.docs.map(doc => {
+                const d = doc.data();
+                return {
+                    icon: '💬',
+                    text: `New message about: ${d.itemTitle} from ${d.buyerName}`,
+                    time: d.lastMessageAt ? d.lastMessageAt.toMillis() : 0
+                };
+            });
+            renderActivityFeed();
+        });
+    }
+
+    function loadPendingSellers() {
+        db.collection('sellers').where('status', '==', 'pending').onSnapshot(snapshot => {
+            const list = document.getElementById('pendingSellersList');
+            const badge = document.getElementById('pendingSellerCount');
+            const count = snapshot.size;
+
+            badge.style.display = count > 0 ? 'inline-block' : 'none';
+            badge.innerText = count;
+
+            if (snapshot.empty) {
+                list.innerHTML = '<p style="color:#999; font-size:13px;">No pending requests right now.</p>';
+                return;
+            }
+
+            let sellers = [];
+            snapshot.forEach(doc => sellers.push({ id: doc.id, ...doc.data() }));
+            sellers.sort((a, b) => {
+                const at = a.createdAt ? a.createdAt.toMillis() : 0;
+                const bt = b.createdAt ? b.createdAt.toMillis() : 0;
                 return bt - at;
             });
 
-            renderSalesHistoryTable(sales);
-            renderSalesChart(sales);
+           list.innerHTML = sellers.map(s => {
+                const joined = s.createdAt ? s.createdAt.toDate().toLocaleDateString() : 'Unknown';
+                return `
+                    <div class="seller-req-item" style="cursor:pointer;" onclick="openSellerModal('${s.id}')">
+                        <div class="seller-req-name">${s.businessName || s.name}</div>
+                        <div class="seller-req-meta">👤 ${s.name} · 📍 ${s.location || 'Unknown'}</div>
+                        <div class="seller-req-meta">📞 ${s.phone || ''}${s.email ? ' · ✉️ ' + s.email : ''}</div>
+                        <div class="seller-req-meta">🪪 ${s.ghanaCard || 'No Ghana Card provided'}</div>
+                        <div class="seller-req-meta">Requested: ${joined}</div>
+                        <div class="seller-req-actions" onclick="event.stopPropagation()">
+                            <button class="seller-req-approve" onclick="setSellerStatus('${s.id}', 'approved')">✔ Approve</button>
+                            <button class="seller-req-decline" onclick="setSellerStatus('${s.id}', 'declined')">✕ Decline</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         });
-}
-
-function renderSalesHistoryTable(sales) {
-    const table = document.getElementById("salesHistoryTable");
-    const outstandingLabel = document.getElementById("salesOutstandingLabel");
-
-    if (sales.length === 0) {
-        table.innerHTML = "<tr class='empty-row'><td colspan='5'>No completed sales yet.</td></tr>";
-        outstandingLabel.innerText = '';
-        return;
     }
 
-    const outstanding = sales.filter(s => !s.collected).reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
-    outstandingLabel.innerText = outstanding > 0 ? `GHS ${outstanding.toFixed(2)} outstanding` : 'All settled ✓';
-
-    table.innerHTML = sales.map(sale => {
-        const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : '—';
-        const statusBadge = sale.collected
-            ? '<span class="badge in-stock">Collected</span>'
-            : '<span class="badge low-stock">Outstanding</span>';
-        return `
-            <tr>
-                <td>${sale.title}</td>
-                <td>GHS ${sale.price}</td>
-                <td>GHS ${Number(sale.commission).toFixed(2)}</td>
-                <td>${statusBadge}</td>
-                <td>${dateStr}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function renderSalesChart(sales) {
-    const chart = document.getElementById("salesChart");
-
-    const months = [];
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push({ key: d.getFullYear() + '-' + d.getMonth(), label: d.toLocaleDateString('en-US', { month: 'short' }), total: 0 });
-    }
-
-    sales.forEach(sale => {
-        if (!sale.soldAt) return;
-        const d = sale.soldAt.toDate();
-        const key = d.getFullYear() + '-' + d.getMonth();
-        const monthEntry = months.find(m => m.key === key);
-        if (monthEntry) monthEntry.total += Number(sale.price) || 0;
-    });
-
-    const maxVal = Math.max(...months.map(m => m.total), 1);
-    const hasAnySales = months.some(m => m.total > 0);
-
-    if (!hasAnySales) {
-        chart.innerHTML = '<div class="chart-empty">No sales in the last 6 months yet.</div>';
-        return;
-    }
-
-    chart.innerHTML = months.map(m => {
-        const heightPct = Math.max((m.total / maxVal) * 100, m.total > 0 ? 6 : 2);
-        return `
-            <div class="chart-bar-wrap">
-                ${m.total > 0 ? `<div class="chart-value">GHS ${m.total}</div>` : ''}
-                <div class="chart-bar" style="height:${heightPct}%;"></div>
-                <div class="chart-label">${m.label}</div>
-            </div>
-        `;
-    }).join('');
-}
-
-function loadOrders() {
-    db.collection("orders")
-        .orderBy("createdAt", "desc")
-        .onSnapshot(snapshot => {
-            const relevantOrders = [];
-
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                const myItems = (order.items || []).filter(it => it.sellerId === sellerId);
-                if (myItems.length === 0) return;
-
-                const subtotal = myItems.reduce((sum, it) => sum + (Number(it.price) * Number(it.qty)), 0);
-                relevantOrders.push({
-                    id: doc.id,
-                    buyerName: order.buyerName || 'Unknown',
-                    buyerPhone: order.buyerPhone || '',
-                    deliveryMethod: order.deliveryMethod || '',
-                    location: order.location || '',
-                    createdAt: order.createdAt,
-                    myItems,
-                    subtotal
-                });
-            });
-
-            document.getElementById("pendingOrdersCount").innerText = relevantOrders.length;
-            renderOrdersTable(relevantOrders);
+    function setSellerStatus(id, status) {
+        if (!confirm(`Mark this seller as ${status}?`)) return;
+        db.collection('sellers').doc(id).update({ status }).catch(err => {
+            alert('Failed to update seller: ' + err.message);
         });
-}
-
-function renderOrdersTable(orders) {
-    const table = document.getElementById("ordersTable");
-
-    if (orders.length === 0) {
-        table.innerHTML = "<tr class='empty-row'><td colspan='5'>No orders yet for your items.</td></tr>";
-        return;
     }
 
-    table.innerHTML = orders.map(order => {
-        const itemsText = order.myItems.map(it => `${it.title} x${it.qty}`).join(', ');
-        const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : '—';
-        return `
-            <tr>
-                <td>
-                    <div style="font-weight:600;">${order.buyerName}</div>
-                    <div style="font-size:11.5px; color:#999;">${order.buyerPhone}</div>
-                </td>
-                <td>${itemsText}</td>
-                <td>GHS ${order.subtotal}</td>
-                <td>${order.deliveryMethod}${order.location ? ' • ' + order.location : ''}</td>
-                <td>${dateStr}</td>
-            </tr>
-        `;
-    }).join('');
-}
+    function getDateBounds() {
+
+        const fromVal = document.getElementById('dateFrom').value;
+        const toVal = document.getElementById('dateTo').value;
+        const from = fromVal ? new Date(fromVal + 'T00:00:00').getTime() : null;
+        const to = toVal ? new Date(toVal + 'T23:59:59').getTime() : null;
+        return { from, to };
+    }
+
+    function inRange(time, from, to) {
+        if (from !== null && time < from) return false;
+        if (to !== null && time > to) return false;
+        return true;
+    }
+
+    function renderStats() {
+        const { from, to } = getDateBounds();
+        const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+        const totalCommission = filteredSales.reduce((sum, s) => sum + s.commission, 0);
+document.getElementById('statGrid').innerHTML = `
+            <div class="stat-box"><div class="num">${activeItemCount}</div><div class="label">Active Items</div></div>
+            <div class="stat-box"><div class="num">${activeSellerCount}</div><div class="label">Active Sellers</div></div>
+            <div class="stat-box"><div class="num">${totalUserCount}</div><div class="label">Total Users</div></div>
+            <div class="stat-box"><div class="num">${filteredSales.length}</div><div class="label">Total Sales${(from || to) ? ' (filtered)' : ''}</div></div>
+            <div class="stat-box"><div class="num">GHS ${totalCommission.toFixed(0)}</div><div class="label">Total Commission${(from || to) ? ' (filtered)' : ''}</div></div>
+        `;    }
+
+    function renderActivityFeed() {
+        const feed = document.getElementById('activityFeed');
+        const { from, to } = getDateBounds();
+
+      const showSales = document.getElementById('showSales').checked;
+        const showSellers = document.getElementById('showSellers').checked;
+        const showChats = document.getElementById('showChats').checked;
+
+        let allActivities = [];
+        if (showSales) allActivities = allActivities.concat(allSalesData);
+        if (showSellers) allActivities = allActivities.concat(allSellersData);
+        if (showChats) allActivities = allActivities.concat(allChatsData);
+
+        allActivities = allActivities.filter(act => inRange(act.time, from, to));
+
+        allActivities.sort((a, b) => b.time - a.time);
+
+        if (allActivities.length === 0) {
+            feed.innerHTML = '<p style="color:#999;">No activity in this range.</p>';
+            return;
+        }
+
+       feed.innerHTML = '';
+        allActivities.slice(0, 15).forEach(act => {
+            const dateStr = act.time ? new Date(act.time).toLocaleString() : '';
+            const clickAttr = act.clickable ? `style="cursor:pointer;" onclick="openSaleModal('${act.firestoreId}')"` : '';
+            feed.innerHTML += `
+                <div class="activity-item" ${clickAttr}>
+                    <div class="activity-icon">${act.icon}</div>
+                    <div>
+                        <div class="activity-text">${act.text}</div>
+                        <div class="activity-time">${dateStr}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function applyDateFilter() {
+        renderStats();
+        renderActivityFeed();
+    }
+
+    function clearDateFilter() {
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        renderStats();
+        renderActivityFeed();
+    }
+function exportSalesCSV() {
+        const { from, to } = getDateBounds();
+        const filteredSales = allSalesData.filter(s => inRange(s.time, from, to));
+
+        if (filteredSales.length === 0) {
+            alert('No sales in the selected range to export.');
+            return;
+        }
+
+        let csv = 'Date,Title,Price (GHS),Commission (GHS)\n';
+        filteredSales.forEach(s => {
+            const dateStr = s.time ? new Date(s.time).toLocaleDateString() : '';
+            const safeTitle = `"${(s.title || '').replace(/"/g, '""')}"`;
+            csv += `${dateStr},${safeTitle},${s.price},${s.commission.toFixed(2)}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fromLabel = from ? new Date(from).toISOString().slice(0,10) : 'all';
+        const toLabel = to ? new Date(to).toISOString().slice(0,10) : 'all';
+        link.download = `kayamart-sales_${fromLabel}_to_${toLabel}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
 </script>
-
 </body>
 </html>
