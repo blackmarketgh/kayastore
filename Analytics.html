@@ -337,18 +337,18 @@ tr:last-child td { border-bottom: none; }
             <h2>🛒 My Products</h2>
             <span class="section-sub" id="productsCountLabel"></span>
         </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="productsTable">
+       <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="productsTable">
                     <tr class="empty-row"><td colspan="5">Loading...</td></tr>
                 </tbody>
             </table>
@@ -362,16 +362,18 @@ tr:last-child td { border-bottom: none; }
         </div>
         <div class="table-wrap">
             <table>
-                <thead>
-                    <tr>
-                        <th>Buyer</th>
-                        <th>Item(s)</th>
-                        <th>Subtotal</th>
-                        <th>Delivery</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTable">
+               <thead>
+    <tr>
+        <th>Buyer</th>
+        <th>Item(s)</th>
+        <th>Subtotal</th>
+        <th>Delivery</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+</thead>
+<tbody id="ordersTable">
                     <tr class="empty-row"><td colspan="5">Loading...</td></tr>
                 </tbody>
             </table>
@@ -385,16 +387,17 @@ tr:last-child td { border-bottom: none; }
         </div>
         <div class="table-wrap">
             <table>
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Commission</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="salesHistoryTable">
+               <thead>
+    <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Commission</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+    </tr>
+</thead>
+<tbody id="salesHistoryTable">
                     <tr class="empty-row"><td colspan="5">Loading...</td></tr>
                 </tbody>
             </table>
@@ -628,11 +631,18 @@ function renderSalesHistoryTable(sales) {
     const outstanding = sales.filter(s => !s.collected).reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
     outstandingLabel.innerText = outstanding > 0 ? `GHS ${outstanding.toFixed(2)} outstanding` : 'All settled ✓';
 
-    table.innerHTML = sales.map(sale => {
+  table.innerHTML = sales.map(sale => {
         const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : '—';
-        const statusBadge = sale.collected
-            ? '<span class="badge in-stock">Collected</span>'
-            : '<span class="badge low-stock">Outstanding</span>';
+        let statusBadge;
+        let actionCell = '—';
+        if (sale.collected) {
+            statusBadge = '<span class="badge in-stock">Collected</span>';
+        } else if (sale.paymentClaimed) {
+            statusBadge = '<span class="badge low-stock">Payment Claimed</span>';
+        } else {
+            statusBadge = '<span class="badge out-stock">Outstanding</span>';
+            actionCell = `<button class="icon-btn edit" onclick="claimPaymentMade('${sale.id}')"> Paid</button>`;
+        }
         return `
             <tr>
                 <td>${sale.title}</td>
@@ -640,6 +650,7 @@ function renderSalesHistoryTable(sales) {
                 <td>GHS ${Number(sale.commission).toFixed(2)}</td>
                 <td>${statusBadge}</td>
                 <td>${dateStr}</td>
+                <td>${actionCell}</td>
             </tr>
         `;
     }).join('');
@@ -703,7 +714,8 @@ function loadOrders() {
                     location: order.location || '',
                     createdAt: order.createdAt,
                     myItems,
-                    subtotal
+                    subtotal,
+                    status: order.status || 'pending'
                 });
             });
 
@@ -711,7 +723,6 @@ function loadOrders() {
             renderOrdersTable(relevantOrders);
         });
 }
-
 function renderOrdersTable(orders) {
     const table = document.getElementById("ordersTable");
 
@@ -723,21 +734,55 @@ function renderOrdersTable(orders) {
     table.innerHTML = orders.map(order => {
         const itemsText = order.myItems.map(it => `${it.title} x${it.qty}`).join(', ');
         const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : '—';
-        return `
-            <tr>
-                <td>
-                    <div style="font-weight:600;">${order.buyerName}</div>
-                    <div style="font-size:11.5px; color:#999;">${order.buyerPhone}</div>
-                </td>
-                <td>${itemsText}</td>
-                <td>GHS ${order.subtotal}</td>
-                <td>${order.deliveryMethod}${order.location ? ' • ' + order.location : ''}</td>
-                <td>${dateStr}</td>
-            </tr>
-        `;
+      const statusBadge = order.status === 'completed'
+    ? '<span class="badge in-stock">Completed</span>'
+    : '<span class="badge pending">Pending</span>';
+const actionCell = order.status === 'completed'
+    ? '—'
+    : `<button class="icon-btn edit" onclick="markOrderCompleted('${order.id}')">✅ Complete</button>`;
+
+return `
+    <tr>
+        <td>
+            <div style="font-weight:600;">${order.buyerName}</div>
+            <div style="font-size:11.5px; color:#999;">${order.buyerPhone}</div>
+        </td>
+        <td>${itemsText}</td>
+        <td>GHS ${order.subtotal}</td>
+        <td>${order.deliveryMethod}${order.location ? ' • ' + order.location : ''}</td>
+        <td>${dateStr}</td>
+        <td>${statusBadge}</td>
+        <td>${actionCell}</td>
+    </tr>
+`;
     }).join('');
 }
-</script>
+function claimPaymentMade(saleId) {
+    if (!confirm("Confirm you've sent this commission payment to KayaMart? The owner will verify and mark it collected.")) return;
+    db.collection('sales').doc(saleId).update({
+        paymentClaimed: true,
+        paymentClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("Thanks! The owner has been flagged to verify your payment.");
+    }).catch(err => alert('Failed: ' + err.message));
+}
 
+function markOrderCompleted(orderId) {
+    if (!confirm("Mark this order as completed/delivered? The buyer will be prompted to confirm and leave a review.")) return;
+    db.collection('orders').doc(orderId).update({
+        status: 'completed',
+        buyerConfirmed: false,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(err => alert('Failed: ' + err.message));
+}
+function markOrderCompleted(orderId) {
+    if (!confirm("Mark this order as completed/delivered? The buyer will be prompted to confirm and leave a review.")) return;
+    db.collection('orders').doc(orderId).update({
+        status: 'completed',
+        buyerConfirmed: false,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(err => alert('Failed: ' + err.message));
+}
+</script>
 </body>
 </html>
