@@ -2665,6 +2665,10 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <h3>Complete Your Order</h3>
             <div id="orderFormItemsSummary" style="text-align:left; font-size:13px; color:#555; margin-bottom:12px; max-height:150px; overflow-y:auto;"></div>
             <div id="orderFormTotal" style="font-weight:bold; text-align:right; margin-bottom:12px;"></div>
+<div style="background:#eef4fa; border-radius:12px; padding:14px; margin-bottom:14px; text-align:left;">
+    <div style="font-size:12.5px; font-weight:700; color:#2980b9; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">📱 Pay via Mobile Money</div>
+    <div id="momoPaymentInfo"></div>
+</div>
 
             <div class="option-picker-label" style="text-align:left;">Delivery Method</div>
             <div class="option-btn-row">
@@ -2773,7 +2777,18 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <button onclick="closeWriteReview()" style="margin-top:8px;">Cancel</button>
     </div>
 </div>
+    <div class="modal-content" style="text-align:left;">
+        <h3 style="text-align:center;">📦 Order Update</h3>
+        <p style="font-size:13.5px; color:#777; text-align:center;">The seller marked your order as delivered. Please confirm and leave a quick review.</p>
+        <div id="deliveryConfirmItemsWrap"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="add-btn" style="flex:1;" onclick="submitDeliveryConfirmation()">✅ Confirm & Submit Reviews</button>
+        </div>
+        <button onclick="declineDeliveryConfirmation()" style="margin-top:8px; background:#e74c3c; color:white;">❌ Not Delivered / There's a Problem</button>
+    </div>
+</div>
 <div class="modal" id="buyerNameModal">
+
     <div class="modal-content" style="text-align:center;">
         <h3>What's your name?</h3>
         <p style="font-size:13px; color:#777;">So the seller knows who's messaging them.</p>
@@ -3235,9 +3250,10 @@ const introSlidesData = [
         localStorage.setItem('kayaBuyerPhone', phone);
         if (email) localStorage.setItem('kayaBuyerEmail', email);
 
-       document.getElementById('getStartedModal').style.display = 'none';
+     document.getElementById('getStartedModal').style.display = 'none';
         showGreetingToast(name, '🛍️');
         listenForBuyerMessages();
+        checkPendingDeliveryConfirmations();
 
         const buyerLogoutLink = document.getElementById('buyerLogoutLink');
         if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
@@ -3598,17 +3614,18 @@ function closeSellersPanel() {
                                 </span>
                             </div>
                             ${outstandingForSeller > 0 ? `<button onclick="collectCommission('${sid}', ${JSON.stringify(uncollectedIds).replace(/"/g, '&quot;')})" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; margin-top:6px;">💰 Mark as Collected</button>` : ''}
-                            <div style="margin-top:8px;">
-                                ${sales.map(sale => {
-                                    const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : 'Unknown date';
-                                    return `
-                                        <div style="padding:6px 0; font-size:13px; display:flex; justify-content:space-between; color:${sale.collected ? '#999' : '#333'};">
-                                            <span>${sale.title} (GHS ${sale.price})</span>
-                                            <span>${sale.collected ? '✓ Collected' : 'GHS ' + Number(sale.commission).toFixed(2)} • ${dateStr}</span>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
+                          <div style="margin-top:8px;">
+    ${sales.map(sale => {
+        const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : 'Unknown date';
+        const claimTag = (!sale.collected && sale.paymentClaimed) ? ' <span style="color:#e67e22; font-weight:700;">💸 Claims Paid</span>' : '';
+        return `
+            <div style="padding:6px 0; font-size:13px; display:flex; justify-content:space-between; color:${sale.collected ? '#999' : '#333'};">
+                <span>${sale.title} (GHS ${sale.price})${claimTag}</span>
+                <span>${sale.collected ? '✓ Collected' : 'GHS ' + Number(sale.commission).toFixed(2)} • ${dateStr}</span>
+            </div>
+        `;
+    }).join('')}
+</div>
                         </div>
                     `;
                 });
@@ -4778,7 +4795,132 @@ function renderDetailPhotosRail(item) {
             closeWriteReview();
         }).catch(err => alert("Failed to submit review: " + err.message));
     }
+let pendingConfirmOrders = [];
+let currentConfirmOrderIndex = 0;
 
+function checkPendingDeliveryConfirmations() {
+    const buyerId = localStorage.getItem('kayaBuyerId');
+    if (!buyerId) return;
+    db.collection('orders').where('buyerId', '==', buyerId).get().then(snapshot => {
+        pendingConfirmOrders = [];
+        snapshot.forEach(doc => {
+            const o = doc.data();
+            if (o.status === 'completed' && o.buyerConfirmed !== true && o.buyerConfirmed !== 'declined') {
+                o.id = doc.id;
+                pendingConfirmOrders.push(o);
+            }
+        });
+        if (pendingConfirmOrders.length > 0) {
+            currentConfirmOrderIndex = 0;
+            showDeliveryConfirmModal();
+        }
+    }).catch(err => console.error('Failed to check pending confirmations:', err));
+}
+
+function showDeliveryConfirmModal() {
+    const order = pendingConfirmOrders[currentConfirmOrderIndex];
+    if (!order) return;
+
+    const wrap = document.getElementById('deliveryConfirmItemsWrap');
+    wrap.innerHTML = order.items.map((it, i) => `
+        <div style="border-top:1px solid #eee; padding-top:12px; margin-top:12px;">
+            <div style="font-weight:700; font-size:14px;">${it.title}</div>
+            <div style="font-size:12.5px; color:#777; margin-bottom:6px;">Rate the seller for this item:</div>
+            <div id="dcStars${i}" style="font-size:22px; cursor:pointer; margin-bottom:8px;">
+                ${[1,2,3,4,5].map(n => `<span onclick="setDcStars(${i}, ${n})" id="dcStar${i}_${n}">☆</span>`).join('')}
+            </div>
+            <textarea id="dcReview${i}" placeholder="Write a short review of this item..." rows="2" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; font-family:inherit;"></textarea>
+        </div>
+    `).join('');
+
+    order.items.forEach((it, i) => setDcStars(i, 5));
+
+    document.getElementById('deliveryConfirmModal').style.display = 'flex';
+}
+
+function setDcStars(itemIndex, n) {
+    const order = pendingConfirmOrders[currentConfirmOrderIndex];
+    order.items[itemIndex]._dcStars = n;
+    for (let s = 1; s <= 5; s++) {
+        const el = document.getElementById(`dcStar${itemIndex}_${s}`);
+        if (el) el.innerText = s <= n ? '★' : '☆';
+    }
+}
+
+function closeDeliveryConfirmModal() {
+    document.getElementById('deliveryConfirmModal').style.display = 'none';
+}
+
+function declineDeliveryConfirmation() {
+    const order = pendingConfirmOrders[currentConfirmOrderIndex];
+    if (!order) return;
+    if (!confirm("Let the seller know there's an issue with this order? You can also message them directly via chat.")) return;
+
+    db.collection('orders').doc(order.id).update({ buyerConfirmed: 'declined' }).finally(() => {
+        advanceToNextConfirmation();
+    });
+}
+
+function submitDeliveryConfirmation() {
+    const order = pendingConfirmOrders[currentConfirmOrderIndex];
+    if (!order) return;
+
+    const reviewPromises = [];
+    const sellerRatings = {};
+
+    order.items.forEach((it, i) => {
+        const stars = it._dcStars || 5;
+        const text = (document.getElementById(`dcReview${i}`).value || '').trim();
+
+        if (it.firestoreId) {
+            reviewPromises.push(
+                db.collection('items').doc(it.firestoreId).collection('reviews').add({
+                    authorName: order.buyerName || 'Buyer',
+                    text: text || 'No comment provided.',
+                    stars: stars,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+            );
+        }
+
+        if (it.sellerId && it.sellerId !== 'OWNER') {
+            if (!sellerRatings[it.sellerId]) sellerRatings[it.sellerId] = [];
+            sellerRatings[it.sellerId].push(stars);
+        }
+    });
+
+    const sellerUpdatePromises = Object.keys(sellerRatings).map(sellerId => {
+        return db.collection('sellers').doc(sellerId).get().then(doc => {
+            if (!doc.exists) return;
+            const seller = doc.data();
+            const oldCount = seller.ratingCount || 0;
+            const oldAvg = seller.avgRating || 0;
+            const ratingsToAdd = sellerRatings[sellerId];
+            const newCount = oldCount + ratingsToAdd.length;
+            const addedSum = ratingsToAdd.reduce((a, b) => a + b, 0);
+            const newAvg = ((oldAvg * oldCount) + addedSum) / newCount;
+            return db.collection('sellers').doc(sellerId).update({ ratingCount: newCount, avgRating: newAvg });
+        });
+    });
+
+    Promise.all([...reviewPromises, ...sellerUpdatePromises]).then(() => {
+        return db.collection('orders').doc(order.id).update({ buyerConfirmed: true });
+    }).then(() => {
+        alert("Thanks for confirming and reviewing!");
+        advanceToNextConfirmation();
+    }).catch(err => {
+        alert("Something went wrong: " + err.message);
+    });
+}
+
+function advanceToNextConfirmation() {
+    currentConfirmOrderIndex++;
+    if (currentConfirmOrderIndex < pendingConfirmOrders.length) {
+        showDeliveryConfirmModal();
+    } else {
+        closeDeliveryConfirmModal();
+    }
+}
     function renderSimilarProducts(item) {
         const section = document.getElementById('pdSimilarSection');
         const row = document.getElementById('pdSimilarRow');
@@ -5009,6 +5151,7 @@ function selectOrderMethod(method) {
 function openOrderForm(orderItems, isCart) {
     pendingOrderItems = orderItems;
     pendingOrderIsCart = isCart;
+    renderMomoPaymentInfo(orderItems);
 
     const summaryDiv = document.getElementById('orderFormItemsSummary');
     let total = 0;
@@ -5034,7 +5177,83 @@ function openOrderForm(orderItems, isCart) {
 function closeOrderForm() {
     document.getElementById('orderFormModal').style.display = 'none';
 }
+function renderMomoPaymentInfo(orderItems) {
+    const infoDiv = document.getElementById('momoPaymentInfo');
+    if (!infoDiv) return;
 
+    const sellerMap = {};
+    orderItems.forEach(it => {
+        const phone = it.sellerPhone || "233535263510";
+        const name = it.sellerName || "KayaMart";
+        if (!sellerMap[phone]) sellerMap[phone] = name;
+    });
+
+    const entries = Object.entries(sellerMap);
+
+    infoDiv.innerHTML = entries.map(([phone, name]) => `
+        <div style="margin-bottom:8px;">
+            <div style="font-size:14px;">Send payment to: <strong>${phone}</strong></div>
+            <div style="font-size:12.5px; color:#777;">Account name: ${name}</div>
+            <button type="button" onclick="copyMomoNumber('${phone}')" style="width:auto; margin-top:4px; padding:6px 14px; font-size:12px; background:#2980b9; color:white; border:none; border-radius:6px; cursor:pointer;">📋 Copy Number</button>
+        </div>
+    `).join('<div style="height:1px; background:#ddd; margin:8px 0;"></div>');
+}
+
+function copyMomoNumber(number) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(number).then(() => {
+            alert("Mobile Money number copied!");
+        }).catch(() => {
+            alert("Number: " + number);
+        });
+    } else {
+        alert("Number: " + number);
+    }
+}
+const SELLER_COMMISSION_RATE = 0.07; // 7%
+
+function billSellerCommission(orderItems, buyerNameForSale) {
+    orderItems.forEach(it => {
+        if (!it.sellerId || it.sellerId === 'OWNER') return; // skip items posted by KayaMart itself
+
+        const lineTotal = Number(it.price) * Number(it.qty);
+        const commission = lineTotal * SELLER_COMMISSION_RATE;
+
+        db.collection('sales').add({
+            sellerId: it.sellerId,
+            sellerName: it.sellerName || '',
+            title: it.title,
+            price: lineTotal,
+            commission: commission,
+            collected: false,
+            buyerName: buyerNameForSale || '',
+            soldAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.error('Failed to log sale for commission:', err));
+
+        db.collection('sellers').doc(it.sellerId).get().then(doc => {
+            if (!doc.exists) return;
+            const seller = doc.data();
+            const currentCommission = seller.commissionEarned || 0;
+            const currentTotalSales = seller.totalSales || 0;
+            db.collection('sellers').doc(it.sellerId).update({
+                commissionEarned: currentCommission + commission,
+                totalSales: currentTotalSales + lineTotal
+            });
+        }).catch(err => console.error('Failed to update seller totals:', err));
+
+        if (it.firestoreId) {
+            db.collection('items').doc(it.firestoreId).get().then(itemDoc => {
+                if (!itemDoc.exists) return;
+                const data = itemDoc.data();
+                const currentStock = (data.stock !== undefined && data.stock !== null && data.stock !== '') ? Number(data.stock) : null;
+                if (currentStock !== null) {
+                    const newStock = Math.max(0, currentStock - Number(it.qty));
+                    db.collection('items').doc(it.firestoreId).update({ stock: newStock });
+                }
+            }).catch(err => console.error('Failed to update stock:', err));
+        }
+    });
+}
 function submitOrderForm() {
     const deliveryMethod = document.getElementById('orderDeliveryMethod').value;
     const location = document.getElementById('orderLocationSelect').value;
@@ -5068,7 +5287,8 @@ function submitOrderForm() {
         buyerId: localStorage.getItem('kayaBuyerId') || null,
         status: 'pending',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
+   }).then(() => {
+        billSellerCommission(pendingOrderItems, name);
         alert("Order submitted! We'll be in touch shortly to arrange " + deliveryMethod.toLowerCase() + ".");
         closeOrderForm();
 
@@ -5111,9 +5331,11 @@ function saveBuyerName() {
     }
    buyerName = name;
     localStorage.setItem('kayaBuyerName', name);
-    document.getElementById('buyerNameModal').style.display = 'none';
+   document.getElementById('buyerNameModal').style.display = 'none';
     showGreetingToast(name, '🛍️');
     listenForBuyerMessages();
+    checkPendingDeliveryConfirmations();
+
     const buyerLogoutLink = document.getElementById('buyerLogoutLink');
     if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
 
@@ -5153,7 +5375,7 @@ function handleOrderClick(index) {
     const item = items[index];
     if (!item) return;
 
-    const orderItem = {
+   const orderItem = {
         title: item.title,
         price: Number(item.price),
         qty: selectedQty || 1,
@@ -5161,7 +5383,8 @@ function handleOrderClick(index) {
         size: selectedSize || null,
         sellerId: item.postedBy || null,
         sellerPhone: item.sellerPhone || null,
-        sellerName: item.sellerName || null
+        sellerName: item.sellerName || null,
+        firestoreId: item.firestoreId || null
     };
 
     openOrderForm([orderItem], false);
@@ -5709,13 +5932,14 @@ function quickEditItem(index) {
             alert("Your cart is empty.");
             return;
         }
-        const orderItems = cart.map(item => ({
+      const orderItems = cart.map(item => ({
             title: item.title,
             price: Number(item.price),
             qty: item.qty,
             sellerId: item.postedBy || null,
             sellerPhone: item.sellerPhone || null,
-            sellerName: item.sellerName || null
+            sellerName: item.sellerName || null,
+            firestoreId: item.firestoreId || null
         }));
         openOrderForm(orderItems, true);
     }
@@ -6029,9 +6253,11 @@ renderBanners();
 loadItemsFromFirestore();
     updateCartCount();
     checkSellerStatus()
-    listenForPendingSellers();
+   listenForPendingSellers();
     listenForBuyerMessages(); updateSellerLinkText();
+    checkPendingDeliveryConfirmations();
     renderAvatarPicker();
+
     renderThemeSwatches();
     startIntroSplash();
     startGuestPromptTimer();
