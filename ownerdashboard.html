@@ -18,7 +18,8 @@
     const db = firebase.firestore();
 </script>
     <title>Owner Dashboard - KayaMart</title>
-    <style>
+  <style>
+* { box-sizing: border-box; }
 .section-title-row {
             display: flex;
             align-items: center;
@@ -261,11 +262,11 @@
     color: #999;
 }
 
-        body {
+      body {
             font-family: 'Poppins', Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
-            padding: 40px;
+            padding: clamp(12px, 4vw, 40px);
             color: #333;
             display: flex;
             flex-direction: column;
@@ -275,7 +276,7 @@
             max-width: 700px;
             width: 100%;
             background-color: white;
-            padding: 35px;
+            padding: clamp(16px, 4vw, 35px);
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         }
@@ -399,7 +400,7 @@
         .logout-link:active {
             transform: scale(0.96);
         }
-        .export-btn {
+      .export-btn {
             padding: 8px 14px;
             border: none;
             border-radius: 6px;
@@ -410,6 +411,64 @@
             cursor: pointer;
             font-size: 13px;
             margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .dash-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .dash-tab-btn {
+                flex: 0 0 auto;
+                min-width: 84px;
+                font-size: 11.5px;
+                padding: 10px 8px;
+            }
+            .items-subtabs, .seller-subtabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+            }
+            .items-subtab-btn, .seller-subtab-btn {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+            .item-review-row {
+                flex-wrap: wrap;
+            }
+            .item-review-info {
+                min-width: 140px;
+            }
+            .item-review-actions {
+                width: 100%;
+                margin-top: 8px;
+            }
+            .seller-req-actions {
+                flex-wrap: wrap;
+            }
+            .item-modal {
+                padding: 16px;
+                max-height: 90vh;
+            }
+            .item-modal-actions {
+                flex-wrap: wrap;
+            }
+            .item-modal-actions button {
+                flex: 1 1 45%;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-bar button {
+                align-self: stretch;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -765,15 +824,19 @@ let allSellersFullList = [];
     }
 
 function getSellerStats(sellerName) {
-        const itemsPosted = allItemsData.filter(i => i.sellerName === sellerName).length;
+        const sellerItems = allItemsData.filter(i => i.sellerName === sellerName);
+        const itemsPosted = sellerItems.length;
+        const itemsPending = sellerItems.filter(i => i.status === 'pending').length;
+        const itemsApproved = sellerItems.filter(i => i.status === 'approved').length;
+        const itemsDeclined = sellerItems.filter(i => i.status === 'declined').length;
+
         const sellerSales = allSalesData.filter(s => s.sellerName === sellerName);
         const salesCount = sellerSales.length;
         const totalCommission = sellerSales.reduce((sum, s) => sum + s.commission, 0);
         const totalRevenue = sellerSales.reduce((sum, s) => sum + s.price, 0);
         const sellerEarnings = totalRevenue - totalCommission;
-        return { itemsPosted, salesCount, totalCommission, totalRevenue, sellerEarnings };
+        return { itemsPosted, itemsPending, itemsApproved, itemsDeclined, salesCount, totalCommission, totalRevenue, sellerEarnings };
     }
-
     function renderAllSellers() {        const list = document.getElementById('allSellersList');
         if (allSellersFullList.length === 0) {
             list.innerHTML = '<p style="color:#999; font-size:13px;">No sellers yet.</p>';
@@ -785,7 +848,7 @@ function getSellerStats(sellerName) {
             <div class="seller-req-item" style="cursor:pointer;" onclick="openSellerModal('${s.firestoreId}')">
                 <div class="seller-req-name">${s.businessName || s.name}</div>
                 <div class="seller-req-meta">👤 ${s.name} · 📍 ${s.location || 'Unknown'}</div>
-                <div class="seller-req-meta">📦 ${stats.itemsPosted} items · 💰 ${stats.salesCount} sales · GHS ${stats.sellerEarnings.toFixed(2)} earned</div>
+               <div class="seller-req-meta">📦 ${stats.itemsApproved} live · ⏳ ${stats.itemsPending} pending · 💰 ${stats.salesCount} sales · GHS ${stats.sellerEarnings.toFixed(2)} earned</div>
                 <span class="seller-status-tag ${s.status || 'pending'}">${s.status || 'pending'}</span>
             </div>
         `;
@@ -825,14 +888,26 @@ function getSellerStats(sellerName) {
                 Requested: ${joined}
             </div>
             <span class="seller-status-tag ${status}">${status}</span>
-            <div class="stat-grid" style="margin-top:14px;">
-                <div class="stat-box"><div class="num">${stats.itemsPosted}</div><div class="label">Items Posted</div></div>
+           <div class="stat-grid" style="margin-top:14px;">
+                <div class="stat-box"><div class="num">${stats.itemsApproved}</div><div class="label">Items Live</div></div>
+                <div class="stat-box"><div class="num">${stats.itemsPending}</div><div class="label">Pending Review</div></div>
                 <div class="stat-box"><div class="num">${stats.salesCount}</div><div class="label">Items Sold</div></div>
                 <div class="stat-box"><div class="num">GHS ${stats.sellerEarnings.toFixed(0)}</div><div class="label">Seller Earned</div></div>
             </div>
-            <div class="item-modal-desc" style="margin-top:10px;">
+          <div class="item-modal-desc" style="margin-top:10px;">
                 💵 Total sales value: GHS ${stats.totalRevenue.toFixed(2)}<br>
                 🏦 Commission paid to KayaMart: GHS ${stats.totalCommission.toFixed(2)}
+            </div>
+            <div class="item-modal-seller" style="margin-top:10px;">
+                <div style="font-weight:700; margin-bottom:8px;">🛍️ Sales by Buyer</div>
+                ${allSalesData.filter(sale => sale.sellerName === s.name).length === 0
+                    ? '<p style="color:#999; font-size:12.5px;">No sales yet.</p>'
+                    : allSalesData.filter(sale => sale.sellerName === s.name).map(sale => `
+                        <div style="font-size:12.5px; margin-bottom:6px;">
+                            <strong>${sale.title}</strong> → ${sale.buyerName || 'Unknown buyer'} · GHS ${sale.price} <span style="color:#999;">(${sale.time ? new Date(sale.time).toLocaleDateString() : ''})</span>
+                        </div>
+                    `).join('')
+                }
             </div>
             <div class="item-modal-actions" style="margin-top:16px; flex-wrap:wrap;">
                 ${actionsHtml}
@@ -1050,11 +1125,13 @@ function exportSalesCSV() {
             return;
         }
 
-        let csv = 'Date,Title,Price (GHS),Commission (GHS)\n';
+       let csv = 'Date,Title,Seller,Buyer,Price (GHS),Commission (GHS)\n';
         filteredSales.forEach(s => {
             const dateStr = s.time ? new Date(s.time).toLocaleDateString() : '';
             const safeTitle = `"${(s.title || '').replace(/"/g, '""')}"`;
-            csv += `${dateStr},${safeTitle},${s.price},${s.commission.toFixed(2)}\n`;
+            const safeSeller = `"${(s.sellerName || '').replace(/"/g, '""')}"`;
+            const safeBuyer = `"${(s.buyerName || '').replace(/"/g, '""')}"`;
+            csv += `${dateStr},${safeTitle},${safeSeller},${safeBuyer},${s.price},${s.commission.toFixed(2)}\n`;
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
