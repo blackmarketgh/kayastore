@@ -2703,12 +2703,26 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <input type="text" id="orderBuyerName" placeholder="Your name">
             <input type="text" id="orderBuyerPhone" placeholder="Your phone number">
 
-            <button class="add-btn" id="submitOrderFormBtn" onclick="submitOrderForm()">Submit Order</button>
+           <button class="add-btn" id="submitOrderFormBtn" onclick="submitOrderForm()">Submit Order</button>
             <button onclick="closeOrderForm()" style="margin-top:8px;">Cancel</button>
         </div>
     </div>
 
+    <div class="modal" id="paymentClaimModal">
+        <div class="modal-content" style="text-align:center;">
+            <h3>Have you sent the payment?</h3>
+            <p style="font-size:13.5px; color:#777;">Once you've sent <strong id="paymentClaimTotalText"></strong> on MTN MoMo using the reference below, tap confirm so we can record it.</p>
+            <div style="margin:14px 0; padding:12px; background:#eef4fa; border-radius:10px;">
+                <div style="font-size:11.5px; color:#777;">Reference used:</div>
+                <div style="font-size:20px; font-weight:800; letter-spacing:1px;" id="paymentClaimRefText"></div>
+            </div>
+            <button class="add-btn" id="paymentClaimConfirmBtn">✅ Yes, I've Sent It</button>
+            <button onclick="closePaymentClaimModal()" style="margin-top:8px;">I'll Confirm Later</button>
+        </div>
+    </div>
+
    <div class="modal" id="sellersModal">
+
         <div class="modal-content">
             <h3>Manage Sellers</h3>
             <div id="sellersList" style="text-align:left; max-height:350px; overflow-y:auto;"></div>
@@ -3241,6 +3255,31 @@ const introSlidesData = [
             btn.disabled = false;
             btn.innerText = "Sign Up";
         });
+    }
+
+function submitBuyerLogin() {
+        const phone = document.getElementById('buyerLoginPhone').value.trim();
+        if (!phone) {
+            alert("Please enter your phone number.");
+            return;
+        }
+
+        db.collection('buyers')
+            .where('phone', '==', formatPhone(phone))
+            .limit(1)
+            .get()
+            .then((snapshot) => {
+                if (snapshot.empty) {
+                    alert("No buyer account found with that phone number. Please sign up instead.");
+                    return;
+                }
+                const doc = snapshot.docs[0];
+                const b = doc.data();
+                finishBuyerLogin(doc.id, b.name, b.phone, b.email || '');
+            })
+            .catch((err) => {
+                alert("Login failed: " + err.message);
+            });
     }
 
    function finishBuyerLogin(buyerId, name, phone, email) {
@@ -3983,9 +4022,19 @@ async function hashPassword(password) {
         return number;
     }
 
-    function sellerShortId(id) {
+   function sellerShortId(id) {
         return id.substring(0, 6).toUpperCase();
     }
+
+    function generateOrderRef() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return 'KM-' + code;
+    }
+
 function trackVisit() {
         let visitorId = localStorage.getItem('kayaVisitorId');
         if (!visitorId) {
@@ -5141,6 +5190,7 @@ let pendingChatItem = null;
 let pendingOrderUrl = null;
 let pendingOrderItems = [];
 let pendingOrderIsCart = false;
+let pendingOrderRef = null;
 
 function selectOrderMethod(method) {
     document.getElementById('orderDeliveryMethod').value = method;
@@ -5151,7 +5201,8 @@ function selectOrderMethod(method) {
 function openOrderForm(orderItems, isCart) {
     pendingOrderItems = orderItems;
     pendingOrderIsCart = isCart;
-    renderMomoPaymentInfo(orderItems);
+    pendingOrderRef = generateOrderRef();
+    renderMomoPaymentInfo(orderItems, pendingOrderRef);
 
     const summaryDiv = document.getElementById('orderFormItemsSummary');
     let total = 0;
@@ -5177,7 +5228,7 @@ function openOrderForm(orderItems, isCart) {
 function closeOrderForm() {
     document.getElementById('orderFormModal').style.display = 'none';
 }
-function renderMomoPaymentInfo(orderItems) {
+function renderMomoPaymentInfo(orderItems, orderRef) {
     const infoDiv = document.getElementById('momoPaymentInfo');
     if (!infoDiv) return;
 
@@ -5190,7 +5241,17 @@ function renderMomoPaymentInfo(orderItems) {
 
     const entries = Object.entries(sellerMap);
 
-    infoDiv.innerHTML = entries.map(([phone, name]) => `
+    const refHtml = orderRef ? `
+        <div style="margin-bottom:10px; padding:8px 10px; background:white; border-radius:8px; border:1.5px dashed #2980b9;">
+            <div style="font-size:11.5px; color:#777;">Enter this as your MTN payment reference:</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:2px;">
+                <strong style="font-size:16px; letter-spacing:1px;">${orderRef}</strong>
+                <button type="button" onclick="copyMomoNumber('${orderRef}')" style="width:auto; padding:5px 10px; font-size:11px; background:#2980b9; color:white; border:none; border-radius:6px; cursor:pointer;">📋 Copy</button>
+            </div>
+        </div>
+    ` : '';
+
+    infoDiv.innerHTML = refHtml + entries.map(([phone, name]) => `
         <div style="margin-bottom:8px;">
             <div style="font-size:14px;">Send payment to: <strong>${phone}</strong></div>
             <div style="font-size:12.5px; color:#777;">Account name: ${name}</div>
@@ -5198,7 +5259,6 @@ function renderMomoPaymentInfo(orderItems) {
         </div>
     `).join('<div style="height:1px; background:#ddd; margin:8px 0;"></div>');
 }
-
 function copyMomoNumber(number) {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(number).then(() => {
@@ -5276,7 +5336,7 @@ function submitOrderForm() {
     btn.disabled = true;
     btn.innerText = "Submitting...";
 
-    db.collection('orders').add({
+   db.collection('orders').add({
         items: pendingOrderItems,
         total: total,
         deliveryMethod: deliveryMethod,
@@ -5286,10 +5346,11 @@ function submitOrderForm() {
         buyerPhone: formatPhone(phone),
         buyerId: localStorage.getItem('kayaBuyerId') || null,
         status: 'pending',
+        orderRef: pendingOrderRef,
+        paymentClaimed: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
-   }).then(() => {
+   }).then((docRef) => {
         billSellerCommission(pendingOrderItems, name);
-        alert("Order submitted! We'll be in touch shortly to arrange " + deliveryMethod.toLowerCase() + ".");
         closeOrderForm();
 
         if (pendingOrderIsCart) {
@@ -5300,6 +5361,8 @@ function submitOrderForm() {
             closeDetailModal();
         }
 
+        openPaymentClaimModal(docRef.id, pendingOrderRef, total);
+
         btn.disabled = false;
         btn.innerText = "Submit Order";
     }).catch((err) => {
@@ -5308,6 +5371,36 @@ function submitOrderForm() {
         btn.innerText = "Submit Order";
     });
 }
+function openPaymentClaimModal(orderId, ref, total) {
+    document.getElementById('paymentClaimRefText').innerText = ref;
+    document.getElementById('paymentClaimTotalText').innerText = 'GHS ' + total;
+    document.getElementById('paymentClaimConfirmBtn').setAttribute('onclick', "markPaymentSent('" + orderId + "')");
+    document.getElementById('paymentClaimModal').style.display = 'flex';
+}
+
+function closePaymentClaimModal() {
+    document.getElementById('paymentClaimModal').style.display = 'none';
+}
+
+function markPaymentSent(orderId) {
+    const confirmBtn = document.getElementById('paymentClaimConfirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = "Recording...";
+    db.collection('orders').doc(orderId).update({
+        paymentClaimed: true,
+        paymentClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("Thanks! We've recorded that you sent payment. The seller will confirm receipt shortly.");
+        closePaymentClaimModal();
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "✅ Yes, I've Sent It";
+    }).catch(err => {
+        alert("Couldn't record this right now: " + err.message);
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "✅ Yes, I've Sent It";
+    });
+}
+
 function startChat() {
     const item = items[currentDetailIndex];
     if (!item.postedBy || item.postedBy === 'OWNER') {
@@ -5319,10 +5412,11 @@ function startChat() {
         openChatWindow(item);
     } else {
         pendingChatItem = item;
-        document.getElementById('buyerNameModal').style.display = 'flex';
+        alert("Please create a buyer account first so the seller knows who's messaging them.");
+        switchBuyerTab('register');
+        document.getElementById('getStartedModal').style.display = 'flex';
     }
 }
-
 function saveBuyerName() {
     const name = document.getElementById('buyerNameInput').value;
     if (!name) {
@@ -5397,9 +5491,9 @@ let currentChatId = null;
 let chatUnsubscribe = null;
 
 function openChatWindow(item) {
-    currentChatId = item.sellerPhone + '_' + item.firestoreId;
-    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + item.title;
-    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    const buyerKey = localStorage.getItem('kayaBuyerId') || 'guest';
+    currentChatId = item.sellerPhone + '_' + item.firestoreId + '_' + buyerKey;
+    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + item.title;    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
     document.getElementById('chatModal').style.display = 'flex';
 
     if (chatUnsubscribe) chatUnsubscribe();
