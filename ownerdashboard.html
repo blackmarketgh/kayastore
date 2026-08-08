@@ -484,7 +484,9 @@
             <button class="dash-tab-btn active" id="tabBtn-overview" onclick="switchDashTab('overview')">📊 Overview</button>
          <button class="dash-tab-btn" id="tabBtn-sellers" onclick="switchDashTab('sellers')">🧑‍💼 Sellers <span class="pending-count-badge" id="pendingSellerCount">0</span></button>
             <button class="dash-tab-btn" id="tabBtn-buyers" onclick="switchDashTab('buyers')">🛍️ Buyers</button>
-            <button class="dash-tab-btn" id="tabBtn-items" onclick="switchDashTab('items')">🛒 Items <span class="pending-count-badge" id="pendingItemCount">0</span></button>
+           <button class="dash-tab-btn" id="tabBtn-items" onclick="switchDashTab('items')">🛒 Items <span class="pending-count-badge" id="pendingItemCount">0</span></button>
+           <button class="dash-tab-btn" id="tabBtn-payments" onclick="switchDashTab('payments')">💵 Payments <span class="pending-count-badge" id="pendingPaymentCount">0</span></button>
+            <button class="dash-tab-btn" id="tabBtn-commissions" onclick="switchDashTab('commissions')">🏦 Commissions <span class="pending-count-badge" id="pendingCommissionCount">0</span></button>
             <button class="dash-tab-btn" id="tabBtn-export" onclick="switchDashTab('export')">📁 Export</button>
         </div>
 
@@ -533,8 +535,26 @@
             </div>
         </div>
 
+<div class="dash-tab-panel" id="tab-payments">
+            <div class="items-subtabs">
+                <button class="items-subtab-btn active" id="paymentsSubtab-claimed" onclick="switchPaymentsSubtab('claimed')">💸 Awaiting Confirmation</button>
+                <button class="items-subtab-btn" id="paymentsSubtab-all" onclick="switchPaymentsSubtab('all')">📋 All Orders</button>
+            </div>
+            <div class="items-subpanel active" id="paymentsPanel-claimed">
+                <div id="claimedPaymentsList">Loading...</div>
+            </div>
+            <div class="items-subpanel" id="paymentsPanel-all">
+                <div id="allPaymentsList">Loading...</div>
+            </div>
+        </div>
+
+<div class="dash-tab-panel" id="tab-commissions">
+            <div id="commissionsTotalBar" style="font-weight:700; margin-bottom:12px; color:#1a5c3a;"></div>
+            <div id="commissionsList">Loading...</div>
+        </div>
+
         <div class="dash-tab-panel" id="tab-export">
-            <p class="export-note">Exports use the date range set in the Overview tab (leave blank to export everything).</p>
+ <p class="export-note">Exports use the date range set in the Overview tab (leave blank to export everything).</p>
             <button class="export-btn" onclick="exportSalesCSV()">⬇️ Export Sales CSV</button>
         </div>
        </div>
@@ -569,6 +589,72 @@ if (localStorage.getItem('kayaOwner') !== 'true') {
         document.querySelectorAll('.items-subpanel').forEach(p => p.classList.remove('active'));
         document.getElementById('itemsSubtab-' + sub).classList.add('active');
         document.getElementById('itemsPanel-' + sub).classList.add('active');
+    }
+
+let allOrdersData = [];
+
+    function switchPaymentsSubtab(sub) {
+        document.querySelectorAll('.paymentsSubtab-claimed, .paymentsSubtab-all').forEach(() => {});
+        document.getElementById('paymentsSubtab-claimed').classList.toggle('active', sub === 'claimed');
+        document.getElementById('paymentsSubtab-all').classList.toggle('active', sub === 'all');
+        document.getElementById('paymentsPanel-claimed').classList.toggle('active', sub === 'claimed');
+        document.getElementById('paymentsPanel-all').classList.toggle('active', sub === 'all');
+    }
+
+    function loadOrdersData() {
+        db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            allOrdersData = [];
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                d.firestoreId = doc.id;
+                allOrdersData.push(d);
+            });
+            renderPaymentsTabs();
+        });
+    }
+
+    function orderRow(order, showConfirmBtn) {
+        const dateStr = order.createdAt ? order.createdAt.toDate().toLocaleString() : '';
+        return `
+            <div class="seller-req-item">
+                <div class="seller-req-name">${order.orderRef || 'No ref'} — GHS ${order.total}</div>
+                <div class="seller-req-meta">🛍️ ${order.buyerName || 'Unknown buyer'} · 📞 ${order.buyerPhone || ''}</div>
+                <div class="seller-req-meta">${dateStr}</div>
+                <span class="seller-status-tag ${order.paymentConfirmed ? 'approved' : (order.paymentClaimed ? 'warned' : 'pending')}">
+                    ${order.paymentConfirmed ? 'Confirmed Received' : (order.paymentClaimed ? 'Buyer Claims Sent' : 'Not Yet Claimed')}
+                </span>
+                ${showConfirmBtn && order.paymentClaimed && !order.paymentConfirmed ? `
+                    <div class="seller-req-actions">
+                        <button class="seller-req-approve" onclick="confirmOrderPayment('${order.firestoreId}')">✔ Confirm Received</button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function renderPaymentsTabs() {
+        const claimed = allOrdersData.filter(o => o.paymentClaimed && !o.paymentConfirmed);
+        const badge = document.getElementById('pendingPaymentCount');
+        badge.style.display = claimed.length > 0 ? 'inline-block' : 'none';
+        badge.innerText = claimed.length;
+
+        const claimedList = document.getElementById('claimedPaymentsList');
+        claimedList.innerHTML = claimed.length === 0
+            ? '<p style="color:#999; font-size:13px;">No payments awaiting confirmation.</p>'
+            : claimed.map(o => orderRow(o, true)).join('');
+
+        const allList = document.getElementById('allPaymentsList');
+        allList.innerHTML = allOrdersData.length === 0
+            ? '<p style="color:#999; font-size:13px;">No orders yet.</p>'
+            : allOrdersData.map(o => orderRow(o, true)).join('');
+    }
+
+    function confirmOrderPayment(orderId) {
+        if (!confirm("Confirm that this payment was received?")) return;
+        db.collection('orders').doc(orderId).update({
+            paymentConfirmed: true,
+            paymentConfirmedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => alert('Failed: ' + err.message));
     }
 
     let allItemsData = [];
@@ -837,7 +923,74 @@ function getSellerStats(sellerName) {
         const sellerEarnings = totalRevenue - totalCommission;
         return { itemsPosted, itemsPending, itemsApproved, itemsDeclined, salesCount, totalCommission, totalRevenue, sellerEarnings };
     }
-    function renderAllSellers() {        const list = document.getElementById('allSellersList');
+function renderCommissions() {
+        const list = document.getElementById('commissionsList');
+        const totalBar = document.getElementById('commissionsTotalBar');
+        const badge = document.getElementById('pendingCommissionCount');
+
+        if (allSalesData.length === 0) {
+            list.innerHTML = '<p style="color:#999; font-size:13px;">No sales yet.</p>';
+            totalBar.innerText = '';
+            badge.style.display = 'none';
+            return;
+        }
+
+        const bySeller = {};
+        allSalesData.forEach(sale => {
+            const sid = sale.sellerId || 'unknown';
+            if (!bySeller[sid]) bySeller[sid] = { sellerName: sale.sellerName || 'Unknown Seller', sales: [] };
+            bySeller[sid].sales.push(sale);
+        });
+
+        let totalOutstanding = 0;
+        let totalCollected = 0;
+        const sellersWithOutstanding = Object.keys(bySeller).filter(sid => {
+            const outstanding = bySeller[sid].sales.filter(s => !s.collected);
+            return outstanding.length > 0;
+        });
+
+        Object.values(bySeller).forEach(group => {
+            group.sales.forEach(s => {
+                if (s.collected) totalCollected += s.commission;
+                else totalOutstanding += s.commission;
+            });
+        });
+
+        totalBar.innerText = `Outstanding: GHS ${totalOutstanding.toFixed(2)} · Already Collected: GHS ${totalCollected.toFixed(2)}`;
+        badge.style.display = sellersWithOutstanding.length > 0 ? 'inline-block' : 'none';
+        badge.innerText = sellersWithOutstanding.length;
+
+        list.innerHTML = Object.keys(bySeller).map(sid => {
+            const group = bySeller[sid];
+            const outstanding = group.sales.filter(s => !s.collected);
+            const outstandingTotal = outstanding.reduce((sum, s) => sum + s.commission, 0);
+            const saleIds = outstanding.map(s => s.firestoreId);
+
+            return `
+                <div class="seller-req-item">
+                    <div class="seller-req-name">${group.sellerName}</div>
+                    <div class="seller-req-meta">${group.sales.length} sale(s) total</div>
+                    <span class="seller-status-tag ${outstandingTotal > 0 ? 'pending' : 'approved'}">
+                        ${outstandingTotal > 0 ? 'Owes GHS ' + outstandingTotal.toFixed(2) : 'Settled ✓'}
+                    </span>
+                    ${outstandingTotal > 0 ? `
+                        <div class="seller-req-actions">
+                            <button class="seller-req-approve" onclick='collectSellerCommission(${JSON.stringify(saleIds)})'>💰 Mark as Received</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function collectSellerCommission(saleIds) {
+        if (!confirm("Mark all outstanding commission for this seller as received?")) return;
+        const promises = saleIds.map(id => db.collection('sales').doc(id).update({ collected: true }));
+        Promise.all(promises).catch(err => alert('Failed: ' + err.message));
+    }
+
+    function renderAllSellers() {
+  const list = document.getElementById('allSellersList');
         if (allSellersFullList.length === 0) {
             list.innerHTML = '<p style="color:#999; font-size:13px;">No sellers yet.</p>';
             return;
@@ -925,11 +1078,12 @@ function getSellerStats(sellerName) {
         }
     }
 
-  function loadDashboard() {
+ function loadDashboard() {
         loadPendingSellers();
         loadAllSellers();
         loadAllBuyers();
         loadAllItems();
+        loadOrdersData();
 
         db.collection('items').get().then(snap => {
             activeItemCount = snap.size;
@@ -946,7 +1100,7 @@ function getSellerStats(sellerName) {
             renderStats();
         });
 
-   db.collection('sales').orderBy('soldAt', 'desc').get().then(snap => {
+ db.collection('sales').orderBy('soldAt', 'desc').get().then(snap => {
             allSalesData = snap.docs.map(doc => {
                 const d = doc.data();
                 return {
@@ -957,14 +1111,17 @@ function getSellerStats(sellerName) {
                     commission: d.commission || 0,
                     title: d.title || '',
                     price: d.price || 0,
+                    sellerId: d.sellerId || '',
                     sellerName: d.sellerName || '',
                     buyerName: d.buyerName || '',
+                    collected: d.collected || false,
                     clickable: true
                 };
             });
-            renderStats();
+          renderStats();
             renderActivityFeed();
             renderAllSellers();
+            renderCommissions();
         });
 
         db.collection('sellers').orderBy('createdAt', 'desc').get().then(snap => {
