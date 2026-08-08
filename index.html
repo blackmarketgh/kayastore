@@ -2051,7 +2051,12 @@ body.dark-mode .pd-icon-btn { background: rgba(44,44,44,0.9); color: #f0f0f0; }
 @media (max-width: 600px) {
     .pd-gallery-wrap { max-height: 45vh; }
 }
-
+@media (max-width: 899px) {
+    #detailModal .pd-content {
+        overflow-y: visible;
+        flex: none;
+    }
+}
 body {
     padding-bottom: 70px;
 }
@@ -2330,7 +2335,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
 
    <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:75px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
 
-   <button id="favBtn" onclick="document.getElementById('categoryFilter').value='Favorites'; renderItems(); window.scrollTo({top:0, behavior:'smooth'});" style="position:fixed; top:20px; right:185px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">❤️</button>
+  
 
     <button id="sellersBtn" onclick="openSellersPanel()" style="display:none; position:fixed; top:20px; right:240px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:18px; cursor:pointer; z-index:100;">
         🔔<span id="sellerRequestCount" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:none; align-items:center; justify-content:center;">0</span>
@@ -2820,6 +2825,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <button onclick="closeWriteReview()" style="margin-top:8px;">Cancel</button>
     </div>
 </div>
+<div class="modal" id="deliveryConfirmModal">
     <div class="modal-content" style="text-align:left;">
         <h3 style="text-align:center;">📦 Order Update</h3>
         <p style="font-size:13.5px; color:#777; text-align:center;">The seller marked your order as delivered. Please confirm and leave a quick review.</p>
@@ -2831,7 +2837,6 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
     </div>
 </div>
 <div class="modal" id="buyerNameModal">
-
     <div class="modal-content" style="text-align:center;">
         <h3>What's your name?</h3>
         <p style="font-size:13px; color:#777;">So the seller knows who's messaging them.</p>
@@ -3918,13 +3923,11 @@ if (buyerLogoutLink) buyerLogoutLink.style.display = (buyerName && !sellerId) ? 
 if (myListingsOption) myListingsOption.style.display = (isOwner || (sellerId && sellerStatus === 'approved')) ? 'block' : 'none';
     }window.addEventListener('scroll', function() {    const shouldHide = window.scrollY > 50;
     const modeToggle = document.getElementById('modeToggle');
-    const favBtn = document.getElementById('favBtn');
     const cartBtn = document.getElementById('cartBtn');
     const hamburger = document.querySelector('button[onclick="toggleTabsMenu()"]');
     const bellBtn = document.querySelector('.top-bell-btn');
 
     if (modeToggle) modeToggle.style.display = shouldHide ? 'none' : 'inline-block';
-    if (favBtn) favBtn.style.display = shouldHide ? 'none' : 'inline-block';
     if (cartBtn) cartBtn.style.display = shouldHide ? 'none' : 'inline-block';
     if (hamburger) hamburger.style.display = shouldHide ? 'none' : 'block';
     if (bellBtn) bellBtn.style.display = shouldHide ? 'none' : 'flex';
@@ -4196,19 +4199,23 @@ const filtered = items.filter(item => {
             }
         }
 
-        card.innerHTML = `
+       card.innerHTML = `
             <div style="position:relative;">
               <img src="${(item.images && item.images.length > 0 ? item.images[0] : item.image) || 'https://via.placeholder.com/200x150?text=No+Image'}"
  alt="${item.title}"
  onclick="openDetail(${idx})"
  style="cursor:pointer; ${isSoldOut ? 'filter:grayscale(60%); opacity:0.7;' : ''}">
 
-                ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : (item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>` : '')}
+                ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : ''}
                 <span onclick="toggleFavorite(${idx})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(idx) ? '❤️' : '🤍'}</span>
             </div>
            <div class="item-info">
                 <h3 onclick="openDetail(${idx})" style="cursor:pointer;">${item.title}</h3>
                 <div class="price">GHS ${item.price}</div>
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <span style="font-size:11.5px; color:#e67e22;">${item.avgRating ? starString(item.avgRating) + ' (' + item.reviewCount + ')' : '☆☆☆☆☆ (0)'}</span>
+                    ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge" style="position:static; background:${item.condition === 'New' ? '#27ae60' : '#2980b9'};">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURB'}</span>` : ''}
+                </div>
                 <div class="item-card-footer">
                     <button class="item-card-order-btn" onclick="handleOrderClick(${idx})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>${isSoldOut ? 'Sold Out' : 'Order Now'}</button>
                     <button class="item-card-cart-btn" onclick="addToCart(${idx})" ${isSoldOut ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
@@ -4836,9 +4843,21 @@ function renderDetailPhotosRail(item) {
         `).join('');
     }
 
-    function starString(n) {
+   function starString(n) {
         const rounded = Math.round(n);
         return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+    }
+
+    function updateItemRating(itemFirestoreId, newStars) {
+        return db.collection('items').doc(itemFirestoreId).get().then(doc => {
+            if (!doc.exists) return;
+            const data = doc.data();
+            const oldCount = data.reviewCount || 0;
+            const oldAvg = data.avgRating || 0;
+            const newCount = oldCount + 1;
+            const newAvg = ((oldAvg * oldCount) + newStars) / newCount;
+            return db.collection('items').doc(itemFirestoreId).update({ avgRating: newAvg, reviewCount: newCount });
+        });
     }
 
     let currentReviewsUnsub = null;
@@ -4906,10 +4925,11 @@ function renderDetailPhotosRail(item) {
             alert("Please enter your name and a review.");
             return;
         }
-        db.collection('items').doc(item.firestoreId).collection('reviews').add({
+      db.collection('items').doc(item.firestoreId).collection('reviews').add({
             authorName, text, stars: writeReviewStars,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
+            updateItemRating(item.firestoreId, writeReviewStars);
             closeWriteReview();
         }).catch(err => alert("Failed to submit review: " + err.message));
     }
@@ -4990,14 +5010,14 @@ function submitDeliveryConfirmation() {
         const stars = it._dcStars || 5;
         const text = (document.getElementById(`dcReview${i}`).value || '').trim();
 
-        if (it.firestoreId) {
+       if (it.firestoreId) {
             reviewPromises.push(
                 db.collection('items').doc(it.firestoreId).collection('reviews').add({
                     authorName: order.buyerName || 'Buyer',
                     text: text || 'No comment provided.',
                     stars: stars,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                })
+                }).then(() => updateItemRating(it.firestoreId, stars))
             );
         }
 
