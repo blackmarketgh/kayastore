@@ -299,10 +299,11 @@ tr:last-child td { border-bottom: none; }
             <h3>Total Sales</h3>
             <h1 id="totalSales">GHS 0</h1>
         </div>
-        <div class="card">
+       <div class="card">
             <span class="card-icon">🏦</span>
-            <h3>Commission Earned</h3>
+            <h3>Commission Owed</h3>
             <h1 id="commission">GHS 0</h1>
+           <button class="icon-btn edit" id="payCommissionBtn" style="margin-top:6px; width:fit-content;" onclick="openPayCommissionModal()"> Pay Commission</button>
         </div>
         <div class="card">
             <span class="card-icon">⭐</span>
@@ -406,6 +407,40 @@ tr:last-child td { border-bottom: none; }
 
 </div>
 
+<div id="payCommissionOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
+
+        <div id="payCommissionPayView">
+            <h2 style="font-size:19px; margin-bottom:6px;">Pay Your Commission</h2>
+            <p style="font-size:13px; color:#777; margin-bottom:16px;">Send your outstanding commission via MTN Mobile Money to the number below.</p>
+            <div style="background:#eef4fa; border-radius:12px; padding:16px; margin-bottom:16px;">
+                <div style="font-size:11.5px; color:#777; text-transform:uppercase; letter-spacing:0.5px;">Send to</div>
+                <div style="font-size:22px; font-weight:800; margin:4px 0;" id="payCommissionNumber">0591616403</div>
+                <div style="font-size:12.5px; color:#777;">Account name: Bright Asamoah Banson</div>
+            </div>
+            <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:16px;">
+                <div style="font-size:11.5px; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Amount owed</div>
+                <div style="font-size:20px; font-weight:800; color:#b85c0f;" id="payCommissionAmount">GHS 0</div>
+            </div>
+            <button class="icon-btn edit" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px;" onclick="copyCommissionNumber()"> Copy Number</button>
+            <button class="icon-btn" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:#27ae60;" onclick="markCommissionPaid()">Done, I've Paid</button>
+        </div>
+
+        <div id="payCommissionReviewView" style="display:none;">
+            <div style="font-size:40px; margin-bottom:8px;">⏳</div>
+            <h2 style="font-size:19px; margin-bottom:6px;">Payment Under Review</h2>
+            <p style="font-size:13.5px; color:#777; margin-bottom:16px;">We've flagged your payment for the owner to verify. This card will update automatically once they confirm receipt.</p>
+        </div>
+
+        <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePayCommissionModal()">Close</button>
+    </div>
+</div>
+
+<div id="paymentSuccessToast" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:14px 22px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.2); font-size:13.5px; font-weight:600; z-index:2000; align-items:center; gap:10px;">
+    <span style="font-size:18px;">✅</span>
+    <span>Payment Successful — your commission is settled!</span>
+</div>
+
 <script>
 const firebaseConfig = {
     apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
@@ -447,8 +482,7 @@ function loadSeller() {
         document.getElementById("sellerEmail").innerText = seller.email || "";
         document.getElementById("sellerPhone").innerText = seller.phone || "";
         document.getElementById("sellerPhoto").src = seller.photo || "https://via.placeholder.com/72";
-        document.getElementById("commission").innerText = "GHS " + (seller.commissionEarned || 0);
-        document.getElementById("totalSales").innerText = "GHS " + (seller.totalSales || 0);
+// Commission card is now driven live by outstanding sales — see updateCommissionCard()        document.getElementById("totalSales").innerText = "GHS " + (seller.totalSales || 0);
         document.getElementById("rating").innerText = (seller.avgRating || 0).toFixed(1) + " ★";
 
         document.getElementById("pendingBanner").style.display = seller.status === "pending" ? "inline-block" : "none";
@@ -613,11 +647,104 @@ function loadSalesHistory() {
                 return bt - at;
             });
 
-            renderSalesHistoryTable(sales);
+           renderSalesHistoryTable(sales);
             renderSalesChart(sales);
+            updateCommissionCard(sales);
         });
 }
 
+const KAYAMART_MOMO_NUMBER = "0591616403";
+let currentOutstandingCommission = 0;
+
+let wasUnderReview = false;
+let currentOutstandingSaleIds = [];
+
+function updateCommissionCard(sales) {
+    const outstandingSales = sales.filter(s => !s.collected);
+    const outstanding = outstandingSales.reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
+    const underReview = outstandingSales.length > 0 && outstandingSales.every(s => s.paymentClaimed);
+
+    currentOutstandingCommission = outstanding;
+    currentOutstandingSaleIds = outstandingSales.map(s => s.id);
+
+    if (wasUnderReview && outstanding === 0) {
+        showPaymentSuccessToast();
+    }
+    wasUnderReview = underReview;
+
+    const card = document.getElementById("commission");
+    const payBtn = document.getElementById("payCommissionBtn");
+
+    if (outstanding > 0) {
+        card.innerText = "-GHS " + outstanding.toFixed(2);
+        card.style.color = "#e74c3c";
+        if (underReview) {
+            payBtn.innerText = "⏳ Under Review";
+        } else {
+            payBtn.innerText = "💳 Pay Commission";
+        }
+        payBtn.style.display = "inline-block";
+    } else {
+        card.innerText = "GHS 0";
+        card.style.color = "var(--accent)";
+        payBtn.style.display = "none";
+    }
+}
+
+function showPaymentSuccessToast() {
+    const toast = document.getElementById("paymentSuccessToast");
+    toast.style.display = "flex";
+    setTimeout(() => { toast.style.display = "none"; }, 5000);
+}
+function openPayCommissionModal() {
+    if (currentOutstandingCommission <= 0) {
+        alert("You have no outstanding commission right now.");
+        return;
+    }
+    document.getElementById("payCommissionAmount").innerText = "GHS " + currentOutstandingCommission.toFixed(2);
+
+    if (wasUnderReview) {
+        document.getElementById("payCommissionPayView").style.display = "none";
+        document.getElementById("payCommissionReviewView").style.display = "block";
+    } else {
+        document.getElementById("payCommissionPayView").style.display = "block";
+        document.getElementById("payCommissionReviewView").style.display = "none";
+    }
+
+    document.getElementById("payCommissionOverlay").style.display = "flex";
+}
+
+function markCommissionPaid() {
+    if (currentOutstandingSaleIds.length === 0) return;
+    if (!confirm("Confirm you've sent GHS " + currentOutstandingCommission.toFixed(2) + " to KayaMart? The owner will review and confirm receipt.")) return;
+
+    const promises = currentOutstandingSaleIds.map(id =>
+        db.collection('sales').doc(id).update({
+            paymentClaimed: true,
+            paymentClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+    );
+
+    Promise.all(promises).then(() => {
+        document.getElementById("payCommissionPayView").style.display = "none";
+        document.getElementById("payCommissionReviewView").style.display = "block";
+    }).catch(err => alert("Failed: " + err.message));
+}
+function closePayCommissionModal() {
+    document.getElementById("payCommissionOverlay").style.display = "none";
+}
+
+function copyCommissionNumber() {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(KAYAMART_MOMO_NUMBER).then(() => {
+            alert("Number copied!");
+        }).catch(() => {
+            alert("Number: " + KAYAMART_MOMO_NUMBER);
+        });
+    } else {
+        alert("Number: " + KAYAMART_MOMO_NUMBER);
+    }
+}
 function renderSalesHistoryTable(sales) {
     const table = document.getElementById("salesHistoryTable");
     const outstandingLabel = document.getElementById("salesOutstandingLabel");
@@ -637,8 +764,9 @@ function renderSalesHistoryTable(sales) {
         let actionCell = '—';
         if (sale.collected) {
             statusBadge = '<span class="badge in-stock">Collected</span>';
-        } else if (sale.paymentClaimed) {
-            statusBadge = '<span class="badge low-stock">Payment Claimed</span>';
+      } else if (sale.paymentClaimed) {
+            statusBadge = '<span class="badge low-stock">Pending</span>';
+
         } else {
             statusBadge = '<span class="badge out-stock">Outstanding</span>';
             actionCell = `<button class="icon-btn edit" onclick="claimPaymentMade('${sale.id}')"> Paid</button>`;
