@@ -2975,7 +2975,17 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
 <input type="password" id="regPassword" placeholder="Create a password">
 <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Choose a profile avatar</label>                <div id="avatarPickerRow" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
                 <input type="hidden" id="regSelectedAvatar">
-               <button class="add-btn" id="submitRegisterBtn" onclick="submitSellerRegister()">Submit Request</button>
+
+                <div style="background:#fff4ea; border:1.5px solid #e67e22; border-radius:12px; padding:14px; margin-bottom:14px; text-align:center;">
+                    <div style="font-size:10.5px; font-weight:700; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Seller Registration Fee</div>
+                    <div style="margin:6px 0 2px;">
+                        <span style="font-size:22px; font-weight:800; color:#b85c0f;">GHS 49.99</span>
+                        <span style="font-size:14px; color:#999; text-decoration:line-through; margin-left:6px;">GHS 120</span>
+                    </div>
+                    <div style="font-size:11.5px; color:#b85c0f;">Launch discount — one-time fee to start selling</div>
+                </div>
+
+               <button class="add-btn" id="submitRegisterBtn" onclick="submitSellerRegister()">Continue to Payment</button>
             </div>
 
             <div id="sellerLoginForm" style="display:none;">
@@ -2988,6 +2998,36 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <button onclick="closeSellerAuth()" style="margin-top:8px;">Cancel</button>
         </div>
     </div>
+<div class="modal" id="payRegistrationModal">
+    <div class="modal-content" style="text-align:center;">
+
+        <div id="payRegPayView">
+            <div style="font-size:36px; margin-bottom:6px;">🏪</div>
+            <h3>Pay Your Registration Fee</h3>
+            <p style="font-size:13px; color:#777; margin-bottom:14px;">Send your one-time seller registration fee via MTN Mobile Money to the number below.</p>
+            <div style="background:#eef4fa; border-radius:12px; padding:16px; margin-bottom:14px;">
+                <div style="font-size:11px; color:#777; text-transform:uppercase; letter-spacing:0.5px;">Send to</div>
+                <div style="font-size:22px; font-weight:800; margin:4px 0;">0591616403</div>
+                <div style="font-size:12.5px; color:#777;">Account name: Bright Asamoah Banson</div>
+            </div>
+            <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:16px;">
+                <div style="font-size:11px; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Amount due</div>
+                <div style="font-size:20px; font-weight:800; color:#b85c0f;">GHS 49.99</div>
+            </div>
+          <button class="add-btn" onclick="copyRegistrationNumber()" style="margin-bottom:8px;">📋 Copy Number</button>
+            <button class="add-btn" id="payRegDoneBtn" style="background:#27ae60; margin-bottom:8px;" onclick="markRegistrationPaid()">Done,Paid</button>
+        </div>
+
+        <div id="payRegReviewView" style="display:none;">
+            <div style="font-size:40px; margin-bottom:8px;">⏳</div>
+            <h3>Payment Under Review</h3>
+            <p style="font-size:13.5px; color:#777; margin-bottom:16px;">We've flagged your payment for the owner to verify. Once confirmed, your seller account will also be reviewed for approval — you'll get a welcome notification once you're live.</p>
+        </div>
+
+        <button onclick="closePayRegistrationModal()">Close</button>
+    </div>
+</div>
+
 <div class="modal" id="themePickerModal">
     <div class="modal-content" style="text-align:center;">
         <h3>Choose a Theme Color</h3>
@@ -3525,27 +3565,27 @@ function submitSellerRegister() {
     btn.disabled = true;
     btn.innerText = "Submitting...";
 
-    function resetButton() {
+   function resetButton() {
         btn.disabled = false;
-        btn.innerText = "Submit Request";
+        btn.innerText = "Continue to Payment";
     }
 
-    hashPassword(password).then((hashedPassword) => {
+   hashPassword(password).then((hashedPassword) => {
         return db.collection('sellers').add({
             name, businessName: businessName || name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
             photo: photoData, ghanaCard, address,
             followerCount: 0,
+            paymentClaimed: false,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then((docRef) => {
             localStorage.setItem('kayaSellerId', docRef.id);
             localStorage.setItem('kayaSellerLocation', location);
             localStorage.setItem('kayaSellerName', name);
             sellerId = docRef.id;
-            alert("Registration submitted! Waiting for owner approval before you can post items.");
             closeSellerAuth();
             updateSellerLinkText();
             startGuestPromptTimer();
-            showGreetingToast(name, '🏪');
+            openPayRegistrationModal(docRef.id);
         });
     }).catch((err) => {
         alert("Registration failed: " + err.message);
@@ -3553,42 +3593,52 @@ function submitSellerRegister() {
         resetButton();
     });
 }
-function submitSellerLogin() {   
- const phone = document.getElementById('loginPhone').value;
-    const password = document.getElementById('loginPassword').value;
+const SELLER_REGISTRATION_NUMBER = "0591616403";
 
-    if (!phone || !password) {
-        alert("Please fill in all fields.");
-        return;
-    }
-
-    hashPassword(password).then((hashedPassword) => {
-        db.collection('sellers')
-            .where('phone', '==', formatPhone(phone))
-            .where('password', '==', hashedPassword)
-            .get()
-            .then((snapshot) => {
-                if (snapshot.empty) {
-                    alert("No matching account found.");
-                    return;
-                }
-             const doc = snapshot.docs[0];
-                const sellerData = doc.data();
-                localStorage.setItem('kayaSellerId', doc.id);
-                localStorage.setItem('kayaSellerLocation', sellerData.location || 'Other');
-                localStorage.setItem('kayaSellerName', sellerData.name || '');
-                sellerId = doc.id;
-                checkSellerStatus();
-                closeSellerAuth();
-                updateSellerLinkText();
-                showGreetingToast(sellerData.name || 'Seller', '🏪');
-            })
-            .catch((err) => {
-                alert("Login failed: " + err.message);
-            });
-    });
+function openPayRegistrationModal(newSellerId) {
+    document.getElementById('payRegPayView').style.display = 'block';
+    document.getElementById('payRegReviewView').style.display = 'none';
+    document.getElementById('payRegistrationModal').setAttribute('data-seller-id', newSellerId);
+    document.getElementById('payRegistrationModal').style.display = 'flex';
 }
 
+function closePayRegistrationModal() {
+    document.getElementById('payRegistrationModal').style.display = 'none';
+}
+
+function copyRegistrationNumber() {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(SELLER_REGISTRATION_NUMBER).then(() => {
+            alert("Mobile Money number copied!");
+        }).catch(() => {
+            alert("Number: " + SELLER_REGISTRATION_NUMBER);
+        });
+    } else {
+        alert("Number: " + SELLER_REGISTRATION_NUMBER);
+    }
+}
+
+function markRegistrationPaid() {
+    const modal = document.getElementById('payRegistrationModal');
+    const regSellerId = modal.getAttribute('data-seller-id');
+    if (!regSellerId) return;
+
+    const doneBtn = document.getElementById('payRegDoneBtn');
+    if (doneBtn) { doneBtn.disabled = true; doneBtn.innerText = "Recording..."; }
+
+    db.collection('sellers').doc(regSellerId).update({
+        paymentClaimed: true,
+        paymentClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('payRegPayView').style.display = 'none';
+        document.getElementById('payRegReviewView').style.display = 'block';
+        showGreetingToast(localStorage.getItem('kayaSellerName') || 'Seller', '🏪');
+    }).catch((err) => {
+        alert("Couldn't record this right now: " + err.message);
+    }).finally(() => {
+        if (doneBtn) { doneBtn.disabled = false; doneBtn.innerText = "Done, I've Paid"; }
+    });
+}
     function openSellersPanel() {
         document.getElementById('sellersModal').style.display = 'flex';
         const list = document.getElementById('sellersList');
@@ -3601,13 +3651,15 @@ function submitSellerLogin() {
             snapshot.forEach((doc) => {
                 const s = doc.data();
                 const statusColor = s.status === 'approved' ? '#27ae60' : s.status === 'declined' ? '#e74c3c' : '#e67e22';
-              const photoHtml = `<img src="${s.photo || getSellerAvatar(doc.id)}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">`;
+             const photoHtml = `<img src="${s.photo || getSellerAvatar(doc.id)}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">`;
+              const paymentTag = s.paymentClaimed ? '<span style="color:#e67e22; font-weight:700; font-size:11px;"> 💸 Payment Claimed</span>' : '<span style="color:#999; font-size:11px;"> ⏳ Not Paid Yet</span>';
               list.innerHTML += `
     <div style="padding:10px 0; border-bottom:1px solid #eee; display:flex; align-items:flex-start;">
         <div onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${photoHtml}</div>
         <div style="flex:1;">
-         <strong onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>
+       <strong onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>${paymentTag}
             <div style="font-size:11px; color:#999;">ID: ${sellerShortId(doc.id)}</div>
+
             <div style="font-size:13px; color:#777;">${s.phone}</div>
             <div style="display:flex; gap:6px; margin-top:6px;">
                 <button onclick="setSellerStatus('${doc.id}', 'approved')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Approve</button>
