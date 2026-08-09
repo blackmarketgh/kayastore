@@ -3639,6 +3639,43 @@ function markRegistrationPaid() {
         if (doneBtn) { doneBtn.disabled = false; doneBtn.innerText = "Done, I've Paid"; }
     });
 }
+
+function submitSellerLogin() {
+    const phone = document.getElementById('loginPhone').value;
+    const password = document.getElementById('loginPassword').value;
+
+    if (!phone || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    hashPassword(password).then((hashedPassword) => {
+        db.collection('sellers')
+            .where('phone', '==', formatPhone(phone))
+            .where('password', '==', hashedPassword)
+            .get()
+            .then((snapshot) => {
+                if (snapshot.empty) {
+                    alert("No matching account found.");
+                    return;
+                }
+                const doc = snapshot.docs[0];
+                const sellerData = doc.data();
+                localStorage.setItem('kayaSellerId', doc.id);
+                localStorage.setItem('kayaSellerLocation', sellerData.location || 'Other');
+                localStorage.setItem('kayaSellerName', sellerData.name || '');
+                sellerId = doc.id;
+                checkSellerStatus();
+                closeSellerAuth();
+                updateSellerLinkText();
+                showGreetingToast(sellerData.name || 'Seller', '🏪');
+            })
+            .catch((err) => {
+                alert("Login failed: " + err.message);
+            });
+    });
+}
+
     function openSellersPanel() {
         document.getElementById('sellersModal').style.display = 'flex';
         const list = document.getElementById('sellersList');
@@ -5411,7 +5448,7 @@ function copyMomoNumber(number) {
         alert("Number: " + number);
     }
 }
-const SELLER_COMMISSION_RATE = 0.07; // 7%
+const SELLER_COMMISSION_RATE = 0.05; // 5%
 
 function billSellerCommission(orderItems, buyerNameForSale) {
     orderItems.forEach(it => {
