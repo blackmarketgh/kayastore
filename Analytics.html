@@ -266,6 +266,77 @@ tr:last-child td { border-bottom: none; }
     .pending-banner { margin-left: 0; }
     th, td { font-size: 12px; padding: 10px 6px; }
 }
+
+.promote-slider-wrap {
+    position: relative;
+    height: 44px;
+    margin: 6px 0 16px;
+}
+.promote-slider-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    height: 10px;
+    border-radius: 6px;
+    background: #eee;
+    overflow: hidden;
+}
+.promote-slider-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #e74c3c, #e67e22);
+    border-radius: 6px;
+}
+.promote-slider-fire {
+    position: absolute;
+    top: -2px;
+    font-size: 26px;
+    pointer-events: none;
+    z-index: 2;
+    transition: left 0.05s linear;
+}
+#promoteHoursSlider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 44px;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    z-index: 3;
+}
+#promoteHoursSlider::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 44px;
+}
+#promoteHoursSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+#promoteHoursSlider::-moz-range-track {
+    background: transparent;
+    height: 44px;
+}
+#promoteHoursSlider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
 </style>
 </head>
 
@@ -470,35 +541,21 @@ tr:last-child td { border-bottom: none; }
     <span style="font-size:18px;">✅</span>
     <span>Payment Successful — your commission is settled!</span>
 </div>
-<div id="paymentSuccessToast" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:14px 22px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.2); font-size:13.5px; font-weight:600; z-index:2000; align-items:center; gap:10px;">
-    <span style="font-size:18px;">✅</span>
-    <span>Payment Successful — your commission is settled!</span>
-</div>
-
-<div id="promoteHoursOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
-        <h2 style="font-size:19px; margin-bottom:6px;">🔥 Promote This Item</h2>
-        <p style="font-size:13px; color:#777; margin-bottom:20px;">Drag the slider to choose how long to promote.</p>
-
-        <div style="font-size:38px; font-weight:800; color:var(--accent-orange); margin-bottom:4px;" id="promoteHoursSliderValue">24h</div>
-        <div style="font-size:22px; font-weight:700; color:#b85c0f; margin-bottom:18px;" id="promoteHoursSliderPrice">GHS 48.00</div>
-
-        <input type="range" id="promoteHoursSlider" min="1" max="72" step="1" value="24" style="width:100%; margin-bottom:6px; accent-color:var(--accent-orange);" oninput="updatePromoteHoursSlider()">
-
-        <div style="display:flex; justify-content:space-between; font-size:11px; color:#999; margin-bottom:20px;">
-            <span>1h</span>
-            <span>72h</span>
-        </div>
-
-        <button class="icon-btn edit" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:var(--accent-orange);" onclick="confirmPromoteHours()">Continue to Payment</button>
-        <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePromoteHoursModal()">Cancel</button>
-    </div>
-</div>
 
 <div id="promoteOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
     <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
         <h2 style="font-size:19px; margin-bottom:6px;">🔥 Promote This Item</h2>
-        <p style="font-size:13px; color:#777; margin-bottom:16px;">Send payment via MTN Mobile Money to activate <strong id="promoteHoursText"></strong> of promotion.</p>
+        <p style="font-size:13px; color:#777; margin-bottom:4px;">Drag to choose how many hours to promote for.</p>
+        <div style="font-size:15px; font-weight:700; margin-bottom:10px;" id="promoteHoursText">24 hours</div>
+
+        <div class="promote-slider-wrap">
+            <div class="promote-slider-track">
+                <div class="promote-slider-fill" id="promoteSliderFill"></div>
+            </div>
+            <span class="promote-slider-fire" id="promoteSliderFire">🔥</span>
+            <input type="range" id="promoteHoursSlider" min="1" max="72" value="24" step="1" oninput="onPromoteSliderChange()">
+        </div>
+
         <div style="background:#eef4fa; border-radius:12px; padding:16px; margin-bottom:16px;">
             <div style="font-size:11.5px; color:#777; text-transform:uppercase; letter-spacing:0.5px;">Send to</div>
             <div style="font-size:22px; font-weight:800; margin:4px 0;">0591616403</div>
@@ -513,8 +570,49 @@ tr:last-child td { border-bottom: none; }
             <div style="font-size:16px; font-weight:800; letter-spacing:1px; margin-top:2px;" id="promoteRefText"></div>
         </div>
         <button class="icon-btn edit" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px;" onclick="copyPromoteNumber()">📋 Copy Number</button>
-        <button class="icon-btn" id="promoteConfirmBtn" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:#27ae60;" onclick="confirmPromotePaid()">✅ Done, I've Paid</button>
+
+       <button class="icon-btn edit" id="promoteConfirmBtn" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:#27ae60;" onclick="confirmPromotePaid()">✅ Paid</button>
         <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePromoteModal()">Cancel</button>
+    </div>
+</div>
+
+<div id="editProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; max-width:420px; width:100%; padding:26px; text-align:left; max-height:88vh; overflow-y:auto;">
+        <h2 style="font-size:19px; margin-bottom:16px;">Manage Product</h2>
+
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; padding:12px; background:#f7f7f7; border-radius:12px;">
+            <img id="epThumb" style="width:56px; height:56px; border-radius:10px; object-fit:cover; background:#eee;">
+            <div>
+                <div id="epTitle" style="font-weight:700; font-size:15px;"></div>
+                <div id="epPrice" style="color:var(--accent); font-weight:700; font-size:14px; margin-top:2px;"></div>
+                <div style="font-size:11px; color:#999; margin-top:2px;">🔒 Name & price are locked</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Description</div>
+            <div id="epDescription" style="font-size:13.5px; color:#444; background:#f7f7f7; padding:10px; border-radius:8px;"></div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Current Stock: <span id="epCurrentStock"></span></div>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="epRestockAmount" placeholder="Add quantity" min="1" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-family:inherit;">
+                <button class="icon-btn edit" style="width:auto; padding:10px 16px;" onclick="restockProduct()">➕ Restock</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+            <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Discount</div>
+            <div id="epCurrentDiscount" style="font-size:12.5px; color:#e67e22; margin-bottom:6px;"></div>
+            <div style="display:flex; gap:8px;">
+                <input type="number" id="epDiscountPercent" placeholder="Discount % (e.g. 15)" min="1" max="99" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-family:inherit;">
+                <button class="icon-btn" style="width:auto; padding:10px 16px; background:#e67e22;" onclick="applyDiscount()">🏷️ Apply</button>
+            </div>
+            <button class="icon-btn delete" style="width:100%; margin-top:8px; font-size:12px; display:none;" id="epRemoveDiscountBtn" onclick="removeDiscount()">Remove Discount</button>
+        </div>
+
+        <button class="icon-btn delete" style="width:100%; padding:12px;" onclick="closeEditProductModal()">Close</button>
     </div>
 </div>
 
@@ -670,12 +768,12 @@ function renderProductsTable() {
                         </div>
                     </div>
                 </td>
-               <td>GHS ${item.price}</td>
+              <td>${item.discountPercent ? `<span style="text-decoration:line-through; color:#999; font-size:11.5px;">GHS ${item.price}</span><br><strong style="color:#e74c3c;">GHS ${(Number(item.price) * (1 - item.discountPercent / 100)).toFixed(2)}</strong> <span style="color:#e67e22; font-size:10.5px; font-weight:700;">-${item.discountPercent}%</span>` : `GHS ${item.price}`}</td>
                 <td>${stockBadge}</td>
                 <td>${statusBadge}${item.promoted ? '<br>' + promotionStatusBadge(item) : ''}</td>
                 <td>
-                    <div class="row-actions">
-                        <button class="icon-btn edit" onclick="editProduct('${item.firestoreId}')">Edit</button>
+                   <div class="row-actions">
+                        <button class="icon-btn edit" onclick="openEditProductModal('${item.firestoreId}')">Manage</button>
                         <button class="icon-btn" style="background:${item.promoted ? '#999' : '#e67e22'};" onclick="togglePromote('${item.firestoreId}')">${item.promoted ? '✕ Unpromote' : '🔥 Promote'}</button>
                         <button class="icon-btn delete" onclick="deleteProduct('${item.firestoreId}')">Delete</button>
                     </div>
@@ -695,26 +793,82 @@ function promotionStatusBadge(item) {
     }
 }
 
-function editProduct(firestoreId) {
+let currentEditProductId = null;
+
+function openEditProductModal(firestoreId) {
     const item = currentItems.find(i => i.firestoreId === firestoreId);
     if (!item) return;
+    currentEditProductId = firestoreId;
 
-    const newTitle = prompt("Item name:", item.title);
-    if (newTitle === null) return;
-    const newPrice = prompt("Price (GHS):", item.price);
-    if (newPrice === null) return;
-    const newStock = prompt("Stock quantity:", item.stock ?? '');
-    if (newStock === null) return;
-    const newDescription = prompt("Description:", item.description || "");
+    document.getElementById("epThumb").src = (item.images && item.images[0]) || item.image || 'https://via.placeholder.com/56x56?text=No+Image';
+    document.getElementById("epTitle").innerText = item.title;
+    document.getElementById("epPrice").innerText = "GHS " + item.price;
+    document.getElementById("epDescription").innerText = item.description || 'No description provided.';
+    document.getElementById("epCurrentStock").innerText = (item.stock !== undefined && item.stock !== '') ? item.stock : 'Unlimited';
+    document.getElementById("epRestockAmount").value = '';
 
-    db.collection('items').doc(firestoreId).update({
-        title: newTitle,
-        price: newPrice,
-        stock: newStock,
-        description: newDescription
-    });
+    const discountEl = document.getElementById("epCurrentDiscount");
+    const removeBtn = document.getElementById("epRemoveDiscountBtn");
+    if (item.discountPercent) {
+        const discountedPrice = (Number(item.price) * (1 - item.discountPercent / 100)).toFixed(2);
+        discountEl.innerText = `Active: ${item.discountPercent}% off → GHS ${discountedPrice}`;
+        removeBtn.style.display = 'block';
+    } else {
+        discountEl.innerText = 'No discount applied.';
+        removeBtn.style.display = 'none';
+    }
+    document.getElementById("epDiscountPercent").value = '';
+
+    document.getElementById("editProductModal").style.display = "flex";
 }
 
+function closeEditProductModal() {
+    document.getElementById("editProductModal").style.display = "none";
+    currentEditProductId = null;
+}
+
+function restockProduct() {
+    if (!currentEditProductId) return;
+    const amount = Number(document.getElementById("epRestockAmount").value);
+    if (!amount || amount <= 0) {
+        alert("Please enter a valid quantity to add.");
+        return;
+    }
+    const item = currentItems.find(i => i.firestoreId === currentEditProductId);
+    if (!item) return;
+    const currentStock = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : 0;
+    const newStock = currentStock + amount;
+
+    db.collection('items').doc(currentEditProductId).update({ stock: newStock }).then(() => {
+        document.getElementById("epRestockAmount").value = '';
+        document.getElementById("epCurrentStock").innerText = newStock;
+        alert("Stock updated! New total: " + newStock);
+    }).catch(err => alert("Failed: " + err.message));
+}
+
+function applyDiscount() {
+    if (!currentEditProductId) return;
+    const percent = Number(document.getElementById("epDiscountPercent").value);
+    if (!percent || percent <= 0 || percent >= 100) {
+        alert("Please enter a valid discount percentage (1-99).");
+        return;
+    }
+    db.collection('items').doc(currentEditProductId).update({ discountPercent: percent }).then(() => {
+        alert(percent + "% discount applied!");
+        closeEditProductModal();
+    }).catch(err => alert("Failed: " + err.message));
+}
+
+function removeDiscount() {
+    if (!currentEditProductId) return;
+    if (!confirm("Remove the discount from this item?")) return;
+    db.collection('items').doc(currentEditProductId).update({
+        discountPercent: firebase.firestore.FieldValue.delete()
+    }).then(() => {
+        alert("Discount removed.");
+        closeEditProductModal();
+    }).catch(err => alert("Failed: " + err.message));
+}
 function deleteProduct(firestoreId) {
     const item = currentItems.find(i => i.firestoreId === firestoreId);
     if (!item) return;
@@ -735,17 +889,8 @@ function togglePromote(firestoreId) {
         return;
     }
 
-    const hoursInput = prompt("Promote for how many hours? (e.g. 6, 12, 24)", "24");
-    if (hoursInput === null) return;
-    const hours = Number(hoursInput);
-    if (!hours || hours <= 0) {
-        alert("Please enter a valid number of hours.");
-        return;
-    }
-
-    openPromoteModal(firestoreId, hours);
+    openPromoteModal(firestoreId);
 }
-
 function generatePromoRef() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
@@ -756,17 +901,39 @@ function generatePromoRef() {
 let pendingPromoteFirestoreId = null;
 let pendingPromoteHours = 0;
 
-function openPromoteModal(firestoreId, hours) {
+function openPromoteModal(firestoreId) {
     pendingPromoteFirestoreId = firestoreId;
+    const defaultHours = 24;
+
+    const ref = generatePromoRef();
+    document.getElementById("promoteRefText").innerText = ref;
+    document.getElementById("promoteConfirmBtn").setAttribute('data-ref', ref);
+
+    const slider = document.getElementById("promoteHoursSlider");
+    slider.value = defaultHours;
+    updatePromoteSliderUI(defaultHours);
+
+    document.getElementById("promoteOverlay").style.display = "flex";
+}
+
+function onPromoteSliderChange() {
+    const hours = Number(document.getElementById("promoteHoursSlider").value);
+    updatePromoteSliderUI(hours);
+}
+
+function updatePromoteSliderUI(hours) {
     pendingPromoteHours = hours;
     const cost = hours * PROMOTION_RATE_PER_HOUR;
-    const ref = generatePromoRef();
 
     document.getElementById("promoteHoursText").innerText = hours + " hour" + (hours === 1 ? "" : "s");
     document.getElementById("promoteAmountText").innerText = "GHS " + cost.toFixed(2);
-    document.getElementById("promoteRefText").innerText = ref;
-    document.getElementById("promoteConfirmBtn").setAttribute('data-ref', ref);
-    document.getElementById("promoteOverlay").style.display = "flex";
+
+    const slider = document.getElementById("promoteHoursSlider");
+    const min = Number(slider.min), max = Number(slider.max);
+    const percent = ((hours - min) / (max - min)) * 100;
+
+    document.getElementById("promoteSliderFill").style.width = percent + "%";
+    document.getElementById("promoteSliderFire").style.left = "calc(" + percent + "% - 14px)";
 }
 
 function closePromoteModal() {
