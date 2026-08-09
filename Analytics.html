@@ -305,6 +305,11 @@ tr:last-child td { border-bottom: none; }
             <h1 id="commission">GHS 0</h1>
            <button class="icon-btn edit" id="payCommissionBtn" style="margin-top:6px; width:fit-content;" onclick="openPayCommissionModal()"> Pay Commission</button>
         </div>
+       <div class="card">
+            <span class="card-icon">🔥</span>
+            <h3>Active Promotions</h3>
+            <h1 id="activePromotionsCount">0</h1>
+        </div>
         <div class="card">
             <span class="card-icon">⭐</span>
             <h3>Average Rating</h3>
@@ -356,9 +361,34 @@ tr:last-child td { border-bottom: none; }
         </div>
     </div>
 
+   <div class="section">
+        <div class="section-header">
+            <h2>🔥 Promoted Items</h2>
+            <span class="section-sub" id="promotedCountLabel"></span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Hours Bought</th>
+                        <th>Amount Paid</th>
+                        <th>Reference</th>
+                        <th>Payment Status</th>
+                        <th>Time Left</th>
+                    </tr>
+                </thead>
+                <tbody id="promotedItemsTable">
+                    <tr class="empty-row"><td colspan="6">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="section">
         <div class="section-header">
             <h2>📬 Recent Orders</h2>
+
             <span class="section-sub">Orders containing your items</span>
         </div>
         <div class="table-wrap">
@@ -440,6 +470,53 @@ tr:last-child td { border-bottom: none; }
     <span style="font-size:18px;">✅</span>
     <span>Payment Successful — your commission is settled!</span>
 </div>
+<div id="paymentSuccessToast" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:14px 22px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.2); font-size:13.5px; font-weight:600; z-index:2000; align-items:center; gap:10px;">
+    <span style="font-size:18px;">✅</span>
+    <span>Payment Successful — your commission is settled!</span>
+</div>
+
+<div id="promoteHoursOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
+        <h2 style="font-size:19px; margin-bottom:6px;">🔥 Promote This Item</h2>
+        <p style="font-size:13px; color:#777; margin-bottom:20px;">Drag the slider to choose how long to promote.</p>
+
+        <div style="font-size:38px; font-weight:800; color:var(--accent-orange); margin-bottom:4px;" id="promoteHoursSliderValue">24h</div>
+        <div style="font-size:22px; font-weight:700; color:#b85c0f; margin-bottom:18px;" id="promoteHoursSliderPrice">GHS 48.00</div>
+
+        <input type="range" id="promoteHoursSlider" min="1" max="72" step="1" value="24" style="width:100%; margin-bottom:6px; accent-color:var(--accent-orange);" oninput="updatePromoteHoursSlider()">
+
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#999; margin-bottom:20px;">
+            <span>1h</span>
+            <span>72h</span>
+        </div>
+
+        <button class="icon-btn edit" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:var(--accent-orange);" onclick="confirmPromoteHours()">Continue to Payment</button>
+        <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePromoteHoursModal()">Cancel</button>
+    </div>
+</div>
+
+<div id="promoteOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
+        <h2 style="font-size:19px; margin-bottom:6px;">🔥 Promote This Item</h2>
+        <p style="font-size:13px; color:#777; margin-bottom:16px;">Send payment via MTN Mobile Money to activate <strong id="promoteHoursText"></strong> of promotion.</p>
+        <div style="background:#eef4fa; border-radius:12px; padding:16px; margin-bottom:16px;">
+            <div style="font-size:11.5px; color:#777; text-transform:uppercase; letter-spacing:0.5px;">Send to</div>
+            <div style="font-size:22px; font-weight:800; margin:4px 0;">0591616403</div>
+            <div style="font-size:12.5px; color:#777;">Account name: Bright Asamoah Banson</div>
+        </div>
+        <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:12px;">
+            <div style="font-size:11.5px; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Amount due</div>
+            <div style="font-size:20px; font-weight:800; color:#b85c0f;" id="promoteAmountText">GHS 0</div>
+        </div>
+        <div style="background:white; border:1.5px dashed #2980b9; border-radius:10px; padding:12px; margin-bottom:16px;">
+            <div style="font-size:11.5px; color:#777;">Enter this as your MTN payment reference:</div>
+            <div style="font-size:16px; font-weight:800; letter-spacing:1px; margin-top:2px;" id="promoteRefText"></div>
+        </div>
+        <button class="icon-btn edit" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px;" onclick="copyPromoteNumber()">📋 Copy Number</button>
+        <button class="icon-btn" id="promoteConfirmBtn" style="width:100%; padding:12px; font-size:13.5px; margin-bottom:8px; background:#27ae60;" onclick="confirmPromotePaid()">✅ Done, I've Paid</button>
+        <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePromoteModal()">Cancel</button>
+    </div>
+</div>
 
 <script>
 const firebaseConfig = {
@@ -510,7 +587,55 @@ function loadProducts() {
 
             renderProductsTable();
             renderStockDonut();
+            renderPromotedItemsTable();
         });
+}
+
+function formatPromoTimeLeft(item) {
+    if (!item.promotedUntil) return '—';
+    const msLeft = item.promotedUntil.toMillis() - Date.now();
+    if (msLeft <= 0) return 'Ended';
+    const hrs = Math.floor(msLeft / (60 * 60 * 1000));
+    const mins = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
+    return hrs >= 1 ? hrs + 'h ' + mins + 'm left' : mins + 'm left';
+}
+
+function renderPromotedItemsTable() {
+    const table = document.getElementById("promotedItemsTable");
+    const countLabel = document.getElementById("promotedCountLabel");
+    if (!table) return;
+
+    const promoted = currentItems.filter(i => i.promoted === true);
+
+    document.getElementById("activePromotionsCount").innerText = promoted.length;
+    countLabel.innerText = promoted.length + (promoted.length === 1 ? ' active' : ' active');
+
+    if (promoted.length === 0) {
+        table.innerHTML = "<tr class='empty-row'><td colspan='6'>No active promotions. Promote an item above to reach more buyers!</td></tr>";
+        return;
+    }
+
+    table.innerHTML = promoted.map(item => {
+        let statusBadge;
+        if (item.promotionPaymentConfirmed) {
+            statusBadge = '<span class="badge in-stock">Confirmed</span>';
+        } else if (item.promotionPaymentClaimed) {
+            statusBadge = '<span class="badge low-stock">Under Review</span>';
+        } else {
+            statusBadge = '<span class="badge out-stock">Unpaid</span>';
+        }
+
+        return `
+            <tr>
+                <td>${item.title}</td>
+                <td>${item.promotionHours || '—'}</td>
+                <td>GHS ${item.promotionAmount ? Number(item.promotionAmount).toFixed(2) : '0.00'}</td>
+                <td>${item.promotionRef || '—'}</td>
+                <td>${statusBadge}</td>
+                <td>${formatPromoTimeLeft(item)}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function renderProductsTable() {
@@ -545,18 +670,29 @@ function renderProductsTable() {
                         </div>
                     </div>
                 </td>
-                <td>GHS ${item.price}</td>
+               <td>GHS ${item.price}</td>
                 <td>${stockBadge}</td>
-                <td>${statusBadge}</td>
+                <td>${statusBadge}${item.promoted ? '<br>' + promotionStatusBadge(item) : ''}</td>
                 <td>
                     <div class="row-actions">
                         <button class="icon-btn edit" onclick="editProduct('${item.firestoreId}')">Edit</button>
+                        <button class="icon-btn" style="background:${item.promoted ? '#999' : '#e67e22'};" onclick="togglePromote('${item.firestoreId}')">${item.promoted ? '✕ Unpromote' : '🔥 Promote'}</button>
                         <button class="icon-btn delete" onclick="deleteProduct('${item.firestoreId}')">Delete</button>
                     </div>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+function promotionStatusBadge(item) {
+    if (item.promotionPaymentConfirmed) {
+        return '<span class="badge in-stock" style="margin-top:4px;">🔥 Confirmed</span>';
+    } else if (item.promotionPaymentClaimed) {
+        return '<span class="badge low-stock" style="margin-top:4px;">🔥 Pending</span>';
+    } else {
+        return '<span class="badge out-stock" style="margin-top:4px;">🔥 Unpaid</span>';
+    }
 }
 
 function editProduct(firestoreId) {
@@ -587,6 +723,92 @@ function deleteProduct(firestoreId) {
     }
 }
 
+const PROMOTION_RATE_PER_HOUR = 2; // GHS per hour
+
+function togglePromote(firestoreId) {
+    const item = currentItems.find(i => i.firestoreId === firestoreId);
+    if (!item) return;
+
+    if (item.promoted) {
+        if (!confirm("Remove this item from Promoted? Any remaining paid time will be forfeited.")) return;
+        db.collection('items').doc(firestoreId).update({ promoted: false, promotedUntil: null });
+        return;
+    }
+
+    const hoursInput = prompt("Promote for how many hours? (e.g. 6, 12, 24)", "24");
+    if (hoursInput === null) return;
+    const hours = Number(hoursInput);
+    if (!hours || hours <= 0) {
+        alert("Please enter a valid number of hours.");
+        return;
+    }
+
+    openPromoteModal(firestoreId, hours);
+}
+
+function generatePromoRef() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return 'PR-' + code;
+}
+
+let pendingPromoteFirestoreId = null;
+let pendingPromoteHours = 0;
+
+function openPromoteModal(firestoreId, hours) {
+    pendingPromoteFirestoreId = firestoreId;
+    pendingPromoteHours = hours;
+    const cost = hours * PROMOTION_RATE_PER_HOUR;
+    const ref = generatePromoRef();
+
+    document.getElementById("promoteHoursText").innerText = hours + " hour" + (hours === 1 ? "" : "s");
+    document.getElementById("promoteAmountText").innerText = "GHS " + cost.toFixed(2);
+    document.getElementById("promoteRefText").innerText = ref;
+    document.getElementById("promoteConfirmBtn").setAttribute('data-ref', ref);
+    document.getElementById("promoteOverlay").style.display = "flex";
+}
+
+function closePromoteModal() {
+    document.getElementById("promoteOverlay").style.display = "none";
+    pendingPromoteFirestoreId = null;
+    pendingPromoteHours = 0;
+}
+
+function copyPromoteNumber() {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(KAYAMART_MOMO_NUMBER).then(() => {
+            alert("Number copied!");
+        }).catch(() => alert("Number: " + KAYAMART_MOMO_NUMBER));
+    } else {
+        alert("Number: " + KAYAMART_MOMO_NUMBER);
+    }
+}
+
+function confirmPromotePaid() {
+    if (!pendingPromoteFirestoreId || !pendingPromoteHours) return;
+    const ref = document.getElementById("promoteConfirmBtn").getAttribute('data-ref');
+    const cost = pendingPromoteHours * PROMOTION_RATE_PER_HOUR;
+
+    if (!confirm("Confirm you've sent GHS " + cost.toFixed(2) + " for " + pendingPromoteHours + " hour(s) of promotion?")) return;
+
+    const promotedUntil = new Date(Date.now() + pendingPromoteHours * 60 * 60 * 1000);
+
+    db.collection('items').doc(pendingPromoteFirestoreId).update({
+        promoted: true,
+        promotedFrom: firebase.firestore.Timestamp.fromDate(new Date()),
+        promotedUntil: firebase.firestore.Timestamp.fromDate(promotedUntil),
+        promotionHours: pendingPromoteHours,
+        promotionAmount: cost,
+        promotionRef: ref,
+        promotionPaymentClaimed: true,
+        promotionPaymentConfirmed: false,
+        promotionClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("Your item is now promoted! The owner will verify payment shortly.");
+        closePromoteModal();
+    }).catch(err => alert("Failed: " + err.message));
+}
 function renderStockDonut() {
     const row = document.getElementById("stockDonutRow");
     const totalLabel = document.getElementById("stockTotalLabel");
