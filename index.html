@@ -6349,9 +6349,7 @@ if (files.length === 0) { alert("Please add at least one photo."); return; }
         const postedBy = isOwner ? "OWNER" : sellerId;
         const itemStatus = isOwner ? "approved" : "pending";
 
-   const postBtn = document.querySelector('#addModal .add-btn');
-    if (postBtn) { postBtn.disabled = true; postBtn.innerText = "Posting..."; }
-
+  
     Promise.all(files.map(f => compressImage(f))).then((images) => {
             const totalKB = images.reduce((sum, img) => sum + (img.length / 1024), 0);
             if (totalKB > 850) {
