@@ -482,8 +482,28 @@
         .condition-badge.New {
             background: #27ae60;
         }
-        .condition-badge.Refurbished {
+       .condition-badge.Refurbished {
             background: #2980b9;
+        }
+        .discount-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: linear-gradient(90deg, #e74c3c, #e67e22);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 7px;
+            border-radius: 6px;
+            z-index: 3;
+        }
+        .pd-condition-wrap .discount-badge {
+            position: static;
+            display: inline-block;
+            margin-right: 6px;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 11px;
         }
       body.dark-mode .scroll-row-title {
             color: #f0f0f0;
@@ -2510,7 +2530,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <input type="text" id="sellerPhone" placeholder="Your WhatsApp number (e.g. 233535263510) *">
            <textarea id="itemDescription" placeholder="Description *" rows="3" style="width:100%; margin-bottom:10px; padding:10px; border-radius:6px; border:1px solid #ccc; font-family:inherit;"></textarea>
 
-          <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Photos * (you can select multiple, different angles)</label>
+         <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Photos * (up to 10MB each — we'll compress them automatically)</label>
             <input type="file" id="itemImage" accept="image/*" multiple>
             <div id="imagePreviewRow" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;"></div>
             <input type="text" id="itemColors" placeholder="Available colors (e.g. Red, Blue, Black) - optional">
@@ -3010,12 +3030,11 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
                 <div style="font-size:22px; font-weight:800; margin:4px 0;">0591616403</div>
                 <div style="font-size:12.5px; color:#777;">Account name: Bright Asamoah Banson</div>
             </div>
-            <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:16px;">
-                <div style="font-size:11px; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Amount due</div>
-                <div style="font-size:20px; font-weight:800; color:#b85c0f;">GHS 49.99</div>
+          <div style="background:#e8f8ef; border-radius:12px; padding:14px; margin-bottom:16px;">
+                <div style="font-size:11px; color:#27ae60; text-transform:uppercase; letter-spacing:0.5px;">Amount due</div>
+                <div style="font-size:20px; font-weight:800; color:#27ae60;">GHS 0.00 — FREE 🎉</div>
             </div>
-          <button class="add-btn" onclick="copyRegistrationNumber()" style="margin-bottom:8px;">📋 Copy Number</button>
-            <button class="add-btn" id="payRegDoneBtn" style="background:#27ae60; margin-bottom:8px;" onclick="markRegistrationPaid()">Done,Paid</button>
+          <button class="add-btn" style="background:#27ae60;" onclick="markRegistrationPaid()">✅ Confirm — No Payment Needed</button>
         </div>
 
         <div id="payRegReviewView" style="display:none;">
@@ -3506,6 +3525,14 @@ const AVATAR_OPTIONS = [
 function compressImage(file, maxWidth = 1280, quality = 0.7) {
     return new Promise((resolve, reject) => {
         if (!file) { resolve(""); return; }
+        // Accept raw files up to 10MB from the picker — but we still compress them down
+        // for storage, since Firestore caps each document at 1MB total.
+        const MAX_RAW_FILE_MB = 10;
+        if (file.size > MAX_RAW_FILE_MB * 1024 * 1024) {
+            reject(new Error(`"${file.name}" is over ${MAX_RAW_FILE_MB}MB. Please choose a smaller photo.`));
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (event) => {
             const img = new Image();
@@ -3521,16 +3548,27 @@ function compressImage(file, maxWidth = 1280, quality = 0.7) {
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', quality));
+
+                // Try progressively lower quality until the compressed image is
+                // comfortably small enough to store safely in Firestore.
+                const MAX_COMPRESSED_KB = 180;
+                let q = quality;
+                let dataUrl = canvas.toDataURL('image/jpeg', q);
+                let attempts = 0;
+                while (dataUrl.length / 1024 > MAX_COMPRESSED_KB && q > 0.3 && attempts < 6) {
+                    q -= 0.1;
+                    dataUrl = canvas.toDataURL('image/jpeg', q);
+                    attempts++;
+                }
+                resolve(dataUrl);
             };
-            img.onerror = reject;
+            img.onerror = () => reject(new Error(`"${file.name}" couldn't be read as an image.`));
             img.src = event.target.result;
         };
-        reader.onerror = reject;
+        reader.onerror = () => reject(new Error(`"${file.name}" couldn't be loaded.`));
         reader.readAsDataURL(file);
     });
 }
-
 function readFileAsDataUrl(file) {
     return new Promise((resolve) => {
         if (!file) { resolve(""); return; }
@@ -4295,12 +4333,12 @@ const filtered = items.filter(item => {
  onclick="openDetail(${idx})"
  style="cursor:pointer; ${isSoldOut ? 'filter:grayscale(60%); opacity:0.7;' : ''}">
 
-                ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : ''}
+               ${isSoldOut ? `<span class="condition-badge" style="background:#e74c3c;">SOLD OUT</span>` : (item.discountPercent ? `<span class="discount-badge">-${item.discountPercent}%</span>` : '')}
                 <span onclick="toggleFavorite(${idx})" style="position:absolute; top:6px; right:6px; background:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2); font-size:14px;">${favorites.includes(idx) ? '❤️' : '🤍'}</span>
             </div>
            <div class="item-info">
                 <h3 onclick="openDetail(${idx})" style="cursor:pointer;">${item.title}</h3>
-                <div class="price">GHS ${item.price}</div>
+                <div class="price">${item.discountPercent ? `<span style="text-decoration:line-through; color:#999; font-size:12px; font-weight:600;">GHS ${item.price}</span> GHS ${(Number(item.price) * (1 - item.discountPercent / 100)).toFixed(2)}` : `GHS ${item.price}`}</div>
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
                     <span style="font-size:11.5px; color:#e67e22;">${item.avgRating ? starString(item.avgRating) + ' (' + item.reviewCount + ')' : '☆☆☆☆☆ (0)'}</span>
                     ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge" style="position:static; background:${item.condition === 'New' ? '#27ae60' : '#2980b9'};">${item.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : ''}
@@ -4377,13 +4415,14 @@ function renderCategoryFullList() {
             const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
             const stockLabel = stockNum !== null ? stockNum + ' left' : 'In stock';
             return `
-            <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
+           <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
                 <div style="position:relative;">
                     <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
                     <span class="promoted-badge">🔥 PROMOTED</span>
+                    ${item.discountPercent ? `<span class="discount-badge" style="left:auto; right:6px;">-${item.discountPercent}%</span>` : ''}
                 </div>
                 <div class="scroll-card-title">${item.title}</div>
-                <div class="scroll-card-price">GHS ${item.price}</div>
+                <div class="scroll-card-price">${priceHtml(item)}</div>
                 <div class="promo-bar-row">
                     <div class="promo-bar-label">⏱ ${timeLabel}</div>
                     <div class="promo-bar-track"><div class="promo-bar-fill promo-bar-time" style="width:${timePct}%;"></div></div>
@@ -4432,13 +4471,14 @@ function renderCategoryFullList() {
         }
 
         section.style.display = 'block';
-        row.innerHTML = recommended.map(item => `
+       row.innerHTML = recommended.map(item => `
             <div class="scroll-card" onclick="openDetail(${items.indexOf(item)})">
-              <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
-                                    ${item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : ''}
-
+              <div style="position:relative;">
+                  <img src="${(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
+                  ${item.discountPercent ? `<span class="discount-badge">-${item.discountPercent}%</span>` : (item.condition && item.condition !== 'Used' ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : '')}
+              </div>
       <div class="scroll-card-title">${item.title}</div>
-                <div class="scroll-card-price">GHS ${item.price}</div>
+                <div class="scroll-card-price">${priceHtml(item)}</div>
             </div>
         `).join('');
     }
@@ -4826,11 +4866,12 @@ function setGalleryIndex(i) {
             orderBtn.innerText = detailIsSoldOut ? '❌ Sold Out' : '🛍️ Order Now';
         }
 
-        const conditionWrap = document.getElementById('pdConditionWrap');
+       const conditionWrap = document.getElementById('pdConditionWrap');
         if (conditionWrap) {
-            conditionWrap.innerHTML = (item.condition && item.condition !== 'Used')
-                ? `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>`
-                : '';
+            let badgeHtml = '';
+            if (item.discountPercent) badgeHtml += `<span class="discount-badge">-${item.discountPercent}% OFF</span>`;
+            if (item.condition && item.condition !== 'Used') badgeHtml += `<span class="condition-badge ${item.condition}">${item.condition === 'New' ? '✨ NEW' : '♻️ REFURBISHED'}</span>`;
+            conditionWrap.innerHTML = badgeHtml;
         }
 
    const canManage = isOwner;
@@ -4841,8 +4882,10 @@ if (promoteBtn) {
     promoteBtn.style.display = isOwner ? 'block' : 'none';
     promoteBtn.innerText = item.promoted ? '✕ Remove from Promoted' : '🔥 Promote This Item';
 }
-        document.getElementById('detailTitle').innerText = item.title;
-        document.getElementById('detailPrice').innerText = 'GHS ' + item.price;
+       document.getElementById('detailTitle').innerText = item.title;
+        document.getElementById('detailPrice').innerHTML = item.discountPercent
+            ? `<span style="text-decoration:line-through; color:#999; font-size:14px; font-weight:600;">GHS ${item.price}</span> GHS ${getDisplayPrice(item)}`
+            : 'GHS ' + item.price;
        document.getElementById('detailCategory').innerText = item.category;
        document.getElementById('detailDescription').innerText = item.description || 'No description provided.';
      renderDetailPhotosRail(item);
@@ -4932,9 +4975,23 @@ function renderDetailPhotosRail(item) {
         `).join('');
     }
 
-   function starString(n) {
+  function starString(n) {
         const rounded = Math.round(n);
         return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+    }
+
+    function getDisplayPrice(item) {
+        if (item.discountPercent) {
+            return (Number(item.price) * (1 - item.discountPercent / 100)).toFixed(2);
+        }
+        return item.price;
+    }
+
+    function priceHtml(item) {
+        if (item.discountPercent) {
+            return `<span style="text-decoration:line-through; color:#999; font-size:11px; font-weight:600;">GHS ${item.price}</span> GHS ${getDisplayPrice(item)}`;
+        }
+        return `GHS ${item.price}`;
     }
 
     function updateItemRating(itemFirestoreId, newStars) {
@@ -5157,14 +5214,14 @@ function advanceToNextConfirmation() {
             return;
         }
         section.style.display = 'block';
-        row.innerHTML = similar.map(it => `
+       row.innerHTML = similar.map(it => `
             <div class="scroll-card" onclick="openDetail(${items.indexOf(it)})">
                 <div style="position:relative;">
                     <img src="${(it.images && it.images[0]) || it.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
-                    ${it.condition && it.condition !== 'Used' ? `<span class="condition-badge ${it.condition}">${it.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : ''}
+                    ${it.discountPercent ? `<span class="discount-badge">-${it.discountPercent}%</span>` : (it.condition && it.condition !== 'Used' ? `<span class="condition-badge ${it.condition}">${it.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : '')}
                 </div>
                 <div class="scroll-card-title">${it.title}</div>
-                <div class="scroll-card-price">GHS ${it.price}</div>
+                <div class="scroll-card-price">${priceHtml(it)}</div>
             </div>
         `).join('');
     }
@@ -5346,14 +5403,14 @@ function advanceToNextConfirmation() {
         }
 
         section.style.display = 'block';
-      row.innerHTML = otherItems.map(it => `
+     row.innerHTML = otherItems.map(it => `
             <div class="scroll-card" onclick="openDetail(${items.indexOf(it)})">
                 <div style="position:relative;">
                     <img src="${(it.images && it.images[0]) || it.image || 'https://via.placeholder.com/130x110?text=No+Image'}">
-                    ${it.condition && it.condition !== 'Used' ? `<span class="condition-badge ${it.condition}">${it.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : ''}
+                    ${it.discountPercent ? `<span class="discount-badge">-${it.discountPercent}%</span>` : (it.condition && it.condition !== 'Used' ? `<span class="condition-badge ${it.condition}">${it.condition === 'New' ? '✨ NEW' : 'REFURB'}</span>` : '')}
                 </div>
                 <div class="scroll-card-title">${it.title}</div>
-                <div class="scroll-card-price">GHS ${it.price}</div>
+                <div class="scroll-card-price">${priceHtml(it)}</div>
             </div>
         `).join('');
     }
@@ -6292,7 +6349,14 @@ if (files.length === 0) { alert("Please add at least one photo."); return; }
         const postedBy = isOwner ? "OWNER" : sellerId;
         const itemStatus = isOwner ? "approved" : "pending";
 
+   const postBtn = document.querySelector('#addModal .add-btn');
+    if (postBtn) { postBtn.disabled = true; postBtn.innerText = "Posting..."; }
+
     Promise.all(files.map(f => compressImage(f))).then((images) => {
+            const totalKB = images.reduce((sum, img) => sum + (img.length / 1024), 0);
+            if (totalKB > 850) {
+                throw new Error("These photos together are still too large after compression. Please use fewer photos or smaller originals.");
+            }
             return db.collection('items').add({
                 title, price, stock, category, condition, description, sellerName, sellerPhone, postedBy, status: itemStatus, sellerLocation,
                 images: images,
@@ -6304,11 +6368,10 @@ if (files.length === 0) { alert("Please add at least one photo."); return; }
                 resetForm();
                 alert("Item posted!" + (isOwner ? "" : " It'll appear once approved."));
             });
-      }).catch((err) => {
+        }).catch((err) => {
             alert("Failed to post item: " + err.message);
         }).finally(() => {
-            postBtn.disabled = false;
-            postBtn.innerText = "Post Item";
+            if (postBtn) { postBtn.disabled = false; postBtn.innerText = "Post Item"; }
         });
     }
 function resetForm() {
