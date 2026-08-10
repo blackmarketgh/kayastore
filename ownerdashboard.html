@@ -2,9 +2,12 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+    emailjs.init("b6-xDbaelZ0QnrUvB");
+</script>
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyD_Nqz1g4fOZCq4x2nRx50squmUYLFpUgo",
@@ -1190,10 +1193,30 @@ function renderCommissions() {
         });
     }
 
-    function setSellerStatus(id, status) {
+  function setSellerStatus(id, status) {
         if (!confirm(`Mark this seller as ${status}?`)) return;
-        db.collection('sellers').doc(id).update({ status }).catch(err => {
-            alert('Failed to update seller: ' + err.message);
+
+        db.collection('sellers').doc(id).get().then(doc => {
+            const seller = doc.data();
+
+            db.collection('sellers').doc(id).update({ status }).then(() => {
+                if (status === 'approved' && seller.email) {
+                    emailjs.send('service_cbiw5me', 'template_hj8414k', {
+                        to_name: seller.name,
+                        to_email: seller.email
+                    }).then(() => {
+                        console.log('Welcome email sent to ' + seller.email);
+                    }).catch(err => {
+                        alert('Seller approved, but the welcome email failed to send: ' + JSON.stringify(err));
+                    });
+                } else if (status === 'approved' && !seller.email) {
+                    alert('Seller approved, but no email on file — welcome email not sent.');
+                }
+            }).catch(err => {
+                alert('Failed to update seller: ' + err.message);
+            });
+        }).catch(err => {
+            alert('Failed to load seller: ' + err.message);
         });
     }
 
