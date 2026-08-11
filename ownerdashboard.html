@@ -1024,14 +1024,34 @@ function renderCommissions() {
                 <button class="item-btn-approve" onclick="setSellerStatus('${s.firestoreId}', 'approved'); closeItemModal();">Approve</button>
                 <button class="item-btn-decline" onclick="setSellerStatus('${s.firestoreId}', 'declined'); closeItemModal();">Decline</button>
             `;
-        } else {
-            actionsHtml = `
-                <button class="item-btn-warn" onclick="setSellerStatus('${s.firestoreId}', 'warned'); closeItemModal();">Warn</button>
-                <button class="item-btn-suspend" onclick="setSellerStatus('${s.firestoreId}', 'suspended'); closeItemModal();">Suspend</button>
-                <button class="item-btn-ban" onclick="setSellerStatus('${s.firestoreId}', 'banned'); closeItemModal();">Ban</button>
-                <button class="item-btn-delete" onclick="removeSellerFromDashboard('${s.firestoreId}')">Remove</button>
-            `;
-        }
+      } else {
+
+    actionsHtml = `
+        <button class="item-btn-warn" onclick="warnSeller('${s.firestoreId}')">
+            ⚠️ ${s.warningActive ? 'Update Warning' : 'Warn'}
+        </button>
+
+      ${(s.warningActive || s.status === 'warned') ? `
+    <button
+        class="item-btn-approve"
+        onclick="clearSellerWarning('${s.firestoreId}')">
+        ✅ Clear Warning
+    </button>
+` : ''}
+
+        <button class="item-btn-suspend" onclick="setSellerStatus('${s.firestoreId}', 'suspended'); closeItemModal();">
+            Suspend
+        </button>
+
+        <button class="item-btn-ban" onclick="setSellerStatus('${s.firestoreId}', 'banned'); closeItemModal();">
+            Ban
+        </button>
+
+        <button class="item-btn-delete" onclick="removeSellerFromDashboard('${s.firestoreId}')">
+            Remove
+        </button>
+    `;
+}
 
         document.getElementById('itemModalContent').innerHTML = `
             <button class="item-modal-close" onclick="closeItemModal()">✕</button>
@@ -1071,7 +1091,97 @@ function renderCommissions() {
         `;
         document.getElementById('itemModalOverlay').classList.add('active');
     }
+function warnSeller(id) {
+    const seller = allSellersFullList.find(x => x.firestoreId === id);
 
+    if (!seller) {
+        alert("Seller not found.");
+        return;
+    }
+
+    const reason = prompt(
+        "Why are you warning this seller?\n\nExample: Unpaid commission, scam, misleading product, etc."
+    );
+
+    if (reason === null) return;
+
+    const cleanReason = reason.trim();
+
+    if (!cleanReason) {
+        alert("Please enter a warning reason.");
+        return;
+    }
+
+    const message = prompt(
+        "Enter the warning message you want the seller to see:"
+    );
+
+    if (message === null) return;
+
+    const cleanMessage = message.trim();
+
+    if (!cleanMessage) {
+        alert("Please enter a warning message.");
+        return;
+    }
+
+    db.collection('sellers').doc(id).update({
+        warningActive: true,
+        warningReason: cleanReason,
+        warningMessage: cleanMessage,
+        warningCreatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+
+        alert("⚠️ Warning sent to " + (seller.businessName || seller.name));
+
+        closeItemModal();
+
+    }).catch(err => {
+
+        alert("Failed to send warning: " + err.message);
+
+    });
+}
+function clearSellerWarning(id) {
+
+    const seller = allSellersFullList.find(x => x.firestoreId === id);
+
+    if (!seller) {
+        alert("Seller not found.");
+        return;
+    }
+
+    if (!seller.warningActive && seller.status !== "warned") {
+        alert("This seller has no active warning.");
+        return;
+    }
+
+    if (!confirm(
+        "Clear the warning for " +
+        (seller.businessName || seller.name) +
+        "?"
+    )) {
+        return;
+    }
+
+    db.collection('sellers').doc(id).update({
+        status: 'approved',
+        warningActive: false,
+        warningReason: "",
+        warningMessage: "",
+        warningCreatedAt: firebase.firestore.FieldValue.delete()
+    }).then(() => {
+
+        alert("✅ Warning cleared. Seller is approved again.");
+
+        closeItemModal();
+
+    }).catch(err => {
+
+        alert("Failed to clear warning: " + err.message);
+
+    });
+}
     function removeSellerFromDashboard(id) {
         const s = allSellersFullList.find(x => x.firestoreId === id);
         if (!s) return;
@@ -1193,33 +1303,84 @@ function renderCommissions() {
         });
     }
 
-  function setSellerStatus(id, status) {
-        if (!confirm(`Mark this seller as ${status}?`)) return;
+function setSellerStatus(id, status) {
 
-        db.collection('sellers').doc(id).get().then(doc => {
+    if (!confirm(`Mark this seller as ${status}?`)) return;
+
+    db.collection('sellers').doc(id).get()
+        .then(doc => {
+
+            if (!doc.exists) {
+                alert("❌ Seller not found.");
+                return;
+            }
+
             const seller = doc.data();
 
-            db.collection('sellers').doc(id).update({ status }).then(() => {
-                if (status === 'approved' && seller.email) {
-                    emailjs.send('service_cbiw5me', 'template_hj8414k', {
-                        to_name: seller.name,
-                        to_email: seller.email
-                    }).then(() => {
-                        console.log('Welcome email sent to ' + seller.email);
-                    }).catch(err => {
-                        alert('Seller approved, but the welcome email failed to send: ' + JSON.stringify(err));
-                    });
-                } else if (status === 'approved' && !seller.email) {
-                    alert('Seller approved, but no email on file — welcome email not sent.');
-                }
-            }).catch(err => {
-                alert('Failed to update seller: ' + err.message);
-            });
-        }).catch(err => {
-            alert('Failed to load seller: ' + err.message);
-        });
-    }
+            return db.collection('sellers').doc(id).update({
+                status: status
+            }).then(() => {
 
+                // Only send email when the seller is APPROVED
+                if (status === 'approved' && seller.email) {
+
+                    return emailjs.send(
+                        'service_cbiw5me',
+                        'template_hj8414k',
+                        {
+                            to_name: seller.name || seller.businessName || 'Seller',
+                            to_email: seller.email
+                        }
+                    ).then(() => {
+
+                        alert(
+                            "✅ Seller approved successfully!\n\n" +
+                            "📧 Approval email sent to:\n" +
+                            seller.email
+                        );
+
+                    }).catch(error => {
+
+                        console.error("EmailJS error:", error);
+
+                        alert(
+                            "✅ Seller approved successfully.\n\n" +
+                            "⚠️ However, the approval email could not be sent.\n\n" +
+                            "Email: " + seller.email
+                        );
+
+                    });
+
+                } else if (status === 'approved' && !seller.email) {
+
+                    alert(
+                        "✅ Seller approved successfully.\n\n" +
+                        "⚠️ No email address is registered for this seller."
+                    );
+
+                } else {
+
+                    alert(
+                        "✅ Seller status changed to: " +
+                        status
+                    );
+
+                }
+
+            });
+
+        })
+        .catch(error => {
+
+            console.error("Seller status error:", error);
+
+            alert(
+                "❌ Could not update seller status.\n\n" +
+                error.message
+            );
+
+        });
+}
     function getDateBounds() {
 
         const fromVal = document.getElementById('dateFrom').value;
