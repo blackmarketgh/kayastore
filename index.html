@@ -3453,8 +3453,7 @@ function submitBuyerLogin() {
                 const doc = snapshot.docs[0];
                 const b = doc.data();
                 finishBuyerLogin(doc.id, b.name, b.phone, b.email || '');
-            })
-            .catch((err) => {
+            }).catch((err) => {
                 alert("Login failed: " + err.message);
             });
     }
@@ -3736,18 +3735,7 @@ function submitSellerRegister() {
 
         });
 
-    }).catch((err) => {
-
-        console.error("Registration failed:", err);
-        alert("Registration failed: " + err.message);
-
-    }).finally(() => {
-
-        btn.disabled = false;
-        btn.innerText = "Continue to Payment";
-
-    });
-}.catch((err) => {
+   }).catch((err) => {
 
         console.error("Registration failed:", err);
         alert("Registration failed: " + err.message);
@@ -3908,8 +3896,7 @@ function submitSellerLogin() {
 
                     });
 
-            })
-            .catch((err) => {
+            }).catch((err) => {
 
                 console.error("Seller login error:", err);
                 alert("Login failed: " + err.message);
