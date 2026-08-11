@@ -1035,11 +1035,13 @@
 }body.dark-mode .detail-chat-btn {
     background: #2c2c2c;
 }
-    .modal {
-    display: flex !important;
+   .modal {
+    display: none;
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
@@ -1048,6 +1050,13 @@
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 .modal.active {
     opacity: 1;
@@ -2507,6 +2516,29 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
            <input type="text" id="itemTitle" placeholder="Item name *">
             <input type="number" id="itemPrice" placeholder="Price (GHS) *">
             <input type="number" id="itemStock" placeholder="Stock quantity *" min="0">
+<div style="margin-bottom:12px;">
+    <label style="display:block; font-size:12px; font-weight:700; color:#777; margin-bottom:6px;">
+        DISCOUNT (OPTIONAL)
+    </label>
+
+    <div style="display:flex; align-items:center; gap:8px;">
+        <input
+            type="number"
+            id="itemDiscount"
+            placeholder="Discount percentage"
+            min="1"
+            max="99"
+            step="1"
+            style="flex:1;"
+        >
+
+        <span style="font-weight:700; color:#e67e22;">%</span>
+    </div>
+
+    <small style="display:block; margin-top:5px; color:#999;">
+        Leave empty if you don't want to offer a discount.
+    </small>
+</div>
       <select id="itemCategory">
                 <option value="Clothes">Clothes</option>
                 <option value="Electronics">Electronics</option>
@@ -2589,11 +2621,14 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <div class="modal-content">
             <div class="lb-stage">
             <div class="pd-gallery-wrap">
-                <img id="detailImage" class="pd-gallery-img" onclick="nextGalleryImage()">
+<img id="detailImage"
+     class="pd-gallery-img"
+     onclick="nextGalleryImage()"
+     ontouchstart="handleGalleryTouchStart(event)"
+     ontouchend="handleGalleryTouchEnd(event)">
                 <div class="pd-gallery-fade"></div>
              <button class="pd-icon-btn pd-back-btn" onclick="closeDetailModal()">←</button>
-                <button class="detail-gallery-arrow prev" onclick="prevGalleryImage()">‹</button>
-                <button class="detail-gallery-arrow next" onclick="nextGalleryImage()">›</button>
+              
                 <div class="pd-condition-wrap" id="pdConditionWrap"></div>
                <div class="detail-gallery-dots" id="detailGalleryDots"></div>
                 <div class="lb-ghost-number" id="detailGhostNumber">01</div>
@@ -2822,10 +2857,59 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             </div>
         </div>
 
-        <h4 style="text-align:left;">Posted Items</h4>
-        <div id="sdItemsList" style="text-align:left; max-height:200px; overflow-y:auto;"></div>
+       <h4 style="text-align:left;">Posted Items</h4>
+<div id="sdItemsList" style="text-align:left; max-height:200px; overflow-y:auto;"></div>
 
-        <button onclick="closeSellerDetail()" style="margin-top:12px;">Close</button>
+<div style="margin-top:15px; padding-top:15px; border-top:1px solid #eee;">
+    <button
+        onclick="openWarnSellerModal()"
+        style="width:100%; background:#e67e22; color:white; border:none; border-radius:8px; padding:11px; font-size:13px; font-weight:700; cursor:pointer;">
+        ⚠️ Warn Seller
+    </button>
+</div>
+
+<button onclick="closeSellerDetail()" style="margin-top:12px;">Close</button>
+    </div>
+</div>
+<div class="modal" id="warnSellerModal">
+    <div class="modal-content" style="text-align:left;">
+        <h3 style="margin-bottom:8px;">⚠️ Warn Seller</h3>
+
+        <p style="font-size:13px; color:#777; margin-bottom:14px;">
+            Send an official warning to this seller.
+        </p>
+
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">
+            Warning Reason
+        </label>
+
+        <select id="warningReason"
+                style="width:100%; padding:11px; border:1px solid #ddd; border-radius:8px; margin-bottom:14px; font-family:inherit;">
+            <option value="Unpaid Commission">💰 Unpaid Commission</option>
+            <option value="Scam / Fraud">🚨 Scam / Fraud</option>
+            <option value="Misleading Product">⚠️ Misleading Product</option>
+            <option value="Other">📌 Other</option>
+        </select>
+
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">
+            Warning Message
+        </label>
+
+        <textarea id="warningMessage"
+                  placeholder="Explain why this seller is being warned..."
+                  style="width:100%; min-height:120px; padding:11px; border:1px solid #ddd; border-radius:8px; resize:vertical; font-family:inherit; margin-bottom:14px;"></textarea>
+
+        <div style="display:flex; gap:8px;">
+            <button onclick="sendSellerWarning()"
+                    style="flex:1; background:#e67e22; color:white; border:none; border-radius:8px; padding:11px; font-weight:700; cursor:pointer;">
+                ⚠️ Send Warning
+            </button>
+
+            <button onclick="closeWarnSellerModal()"
+                    style="flex:1; background:#777; color:white; border:none; border-radius:8px; padding:11px; font-weight:700; cursor:pointer;">
+                Cancel
+            </button>
+        </div>
     </div>
 </div>
  <div class="modal" id="writeReviewModal">
@@ -3578,10 +3662,10 @@ function readFileAsDataUrl(file) {
     });
 }
 function submitSellerRegister() {
-    const name = document.getElementById('regName').value;
+    const name = document.getElementById('regName').value.trim();
     const businessName = document.getElementById('regBusinessName').value.trim();
-    const phone = document.getElementById('regPhone').value;
-    const email = document.getElementById('regEmail').value;
+    const phone = document.getElementById('regPhone').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
     const location = document.getElementById('regLocation').value;
     const password = document.getElementById('regPassword').value;
     const ghanaCard = document.getElementById('regGhanaCard').value.trim().toUpperCase();
@@ -3594,6 +3678,7 @@ function submitSellerRegister() {
     }
 
     const ghanaCardPattern = /^GHA-\d{9}-\d$/;
+
     if (!ghanaCardPattern.test(ghanaCard)) {
         alert("Please enter a valid Ghana Card number in the format GHA-123456789-0.");
         return;
@@ -3603,36 +3688,77 @@ function submitSellerRegister() {
     btn.disabled = true;
     btn.innerText = "Submitting...";
 
-   function resetButton() {
-        btn.disabled = false;
-        btn.innerText = "Continue to Payment";
-    }
+    hashPassword(password).then((hashedPassword) => {
 
-   hashPassword(password).then((hashedPassword) => {
         return db.collection('sellers').add({
-            name, businessName: businessName || name, phone: formatPhone(phone), email, location, password: hashedPassword, status: "pending",
-            photo: photoData, ghanaCard, address,
+
+            // PERMANENT REGISTRATION DATA
+            registrationName: name,
+            registrationPhone: formatPhone(phone),
+            registrationEmail: email,
+            registrationPassword: hashedPassword,
+
+            // EDITABLE SELLER / PAYMENT DATA
+            sellerName: name,
+            businessName: businessName || name,
+            momoName: name,
+            momoNumber: formatPhone(phone),
+
+            // OLD FIELDS — KEEP FOR COMPATIBILITY
+            name: name,
+            phone: formatPhone(phone),
+            email: email,
+            password: hashedPassword,
+
+            location: location,
+            status: "pending",
+            photo: photoData,
+            ghanaCard: ghanaCard,
+            address: address,
             followerCount: 0,
             paymentClaimed: false,
+
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
+
         }).then((docRef) => {
+
             localStorage.setItem('kayaSellerId', docRef.id);
             localStorage.setItem('kayaSellerLocation', location);
             localStorage.setItem('kayaSellerName', name);
+            localStorage.setItem('kayaSellerBusinessName', businessName || name);
+
             sellerId = docRef.id;
+
             closeSellerAuth();
             updateSellerLinkText();
             startGuestPromptTimer();
             openPayRegistrationModal(docRef.id);
+
         });
+
     }).catch((err) => {
+
+        console.error("Registration failed:", err);
         alert("Registration failed: " + err.message);
+
     }).finally(() => {
-        resetButton();
+
+        btn.disabled = false;
+        btn.innerText = "Continue to Payment";
+
+    });
+}.catch((err) => {
+
+        console.error("Registration failed:", err);
+        alert("Registration failed: " + err.message);
+
+    }).finally(() => {
+
+        btn.disabled = false;
+        btn.innerText = "Continue to Payment";
+
     });
 }
-const SELLER_REGISTRATION_NUMBER = "0591616403";
-
 function openPayRegistrationModal(newSellerId) {
     document.getElementById('payRegPayView').style.display = 'block';
     document.getElementById('payRegReviewView').style.display = 'none';
@@ -3679,7 +3805,7 @@ function markRegistrationPaid() {
 }
 
 function submitSellerLogin() {
-    const phone = document.getElementById('loginPhone').value;
+    const phone = document.getElementById('loginPhone').value.trim();
     const password = document.getElementById('loginPassword').value;
 
     if (!phone || !password) {
@@ -3687,34 +3813,160 @@ function submitSellerLogin() {
         return;
     }
 
+    const loginPhone = formatPhone(phone);
+
     hashPassword(password).then((hashedPassword) => {
+
+        // ==========================================
+        // FIRST: USE THE PERMANENT REGISTRATION PHONE
+        // ==========================================
         db.collection('sellers')
-            .where('phone', '==', formatPhone(phone))
-            .where('password', '==', hashedPassword)
+            .where('registrationPhone', '==', loginPhone)
+            .where('registrationPassword', '==', hashedPassword)
+            .limit(1)
             .get()
             .then((snapshot) => {
-                if (snapshot.empty) {
-                    alert("No matching account found.");
+
+                if (!snapshot.empty) {
+                    finishSellerLogin(snapshot.docs[0]);
                     return;
                 }
-                const doc = snapshot.docs[0];
-                const sellerData = doc.data();
-                localStorage.setItem('kayaSellerId', doc.id);
-                localStorage.setItem('kayaSellerLocation', sellerData.location || 'Other');
-                localStorage.setItem('kayaSellerName', sellerData.name || '');
-                sellerId = doc.id;
-                checkSellerStatus();
-                closeSellerAuth();
-                updateSellerLinkText();
-                showGreetingToast(sellerData.name || 'Seller', '🏪');
+
+                // ==========================================
+                // FALLBACK FOR OLD SELLER ACCOUNTS
+                // This allows existing sellers to log in once
+                // using their old phone/password.
+                // ==========================================
+                return db.collection('sellers')
+                    .where('phone', '==', loginPhone)
+                    .where('password', '==', hashedPassword)
+                    .limit(1)
+                    .get()
+                    .then((oldSnapshot) => {
+
+                        if (oldSnapshot.empty) {
+                            alert("No matching account found.");
+                            return;
+                        }
+
+                        const doc = oldSnapshot.docs[0];
+                        const sellerData = doc.data();
+
+                        // ==========================================
+                        // MIGRATE THE EXISTING ACCOUNT
+                        // SAME DOCUMENT ID
+                        // NOTHING IS DELETED
+                        // ==========================================
+                        return db.collection('sellers').doc(doc.id).update({
+
+                            registrationName:
+                                sellerData.registrationName ||
+                                sellerData.name ||
+                                "",
+
+                            registrationPhone:
+                                sellerData.registrationPhone ||
+                                sellerData.phone ||
+                                "",
+
+                            registrationEmail:
+                                sellerData.registrationEmail ||
+                                sellerData.email ||
+                                "",
+
+                            registrationPassword:
+                                sellerData.registrationPassword ||
+                                sellerData.password ||
+                                "",
+
+                            sellerName:
+                                sellerData.sellerName ||
+                                sellerData.name ||
+                                "",
+
+                            businessName:
+                                sellerData.businessName ||
+                                sellerData.name ||
+                                "",
+
+                            momoName:
+                                sellerData.momoName ||
+                                sellerData.name ||
+                                "",
+
+                            momoNumber:
+                                sellerData.momoNumber ||
+                                sellerData.phone ||
+                                ""
+
+                        }).then(() => {
+
+                            // Continue login using the SAME seller document
+                            finishSellerLogin(doc);
+
+                        });
+
+                    });
+
             })
             .catch((err) => {
+
+                console.error("Seller login error:", err);
                 alert("Login failed: " + err.message);
+
             });
+
+    }).catch((err) => {
+
+        console.error("Password hashing error:", err);
+        alert("Login failed: " + err.message);
+
     });
 }
 
-    function openSellersPanel() {
+
+function finishSellerLogin(doc) {
+
+    const sellerData = doc.data();
+
+    // ==========================================
+    // THIS ID NEVER CHANGES
+    // ==========================================
+    sellerId = doc.id;
+
+    localStorage.setItem('kayaSellerId', doc.id);
+
+    localStorage.setItem(
+        'kayaSellerLocation',
+        sellerData.location || 'Other'
+    );
+
+    localStorage.setItem(
+        'kayaSellerName',
+        sellerData.sellerName ||
+        sellerData.momoName ||
+        sellerData.name ||
+        ''
+    );
+
+    localStorage.setItem(
+        'kayaSellerBusinessName',
+        sellerData.businessName ||
+        ''
+    );
+
+    checkSellerStatus();
+    closeSellerAuth();
+    updateSellerLinkText();
+
+    showGreetingToast(
+        sellerData.sellerName ||
+        sellerData.momoName ||
+        sellerData.name ||
+        'Seller',
+        '🏪'
+    );
+}    function openSellersPanel() {
         document.getElementById('sellersModal').style.display = 'flex';
         const list = document.getElementById('sellersList');
         list.innerHTML = 'Loading...';
@@ -3931,6 +4183,9 @@ function closeSellersPanel() {
         });
     }
 function openSellerDetail(sellerDocId) {
+
+    warningSellerId = sellerDocId;
+
     db.collection('sellers').doc(sellerDocId).get().then((doc) => {
         const s = doc.data();
        document.getElementById('sdPhoto').src = s.photo || getSellerAvatar(doc.id);
@@ -3971,10 +4226,77 @@ function openSellerDetail(sellerDocId) {
     });
 }
 
-function closeSellerDetail() {
-    document.getElementById('sellerDetailModal').style.display = 'none';
+let warningSellerId = null;
+
+function openWarnSellerModal() {
+    if (!warningSellerId) {
+        alert("Please select a seller first.");
+        return;
+    }
+
+    document.getElementById('warningReason').value = 'Unpaid Commission';
+    document.getElementById('warningMessage').value = '';
+
+    document.getElementById('warnSellerModal').style.display = 'flex';
 }
 
+function closeWarnSellerModal() {
+    document.getElementById('warnSellerModal').style.display = 'none';
+}
+
+function sendSellerWarning() {
+    if (!warningSellerId) {
+        alert("No seller selected.");
+        return;
+    }
+
+    const reason = document.getElementById('warningReason').value;
+    const message = document.getElementById('warningMessage').value.trim();
+
+    if (!message) {
+        alert("Please enter the warning message.");
+        return;
+    }
+
+    const warningId =
+        Date.now().toString() +
+        '-' +
+        Math.random().toString(36).substring(2, 8);
+
+    const sendBtn = document.querySelector('#warnSellerModal button[onclick="sendSellerWarning()"]');
+
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerText = "Sending...";
+    }
+
+    db.collection('sellers').doc(warningSellerId).update({
+        warningActive: true,
+        warningId: warningId,
+        warningReason: reason,
+        warningMessage: message,
+        warningCreatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        warningRead: false
+    }).then(() => {
+
+        alert("Warning sent successfully to the seller.");
+
+        closeWarnSellerModal();
+        closeSellerDetail();
+
+    }).catch(err => {
+
+        alert("Failed to send warning: " + err.message);
+
+    }).finally(() => {
+
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "⚠️ Send Warning";
+        }
+
+    });
+}
     function setSellerStatus(id, status) {
         db.collection('sellers').doc(id).get().then((doc) => {
             const seller = doc.data();
@@ -4905,8 +5227,7 @@ if (promoteBtn) {
             el.style.animation = '';
         });
 
-        document.getElementById('detailModal').style.display = 'flex';
-        document.querySelector('#detailModal .modal-content').scrollTop = 0;
+document.getElementById('detailModal').classList.add('active');        document.querySelector('#detailModal .modal-content').scrollTop = 0;
         document.body.style.overflow = 'hidden';
     }
 
@@ -5415,11 +5736,11 @@ function advanceToNextConfirmation() {
         `).join('');
     }
 
-   function closeDetailModal() {
-        document.getElementById('detailModal').style.display = 'none';
-        document.body.style.overflow = '';
-        applyThemeColor(localStorage.getItem('kayaThemeColor') || '#2980b9');
-    }
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('active');
+    document.body.style.overflow = '';
+    applyThemeColor(localStorage.getItem('kayaThemeColor') || '#2980b9');
+}
 let buyerName = localStorage.getItem('kayaBuyerName') || null;
 let pendingChatItem = null;
 let pendingOrderUrl = null;
@@ -6317,6 +6638,22 @@ document.getElementById('itemImage').addEventListener('change', function(e) {
         const title = document.getElementById('itemTitle').value.trim();
         const price = document.getElementById('itemPrice').value;
         const stock = document.getElementById('itemStock').value;
+const discountInput = document.getElementById('itemDiscount').value.trim();
+
+let discountPercent = 0;
+
+if (discountInput !== '') {
+    discountPercent = Number(discountInput);
+
+    if (
+        !Number.isFinite(discountPercent) ||
+        discountPercent < 1 ||
+        discountPercent > 99
+    ) {
+        alert("Please enter a discount between 1% and 99%.");
+        return;
+    }
+}
         const category = document.getElementById('itemCategory').value;
         const condition = document.getElementById('itemCondition').value;
         const files = Array.from(document.getElementById('itemImage').files);
@@ -6355,13 +6692,29 @@ if (files.length === 0) { alert("Please add at least one photo."); return; }
             if (totalKB > 850) {
                 throw new Error("These photos together are still too large after compression. Please use fewer photos or smaller originals.");
             }
-            return db.collection('items').add({
-                title, price, stock, category, condition, description, sellerName, sellerPhone, postedBy, status: itemStatus, sellerLocation,
-                images: images,
-                image: images[0] || "",
-                colors, sizes,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
+           return db.collection('items').add({
+    title,
+    price,
+    stock,
+    category,
+    condition,
+    description,
+    sellerName,
+    sellerPhone,
+    postedBy,
+    status: itemStatus,
+    sellerLocation,
+
+    images: images,
+    image: images[0] || "",
+
+    colors,
+    sizes,
+
+    discountPercent: discountPercent,
+
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}).then(() => {
                 closeModal();
                 resetForm();
                 alert("Item posted!" + (isOwner ? "" : " It'll appear once approved."));
@@ -6376,6 +6729,7 @@ function resetForm() {
         document.getElementById('itemTitle').value = '';
         document.getElementById('itemPrice').value = '';
         document.getElementById('itemStock').value = '';
+        document.getElementById('itemDiscount').value = '';
         document.getElementById('itemImage').value = '';
         document.getElementById('itemCondition').value = 'Used';
         document.getElementById('itemColors').value = '';
