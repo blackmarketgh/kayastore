@@ -358,6 +358,70 @@ tr:last-child td { border-bottom: none; }
         </div>
         <div class="pending-banner" id="pendingBanner" style="display:none;">⏳ Approval Pending</div>
     </div>
+    <!-- PAYMENT DETAILS -->
+    <div class="section" id="paymentDetailsSection">
+        <div class="section-header">
+            <h2>💳 Payment Details</h2>
+            <span class="section-sub">Used by buyers to pay you</span>
+        </div>
+
+        <div style="background:#f8f8f8; border-radius:12px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:11px; color:#999; text-transform:uppercase; font-weight:700; margin-bottom:4px;">
+                MoMo Account Name
+            </div>
+            <div id="paymentMomoName" style="font-size:16px; font-weight:700;">
+                Loading...
+            </div>
+        </div>
+
+        <div style="background:#f8f8f8; border-radius:12px; padding:16px; margin-bottom:12px;">
+            <div style="font-size:11px; color:#999; text-transform:uppercase; font-weight:700; margin-bottom:4px;">
+                MoMo Payment Number
+            </div>
+            <div id="paymentMomoPhone" style="font-size:16px; font-weight:700;">
+                Loading...
+            </div>
+        </div>
+
+        <div id="paymentDetailsLockMessage"
+             style="font-size:12px; color:#b85c0f; background:#fff4ea; border-radius:10px; padding:11px 12px; margin-bottom:12px;">
+            ⚠️ Payment details can only be changed once every 30 days.
+        </div>
+
+        <button
+            id="changePaymentDetailsBtn"
+            class="icon-btn edit"
+            style="width:100%; padding:12px; font-size:13px;"
+            onclick="openPaymentDetailsModal()">
+            ✏️ Change Payment Details
+        </button>
+    </div>
+<div id="sellerWarningBox"
+     style="display:none; margin:0 0 18px 0; background:#fff4e5; border:1px solid #f3c27a; border-radius:12px; padding:13px 15px;">
+
+    <div style="display:flex; align-items:flex-start; gap:10px;">
+
+        <div style="font-size:22px;">⚠️</div>
+
+        <div style="flex:1;">
+
+            <div style="font-size:13px; font-weight:800; color:#b85c0f; margin-bottom:3px;">
+                Account Warning
+            </div>
+
+            <div id="sellerWarningReason"
+                 style="font-size:12px; font-weight:700; color:#333; margin-bottom:3px;">
+            </div>
+
+            <div id="sellerWarningMessage"
+                 style="font-size:12.5px; line-height:1.5; color:#555;">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
     <div class="cards">
         <div class="card">
@@ -507,7 +571,162 @@ tr:last-child td { border-bottom: none; }
     </div>
 
 </div>
+<!-- PAYMENT DETAILS CHANGE MODAL -->
+<div id="paymentDetailsOverlay"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:5000; align-items:center; justify-content:center; padding:20px;">
 
+    <div style="background:white; width:100%; max-width:430px; border-radius:18px; padding:25px; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+
+        <div id="paymentDetailsConfirmView">
+
+            <div style="text-align:center; font-size:42px; margin-bottom:8px;">
+                ⚠️
+            </div>
+
+            <h2 style="text-align:center; margin:0 0 10px;">
+                Confirm Payment Details
+            </h2>
+
+            <p style="font-size:13px; line-height:1.6; color:#666; text-align:center; margin-bottom:18px;">
+                You are about to change the payment details used by buyers to pay you.
+            </p>
+
+            <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:16px;">
+
+                <div style="font-size:11px; color:#b85c0f; font-weight:700; text-transform:uppercase; margin-bottom:5px;">
+                    ⚠️ Important
+                </div>
+
+                <div style="font-size:13px; color:#555; line-height:1.5;">
+                    You will not be able to change these payment details again for 30 days.
+                </div>
+
+            </div>
+
+            <div style="background:#f7f7f7; border-radius:12px; padding:14px; margin-bottom:10px;">
+
+                <div style="font-size:11px; color:#999; text-transform:uppercase; font-weight:700;">
+                    Current MoMo Name
+                </div>
+
+                <div id="confirmCurrentMomoName"
+                     style="font-size:14px; font-weight:700; margin-bottom:10px;">
+                </div>
+
+                <div style="font-size:11px; color:#999; text-transform:uppercase; font-weight:700;">
+                    Current MoMo Number
+                </div>
+
+                <div id="confirmCurrentMomoPhone"
+                     style="font-size:14px; font-weight:700;">
+                </div>
+
+            </div>
+
+            <input
+                type="text"
+                id="newMomoName"
+                placeholder="New MoMo Account Name"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:9px; margin-bottom:10px; font-family:inherit; box-sizing:border-box;">
+
+            <input
+                type="text"
+                id="newMomoPhone"
+                placeholder="New MoMo Payment Number"
+                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:9px; margin-bottom:16px; font-family:inherit; box-sizing:border-box;">
+
+            <button
+                onclick="confirmPaymentDetailsChange()"
+                style="width:100%; background:#1a5c3a; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:8px;">
+                Confirm Change
+            </button>
+
+            <button
+                onclick="closePaymentDetailsModal()"
+                style="width:100%; background:#e74c3c; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer;">
+                Cancel
+            </button>
+
+        </div>
+
+        <div id="paymentDetailsSuccessView" style="display:none; text-align:center;">
+
+            <div style="font-size:50px; margin-bottom:8px;">
+                ✅
+            </div>
+
+            <h2 style="margin-bottom:8px;">
+                Payment Details Updated
+            </h2>
+
+            <p style="font-size:13px; color:#777; line-height:1.6;">
+                Your payment details have been updated successfully.
+            </p>
+
+            <p id="paymentDetailsNextChange"
+               style="font-size:13px; color:#1a5c3a; font-weight:700; margin-top:12px;">
+            </p>
+
+            <button
+                onclick="closePaymentDetailsModal()"
+                style="width:100%; background:#1a5c3a; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; margin-top:15px;">
+                Done
+            </button>
+
+        </div>
+
+    </div>
+</div>
+<div id="commissionNoticeOverlay"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10000; align-items:center; justify-content:center; padding:20px;">
+
+    <div style="background:white; width:100%; max-width:430px; border-radius:18px; padding:25px; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+
+        <div id="commissionNoticeIcon"
+             style="text-align:center; font-size:48px; margin-bottom:8px;">
+            ⚠️
+        </div>
+
+        <h2 id="commissionNoticeTitle"
+            style="text-align:center; margin:0 0 10px; color:#d35400;">
+            Commission Payment Notice
+        </h2>
+
+        <p id="commissionNoticeMessage"
+           style="font-size:14px; line-height:1.6; color:#444; text-align:center; margin-bottom:18px;">
+        </p>
+
+        <div style="background:#f7f7f7; border-radius:10px; padding:13px; margin-bottom:18px;">
+
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="color:#777; font-size:12px;">
+                    Outstanding Commission
+                </span>
+
+                <strong id="commissionNoticeAmount">
+                    GHS 0.00
+                </strong>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;">
+                <span style="color:#777; font-size:12px;">
+                    Oldest unpaid sale
+                </span>
+
+                <strong id="commissionNoticeAge">
+                    —
+                </strong>
+            </div>
+
+        </div>
+
+        <button onclick="openCommissionPaymentFromNotice()"
+                style="width:100%; background:#1a5c3a; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer;">
+            💰 Pay Commission
+        </button>
+
+    </div>
+</div>
 <div id="payCommissionOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
     <div style="background:white; border-radius:16px; max-width:380px; width:100%; padding:26px; text-align:center;">
 
@@ -536,7 +755,52 @@ tr:last-child td { border-bottom: none; }
         <button class="icon-btn delete" style="width:100%; padding:12px; font-size:13.5px;" onclick="closePayCommissionModal()">Close</button>
     </div>
 </div>
+<div id="sellerWarningOverlay"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:3000; align-items:center; justify-content:center; padding:20px;">
 
+    <div style="background:white; border-radius:18px; max-width:420px; width:100%; padding:28px; text-align:center; box-shadow:0 15px 40px rgba(0,0,0,0.25);">
+
+        <div style="font-size:48px; margin-bottom:8px;">⚠️</div>
+
+        <h2 style="font-size:21px; color:#e67e22; margin-bottom:8px;">
+            Seller Warning
+        </h2>
+
+        <p style="font-size:13px; color:#777; margin-bottom:16px;">
+            Your KayaMart seller account has received an official warning.
+        </p>
+
+        <div style="background:#fff4ea; border-radius:12px; padding:14px; margin-bottom:12px; text-align:left;">
+            <div style="font-size:11px; color:#b85c0f; font-weight:700; text-transform:uppercase; margin-bottom:4px;">
+                Reason
+            </div>
+
+            <div id="sellerWarningReason"
+                 style="font-size:14px; font-weight:700; color:#333;">
+            </div>
+        </div>
+
+        <div style="background:#f7f7f7; border-radius:12px; padding:14px; margin-bottom:18px; text-align:left;">
+            <div style="font-size:11px; color:#777; font-weight:700; text-transform:uppercase; margin-bottom:5px;">
+                Message from KayaMart
+            </div>
+
+            <div id="sellerWarningMessage"
+                 style="font-size:13.5px; line-height:1.6; color:#333;">
+            </div>
+        </div>
+
+        <p style="font-size:11.5px; color:#999; margin-bottom:16px;">
+            Please resolve the issue to avoid further action on your seller account.
+        </p>
+
+        <button onclick="acknowledgeSellerWarning()"
+                style="width:100%; background:#e67e22; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer;">
+            I Understand
+        </button>
+
+    </div>
+</div>
 <div id="paymentSuccessToast" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#27ae60; color:white; padding:14px 22px; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.2); font-size:13.5px; font-weight:600; z-index:2000; align-items:center; gap:10px;">
     <span style="font-size:18px;">✅</span>
     <span>Payment Successful — your commission is settled!</span>
@@ -642,6 +906,338 @@ loadSeller();
 loadProducts();
 loadSalesHistory();
 loadOrders();
+// ============================================================
+// PAYMENT DETAILS — 30 DAY CHANGE LOCK
+// ============================================================
+
+let currentSellerPaymentData = null;
+
+const PAYMENT_DETAILS_LOCK_DAYS = 30;
+const PAYMENT_DETAILS_LOCK_MS =
+    PAYMENT_DETAILS_LOCK_DAYS * 24 * 60 * 60 * 1000;
+
+
+function getPaymentChangeDate(seller) {
+    if (!seller || !seller.paymentDetailsLastChangedAt) {
+        return null;
+    }
+
+    if (seller.paymentDetailsLastChangedAt.toDate) {
+        return seller.paymentDetailsLastChangedAt.toDate();
+    }
+
+    const date = new Date(seller.paymentDetailsLastChangedAt);
+
+    return isNaN(date.getTime()) ? null : date;
+}
+
+
+function getNextPaymentChangeDate(seller) {
+    const lastChanged = getPaymentChangeDate(seller);
+
+    if (!lastChanged) {
+        return null;
+    }
+
+    return new Date(
+        lastChanged.getTime() + PAYMENT_DETAILS_LOCK_MS
+    );
+}
+
+
+function paymentDetailsAreLocked(seller) {
+    const nextChange = getNextPaymentChangeDate(seller);
+
+    if (!nextChange) {
+        return false;
+    }
+
+    return new Date() < nextChange;
+}
+
+
+function formatPaymentDate(date) {
+    if (!date) return '';
+
+    return date.toLocaleDateString('en-GH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+
+function renderPaymentDetails(seller) {
+
+    currentSellerPaymentData = seller;
+
+    const nameEl = document.getElementById("paymentMomoName");
+    const phoneEl = document.getElementById("paymentMomoPhone");
+    const lockMessage = document.getElementById("paymentDetailsLockMessage");
+    const changeBtn = document.getElementById("changePaymentDetailsBtn");
+
+    if (!nameEl || !phoneEl || !lockMessage || !changeBtn) {
+        return;
+    }
+
+   const momoName =
+    seller.momoName ||
+    "Not set";
+
+const momoPhone =
+    seller.momoPhone ||
+    "Not set";
+
+    nameEl.innerText = momoName;
+    phoneEl.innerText = momoPhone;
+
+    const nextChange = getNextPaymentChangeDate(seller);
+
+    if (paymentDetailsAreLocked(seller)) {
+
+        lockMessage.innerHTML =
+            "🔒 Payment details are locked until <strong>" +
+            formatPaymentDate(nextChange) +
+            "</strong>.";
+
+        changeBtn.disabled = true;
+        changeBtn.style.opacity = "0.55";
+        changeBtn.style.cursor = "not-allowed";
+        changeBtn.innerText = "🔒 Change Locked";
+
+    } else {
+
+        lockMessage.innerHTML =
+            "⚠️ Payment details can only be changed once every 30 days.";
+
+        changeBtn.disabled = false;
+        changeBtn.style.opacity = "1";
+        changeBtn.style.cursor = "pointer";
+        changeBtn.innerText = "✏️ Change Payment Details";
+    }
+}
+
+
+function openPaymentDetailsModal() {
+
+    if (!currentSellerPaymentData) {
+        alert("Seller information is still loading.");
+        return;
+    }
+
+    if (paymentDetailsAreLocked(currentSellerPaymentData)) {
+
+        const nextChange =
+            getNextPaymentChangeDate(currentSellerPaymentData);
+
+        alert(
+            "Your payment details are locked until " +
+            formatPaymentDate(nextChange) +
+            "."
+        );
+
+        return;
+    }
+
+    document.getElementById("confirmCurrentMomoName").innerText =
+        currentSellerPaymentData.name ||
+        currentSellerPaymentData.businessName ||
+        "Not set";
+
+    document.getElementById("confirmCurrentMomoPhone").innerText =
+        currentSellerPaymentData.phone ||
+        "Not set";
+
+    document.getElementById("newMomoName").value = "";
+    document.getElementById("newMomoPhone").value = "";
+
+    document.getElementById("paymentDetailsConfirmView").style.display =
+        "block";
+
+    document.getElementById("paymentDetailsSuccessView").style.display =
+        "none";
+
+    document.getElementById("paymentDetailsOverlay").style.display =
+        "flex";
+}
+
+
+function closePaymentDetailsModal() {
+
+    document.getElementById("paymentDetailsOverlay").style.display =
+        "none";
+}
+
+
+function confirmPaymentDetailsChange() {
+
+    if (!sellerId) {
+        alert("Seller account not found.");
+        return;
+    }
+
+    if (!currentSellerPaymentData) {
+        alert("Seller information is still loading.");
+        return;
+    }
+
+    // SECOND LOCK CHECK BEFORE WRITING TO FIRESTORE
+    if (paymentDetailsAreLocked(currentSellerPaymentData)) {
+
+        const nextChange =
+            getNextPaymentChangeDate(currentSellerPaymentData);
+
+        alert(
+            "Your payment details are locked until " +
+            formatPaymentDate(nextChange) +
+            "."
+        );
+
+        return;
+    }
+
+   const newMomoName =
+    document.getElementById("newMomoName").value.trim();
+
+const newMomoPhone =
+    document.getElementById("newMomoPhone").value.trim();
+
+    if (!newName) {
+        alert("Please enter the new MoMo account name.");
+        return;
+    }
+
+    if (!newPhone) {
+        alert("Please enter the new MoMo payment number.");
+        return;
+    }
+
+    const cleanPhone = newPhone.replace(/\s+/g, "");
+
+    if (!/^\+?[0-9]{10,15}$/.test(cleanPhone)) {
+        alert("Please enter a valid MoMo payment number.");
+        return;
+    }
+
+    if (
+        newName === (currentSellerPaymentData.name || "") &&
+        cleanPhone === (currentSellerPaymentData.phone || "").replace(/\s+/g, "")
+    ) {
+        alert("The new payment details are the same as your current details.");
+        return;
+    }
+
+    const confirmMessage =
+        "Confirm payment details change?\n\n" +
+        "MoMo Name: " + newName + "\n" +
+        "MoMo Number: " + cleanPhone + "\n\n" +
+        "You will not be able to change them again for 30 days.";
+
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    const changeBtn =
+        document.querySelector(
+            '#paymentDetailsConfirmView button[onclick="confirmPaymentDetailsChange()"]'
+        );
+
+    if (changeBtn) {
+        changeBtn.disabled = true;
+        changeBtn.innerText = "Saving...";
+    }
+
+    const changeTime =
+        firebase.firestore.FieldValue.serverTimestamp();
+
+    // IMPORTANT:
+    // Only seller payment/profile fields are changed here.
+    // NO orders.
+    // NO order references.
+    // NO payment references.
+    // NO transaction IDs.
+    // NO sales.
+    // NO commissions.
+
+   db.collection("sellers").doc(sellerId).update({
+
+    momoName: newMomoName,
+
+    momoPhone: cleanPhone,
+
+    paymentDetailsLastChangedAt: changeTime
+
+}).then(() => {
+
+        // Update ONLY the seller's ACTIVE LISTINGS.
+        // This makes FUTURE buyers receive the new details.
+        //
+        // Existing orders are NOT touched.
+
+        return db.collection("items")
+            .where("postedBy", "==", sellerId)
+            .get();
+
+    }).then(snapshot => {
+
+        const itemUpdates = [];
+
+        snapshot.forEach(doc => {
+
+            itemUpdates.push(
+                doc.ref.update({
+                   sellerMomoName: newMomoName,
+sellerMomoPhone: cleanPhone
+                })
+            );
+
+        });
+
+        return Promise.all(itemUpdates);
+
+    }).then(() => {
+
+        const updatedSeller = {
+            ...currentSellerPaymentData,
+            name: newName,
+            phone: cleanPhone,
+            paymentDetailsLastChangedAt: new Date()
+        };
+
+        currentSellerPaymentData = updatedSeller;
+
+        renderPaymentDetails(updatedSeller);
+
+        document.getElementById("paymentDetailsConfirmView").style.display =
+            "none";
+
+        document.getElementById("paymentDetailsSuccessView").style.display =
+            "block";
+
+        const nextChange =
+            getNextPaymentChangeDate(updatedSeller);
+
+        document.getElementById("paymentDetailsNextChange").innerText =
+            "You can change them again on " +
+            formatPaymentDate(nextChange) +
+            ".";
+
+    }).catch(err => {
+
+        alert(
+            "Failed to update payment details: " +
+            err.message
+        );
+
+    }).finally(() => {
+
+        if (changeBtn) {
+            changeBtn.disabled = false;
+            changeBtn.innerText = "Confirm Change";
+        }
+
+    });
+}
 
 function loadSeller() {
     db.collection("sellers").doc(sellerId).onSnapshot(doc => {
@@ -651,16 +1247,127 @@ function loadSeller() {
             return;
         }
 
-        const seller = doc.data();
+      const seller = doc.data();
+updateSellerWarning(seller);
 
-        document.getElementById("sellerName").innerText = seller.businessName || seller.name || "Seller";
+updateSellerWarning(seller);
+document.getElementById("sellerName").innerText =
+    (seller.warningActive ? "⚠️ " : "") +
+    (seller.businessName || seller.name || "Seller");
         document.getElementById("sellerEmail").innerText = seller.email || "";
         document.getElementById("sellerPhone").innerText = seller.phone || "";
         document.getElementById("sellerPhoto").src = seller.photo || "https://via.placeholder.com/72";
+        renderPaymentDetails(seller);
 // Commission card is now driven live by outstanding sales — see updateCommissionCard()        document.getElementById("totalSales").innerText = "GHS " + (seller.totalSales || 0);
         document.getElementById("rating").innerText = (seller.avgRating || 0).toFixed(1) + " ★";
 
         document.getElementById("pendingBanner").style.display = seller.status === "pending" ? "inline-block" : "none";
+    });
+}
+function updateSellerWarning(seller) {
+
+    const overlay = document.getElementById("sellerWarningOverlay");
+    const reason = document.getElementById("sellerWarningReason");
+    const message = document.getElementById("sellerWarningMessage");
+
+    if (!overlay) return;
+
+    if (seller.warningActive === true) {
+
+        reason.innerText =
+            seller.warningReason || "Account Warning";
+
+        message.innerText =
+            seller.warningMessage ||
+            "Your seller account has received a warning from KayaMart.";
+
+        overlay.style.display = "flex";
+
+    } else {
+
+        overlay.style.display = "none";
+
+        reason.innerText = "";
+        message.innerText = "";
+    }
+}
+function updateSellerWarning(seller) {
+
+    const warningBox = document.getElementById("sellerWarningBox");
+    const warningReason = document.getElementById("sellerWarningReason");
+    const warningMessage = document.getElementById("sellerWarningMessage");
+
+    if (!warningBox) return;
+
+   if (seller.warningActive === true || seller.status === "warned") {
+
+       warningReason.innerText =
+    seller.warningReason || "Seller Account Warning";
+
+warningMessage.innerText =
+    seller.warningMessage ||
+    "Your seller account has received a warning. Please contact KayaMart for more information.";
+
+        warningBox.style.display = "block";
+
+    } else {
+
+        warningBox.style.display = "none";
+
+        warningReason.innerText = "";
+        warningMessage.innerText = "";
+    }
+}
+function checkForSellerWarning(seller) {
+
+    if (!seller.warningActive) {
+        return;
+    }
+
+    if (seller.warningRead === true) {
+        return;
+    }
+
+    document.getElementById("sellerWarningReason").innerText =
+        seller.warningReason || "Account Violation";
+
+    document.getElementById("sellerWarningMessage").innerText =
+        seller.warningMessage || "Please contact KayaMart for more information.";
+
+    document.getElementById("sellerWarningOverlay").style.display = "flex";
+}
+
+
+function acknowledgeSellerWarning() {
+
+    if (!sellerId) return;
+
+    const btn = document.querySelector(
+        '#sellerWarningOverlay button[onclick="acknowledgeSellerWarning()"]'
+    );
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+    }
+
+    db.collection("sellers").doc(sellerId).update({
+        warningRead: true
+    }).then(() => {
+
+        document.getElementById("sellerWarningOverlay").style.display = "none";
+
+    }).catch(err => {
+
+        alert("Could not save warning acknowledgement: " + err.message);
+
+    }).finally(() => {
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "I Understand";
+        }
+
     });
 }
 
@@ -1037,6 +1744,7 @@ function loadSalesHistory() {
             });
 
            renderSalesHistoryTable(sales);
+checkCommissionPaymentDeadline(sales);
             renderSalesChart(sales);
             updateCommissionCard(sales);
         });
@@ -1135,6 +1843,125 @@ function copyCommissionNumber() {
     }
 }
 function renderSalesHistoryTable(sales) {
+function checkCommissionPaymentDeadline(sales) {
+
+    const unpaidSales = sales.filter(sale =>
+        !sale.collected &&
+        sale.soldAt
+    );
+
+    const overlay = document.getElementById("commissionNoticeOverlay");
+
+    if (!overlay) return;
+
+    // No unpaid commission = no warning
+    if (unpaidSales.length === 0) {
+        overlay.style.display = "none";
+        return;
+    }
+
+    const now = Date.now();
+
+    const outstandingTotal = unpaidSales.reduce(
+        (sum, sale) => sum + (Number(sale.commission) || 0),
+        0
+    );
+
+    const oldestSale = unpaidSales.reduce((oldest, sale) => {
+
+        if (!oldest) return sale;
+
+        return sale.soldAt.toMillis() < oldest.soldAt.toMillis()
+            ? sale
+            : oldest;
+
+    }, null);
+
+    const ageMilliseconds =
+        now - oldestSale.soldAt.toMillis();
+
+    const ageDays =
+        ageMilliseconds / (1000 * 60 * 60 * 24);
+
+    const amountElement =
+        document.getElementById("commissionNoticeAmount");
+
+    const ageElement =
+        document.getElementById("commissionNoticeAge");
+
+    const titleElement =
+        document.getElementById("commissionNoticeTitle");
+
+    const messageElement =
+        document.getElementById("commissionNoticeMessage");
+
+    const iconElement =
+        document.getElementById("commissionNoticeIcon");
+
+    amountElement.innerText =
+        "GHS " + outstandingTotal.toFixed(2);
+
+    ageElement.innerText =
+        Math.floor(ageDays) + " day(s)";
+
+    /*
+     * DAY 0–2
+     * Friendly reminder only.
+     */
+    if (ageDays < 3) {
+
+        iconElement.innerText = "💰";
+
+        titleElement.innerText =
+            "Commission Payment Due";
+
+        messageElement.innerText =
+            "You currently have GHS " +
+            outstandingTotal.toFixed(2) +
+            " in outstanding commission. Please settle your commission after your sale.";
+
+        overlay.style.display = "none";
+
+        return;
+    }
+
+    /*
+     * DAY 3–6
+     * First warning.
+     */
+    if (ageDays < 7) {
+
+        iconElement.innerText = "⚠️";
+
+        titleElement.innerText =
+            "Commission Payment Reminder";
+
+        messageElement.innerText =
+            "Your outstanding commission of GHS " +
+            outstandingTotal.toFixed(2) +
+            " has remained unpaid for 3 days. Please settle it as soon as possible to keep your seller account in good standing.";
+
+        overlay.style.display = "flex";
+
+        return;
+    }
+
+    /*
+     * DAY 7+
+     * Final notice.
+     */
+    iconElement.innerText = "🚨";
+
+    titleElement.innerText =
+        "Final Commission Notice";
+
+    messageElement.innerText =
+        "Your outstanding commission of GHS " +
+        outstandingTotal.toFixed(2) +
+        " has remained unpaid for 7 days. Please settle the balance immediately. Continued non-payment may result in a temporary suspension of your seller account.";
+
+    overlay.style.display = "flex";
+}
     const table = document.getElementById("salesHistoryTable");
     const outstandingLabel = document.getElementById("salesOutstandingLabel");
 
