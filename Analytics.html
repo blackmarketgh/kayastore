@@ -349,13 +349,44 @@ tr:last-child td { border-bottom: none; }
 
 <div class="wrapper">
 
-    <div class="profile">
-        <img id="sellerPhoto" src="https://via.placeholder.com/72">
-        <div>
-            <h2 id="sellerName">Loading...</h2>
-            <p id="sellerEmail"></p>
-            <p id="sellerPhone"></p>
-        </div>
+   <div class="profile">
+    <img id="sellerPhoto" src="https://via.placeholder.com/72">
+
+    <div>
+        <h2 id="sellerName">Loading...</h2>
+        <p id="sellerEmail"></p>
+        <p id="sellerPhone"></p>
+    </div>
+
+<div style="
+    margin-left:auto;
+    text-align:right;
+    line-height:1.2;
+">
+    <div style="
+        font-size:20px;
+        font-weight:800;
+        color:#222;
+    ">
+        <span id="sellerFollowers">0</span>
+    </div>
+    <div style="
+        font-size:11px;
+        font-weight:600;
+        color:#888;
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+    ">
+        Followers
+    </div>
+</div>
+    <div class="pending-banner" id="pendingBanner" style="display:none;">
+        ⏳ Approval Pending
+    </div>
+</div>
+    <p id="sellerEmail"></p>
+    <p id="sellerPhone"></p>
+</div>
         <div class="pending-banner" id="pendingBanner" style="display:none;">⏳ Approval Pending</div>
     </div>
     <!-- PAYMENT DETAILS -->
@@ -968,28 +999,33 @@ function formatPaymentDate(date) {
 
 
 function renderPaymentDetails(seller) {
-
-    currentSellerPaymentData = seller;
-
     const nameEl = document.getElementById("paymentMomoName");
     const phoneEl = document.getElementById("paymentMomoPhone");
     const lockMessage = document.getElementById("paymentDetailsLockMessage");
     const changeBtn = document.getElementById("changePaymentDetailsBtn");
 
-    if (!nameEl || !phoneEl || !lockMessage || !changeBtn) {
+    // Always save the seller data first
+    currentSellerPaymentData = seller || {};
+
+    // If the payment elements do not exist, stop safely
+    if (!nameEl || !phoneEl) {
+        console.error("Payment details elements not found.");
         return;
     }
 
-   const momoName =
-    seller.momoName ||
-    "Not set";
+    // Display payment details
+    nameEl.innerText = seller && seller.momoName
+        ? seller.momoName
+        : "Not set";
 
-const momoPhone =
-    seller.momoPhone ||
-    "Not set";
+    phoneEl.innerText = seller && seller.momoPhone
+        ? seller.momoPhone
+        : "Not set";
 
-    nameEl.innerText = momoName;
-    phoneEl.innerText = momoPhone;
+    // If lock elements are missing, don't break the page
+    if (!lockMessage || !changeBtn) {
+        return;
+    }
 
     const nextChange = getNextPaymentChangeDate(seller);
 
@@ -1016,7 +1052,6 @@ const momoPhone =
         changeBtn.innerText = "✏️ Change Payment Details";
     }
 }
-
 
 function openPaymentDetailsModal() {
 
@@ -1081,7 +1116,6 @@ function confirmPaymentDetailsChange() {
         return;
     }
 
-    // SECOND LOCK CHECK BEFORE WRITING TO FIRESTORE
     if (paymentDetailsAreLocked(currentSellerPaymentData)) {
 
         const nextChange =
@@ -1096,23 +1130,24 @@ function confirmPaymentDetailsChange() {
         return;
     }
 
-   const newMomoName =
-    document.getElementById("newMomoName").value.trim();
+    const newMomoName =
+        document.getElementById("newMomoName").value.trim();
 
-const newMomoPhone =
-    document.getElementById("newMomoPhone").value.trim();
+    const newMomoPhone =
+        document.getElementById("newMomoPhone").value.trim();
 
-    if (!newName) {
+    if (!newMomoName) {
         alert("Please enter the new MoMo account name.");
         return;
     }
 
-    if (!newPhone) {
+    if (!newMomoPhone) {
         alert("Please enter the new MoMo payment number.");
         return;
     }
 
-    const cleanPhone = newPhone.replace(/\s+/g, "");
+    const cleanPhone =
+        newMomoPhone.replace(/\s+/g, "");
 
     if (!/^\+?[0-9]{10,15}$/.test(cleanPhone)) {
         alert("Please enter a valid MoMo payment number.");
@@ -1120,16 +1155,20 @@ const newMomoPhone =
     }
 
     if (
-        newName === (currentSellerPaymentData.name || "") &&
-        cleanPhone === (currentSellerPaymentData.phone || "").replace(/\s+/g, "")
+        newMomoName ===
+            (currentSellerPaymentData.momoName || "") &&
+        cleanPhone ===
+            (currentSellerPaymentData.momoPhone || "").replace(/\s+/g, "")
     ) {
-        alert("The new payment details are the same as your current details.");
+        alert(
+            "The new payment details are the same as your current details."
+        );
         return;
     }
 
     const confirmMessage =
         "Confirm payment details change?\n\n" +
-        "MoMo Name: " + newName + "\n" +
+        "MoMo Name: " + newMomoName + "\n" +
         "MoMo Number: " + cleanPhone + "\n\n" +
         "You will not be able to change them again for 30 days.";
 
@@ -1150,29 +1189,15 @@ const newMomoPhone =
     const changeTime =
         firebase.firestore.FieldValue.serverTimestamp();
 
-    // IMPORTANT:
-    // Only seller payment/profile fields are changed here.
-    // NO orders.
-    // NO order references.
-    // NO payment references.
-    // NO transaction IDs.
-    // NO sales.
-    // NO commissions.
+    db.collection("sellers").doc(sellerId).update({
 
-   db.collection("sellers").doc(sellerId).update({
+        momoName: newMomoName,
 
-    momoName: newMomoName,
+        momoPhone: cleanPhone,
 
-    momoPhone: cleanPhone,
+        paymentDetailsLastChangedAt: changeTime
 
-    paymentDetailsLastChangedAt: changeTime
-
-}).then(() => {
-
-        // Update ONLY the seller's ACTIVE LISTINGS.
-        // This makes FUTURE buyers receive the new details.
-        //
-        // Existing orders are NOT touched.
+    }).then(() => {
 
         return db.collection("items")
             .where("postedBy", "==", sellerId)
@@ -1186,8 +1211,8 @@ const newMomoPhone =
 
             itemUpdates.push(
                 doc.ref.update({
-                   sellerMomoName: newMomoName,
-sellerMomoPhone: cleanPhone
+                    sellerMomoName: newMomoName,
+                    sellerMomoPhone: cleanPhone
                 })
             );
 
@@ -1197,29 +1222,31 @@ sellerMomoPhone: cleanPhone
 
     }).then(() => {
 
-        const updatedSeller = {
+        currentSellerPaymentData = {
             ...currentSellerPaymentData,
-            name: newName,
-            phone: cleanPhone,
+            momoName: newMomoName,
+            momoPhone: cleanPhone,
             paymentDetailsLastChangedAt: new Date()
         };
 
-        currentSellerPaymentData = updatedSeller;
+        renderPaymentDetails(currentSellerPaymentData);
 
-        renderPaymentDetails(updatedSeller);
+        document.getElementById(
+            "paymentDetailsConfirmView"
+        ).style.display = "none";
 
-        document.getElementById("paymentDetailsConfirmView").style.display =
-            "none";
-
-        document.getElementById("paymentDetailsSuccessView").style.display =
-            "block";
+        document.getElementById(
+            "paymentDetailsSuccessView"
+        ).style.display = "block";
 
         const nextChange =
-            getNextPaymentChangeDate(updatedSeller);
+            getNextPaymentChangeDate(currentSellerPaymentData);
 
-        document.getElementById("paymentDetailsNextChange").innerText =
+        document.getElementById(
+            "paymentDetailsNextChange"
+        ).innerText =
             "You can change them again on " +
-            formatPaymentDate(nextChange) +
+            formatPaymentDate(nextChange) +yyy
             ".";
 
     }).catch(err => {
@@ -1238,58 +1265,123 @@ sellerMomoPhone: cleanPhone
 
     });
 }
-
 function loadSeller() {
-    db.collection("sellers").doc(sellerId).onSnapshot(doc => {
-        if (!doc.exists) {
-            alert("Seller not found.");
-            window.location.href = "index.html";
-            return;
-        }
-
-      const seller = doc.data();
-updateSellerWarning(seller);
-
-updateSellerWarning(seller);
-document.getElementById("sellerName").innerText =
-    (seller.warningActive ? "⚠️ " : "") +
-    (seller.businessName || seller.name || "Seller");
-        document.getElementById("sellerEmail").innerText = seller.email || "";
-        document.getElementById("sellerPhone").innerText = seller.phone || "";
-        document.getElementById("sellerPhoto").src = seller.photo || "https://via.placeholder.com/72";
-        renderPaymentDetails(seller);
-// Commission card is now driven live by outstanding sales — see updateCommissionCard()        document.getElementById("totalSales").innerText = "GHS " + (seller.totalSales || 0);
-        document.getElementById("rating").innerText = (seller.avgRating || 0).toFixed(1) + " ★";
-
-        document.getElementById("pendingBanner").style.display = seller.status === "pending" ? "inline-block" : "none";
-    });
-}
-function updateSellerWarning(seller) {
-
-    const overlay = document.getElementById("sellerWarningOverlay");
-    const reason = document.getElementById("sellerWarningReason");
-    const message = document.getElementById("sellerWarningMessage");
-
-    if (!overlay) return;
-
-    if (seller.warningActive === true) {
-
-        reason.innerText =
-            seller.warningReason || "Account Warning";
-
-        message.innerText =
-            seller.warningMessage ||
-            "Your seller account has received a warning from KayaMart.";
-
-        overlay.style.display = "flex";
-
-    } else {
-
-        overlay.style.display = "none";
-
-        reason.innerText = "";
-        message.innerText = "";
+    if (!sellerId) {
+        console.error("No seller ID found.");
+        alert("Seller ID is missing. Please log in again.");
+        window.location.href = "index.html";
+        return;
     }
+
+    console.log("Loading seller:", sellerId);
+
+    db.collection("sellers")
+        .doc(sellerId)
+        .onSnapshot(
+            function(doc) {
+
+                console.log("Seller snapshot received:", doc.exists);
+
+                if (!doc.exists) {
+                    console.error("Seller document does not exist:", sellerId);
+                    alert("Seller account not found.");
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                const seller = doc.data();
+
+                console.log("Seller data:", seller);
+
+                // Save seller data
+                currentSellerPaymentData = seller;
+
+                // Seller warning
+                if (typeof updateSellerWarning === "function") {
+                    updateSellerWarning(seller);
+                }
+
+                // Seller information
+                const sellerName = document.getElementById("sellerName");
+                const sellerEmail = document.getElementById("sellerEmail");
+                const sellerPhone = document.getElementById("sellerPhone");
+                const sellerPhoto = document.getElementById("sellerPhoto");
+                const totalSales = document.getElementById("totalSales");
+                const rating = document.getElementById("rating");
+                const pendingBanner = document.getElementById("pendingBanner");
+
+                if (sellerName) {
+                    sellerName.innerText =
+                        (seller.warningActive ? "⚠️ " : "") +
+                        (seller.businessName || seller.name || "Seller");
+                }
+
+                if (sellerEmail) {
+                    sellerEmail.innerText = seller.email || "";
+                }
+
+                if (sellerPhone) {
+                    sellerPhone.innerText = seller.phone || "";
+                }
+
+                if (sellerPhoto) {
+                    sellerPhoto.src =
+                        seller.photo ||
+                        "https://via.placeholder.com/72";
+                }
+
+                if (totalSales) {
+                    totalSales.innerText =
+                        "GHS " + (seller.totalSales || 0);
+                }
+
+                if (rating) {
+                    rating.innerText =
+                        ((seller.avgRating || 0).toFixed(1)) + " ★";
+                }
+
+                if (pendingBanner) {
+                    pendingBanner.style.display =
+                        seller.status === "pending"
+                            ? "inline-block"
+                            : "none";
+                }
+
+                // PAYMENT DETAILS
+                console.log("Rendering payment details...");
+
+                if (typeof renderPaymentDetails === "function") {
+                    renderPaymentDetails(seller);
+                }
+
+                console.log("Payment details rendered.");
+            },
+
+            function(error) {
+                console.error("FIRESTORE SELLER ERROR:", error);
+
+                alert(
+                    "Unable to load seller/payment details.\n\n" +
+                    error.code +
+                    "\n" +
+                    error.message
+                );
+
+                const paymentName =
+                    document.getElementById("paymentMomoName");
+
+                const paymentPhone =
+                    document.getElementById("paymentMomoPhone");
+
+                if (paymentName) {
+                    paymentName.innerText = "Error loading";
+                }
+
+                if (paymentPhone) {
+                    paymentPhone.innerText = "Error loading";
+                }
+            }
+        );
 }
 function updateSellerWarning(seller) {
 
@@ -1379,23 +1471,46 @@ function categoryEmoji(cat) {
 function loadProducts() {
     db.collection("items")
         .where("postedBy", "==", sellerId)
-        .onSnapshot(snapshot => {
-            currentItems = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                data.firestoreId = doc.id;
-                currentItems.push(data);
-            });
+        .onSnapshot(
+            snapshot => {
+                currentItems = [];
 
-            document.getElementById("totalProducts").innerText = currentItems.length;
-            document.getElementById("productsCountLabel").innerText = currentItems.length + (currentItems.length === 1 ? " product" : " products");
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.firestoreId = doc.id;
+                    currentItems.push(data);
+                });
 
-            renderProductsTable();
-            renderStockDonut();
-            renderPromotedItemsTable();
-        });
+                document.getElementById("totalProducts").innerText =
+                    currentItems.length;
+
+                document.getElementById("productsCountLabel").innerText =
+                    currentItems.length +
+                    (currentItems.length === 1 ? " product" : " products");
+
+                renderProductsTable();
+                renderStockDonut();
+                renderPromotedItemsTable();
+            },
+            error => {
+                console.error("PRODUCTS LOAD ERROR:", error);
+
+                document.getElementById("productsTable").innerHTML =
+                    `<tr class="empty-row">
+                        <td colspan="5">
+                            Unable to load products: ${error.message}
+                        </td>
+                    </tr>`;
+
+                document.getElementById("promotedItemsTable").innerHTML =
+                    `<tr class="empty-row">
+                        <td colspan="6">
+                            Unable to load promotions.
+                        </td>
+                    </tr>`;
+            }
+        );
 }
-
 function formatPromoTimeLeft(item) {
     if (!item.promotedUntil) return '—';
     const msLeft = item.promotedUntil.toMillis() - Date.now();
@@ -1729,27 +1844,39 @@ function renderStockDonut() {
 function loadSalesHistory() {
     db.collection("sales")
         .where("sellerId", "==", sellerId)
-        .onSnapshot(snapshot => {
-            let sales = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                sales.push(data);
-            });
+        .onSnapshot(
+            snapshot => {
+                let sales = [];
 
-            sales.sort((a, b) => {
-                const at = a.soldAt ? a.soldAt.toMillis() : 0;
-                const bt = b.soldAt ? b.soldAt.toMillis() : 0;
-                return bt - at;
-            });
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    sales.push(data);
+                });
 
-           renderSalesHistoryTable(sales);
-checkCommissionPaymentDeadline(sales);
-            renderSalesChart(sales);
-            updateCommissionCard(sales);
-        });
+                sales.sort((a, b) => {
+                    const at = a.soldAt ? a.soldAt.toMillis() : 0;
+                    const bt = b.soldAt ? b.soldAt.toMillis() : 0;
+                    return bt - at;
+                });
+
+                renderSalesHistoryTable(sales);
+                checkCommissionPaymentDeadline(sales);
+                renderSalesChart(sales);
+                updateCommissionCard(sales);
+            },
+            error => {
+                console.error("SALES LOAD ERROR:", error);
+
+                document.getElementById("salesHistoryTable").innerHTML =
+                    `<tr class="empty-row">
+                        <td colspan="6">
+                            Unable to load sales history: ${error.message}
+                        </td>
+                    </tr>`;
+            }
+        );
 }
-
 const KAYAMART_MOMO_NUMBER = "0591616403";
 let currentOutstandingCommission = 0;
 
@@ -1843,6 +1970,56 @@ function copyCommissionNumber() {
     }
 }
 function renderSalesHistoryTable(sales) {
+    const table = document.getElementById("salesHistoryTable");
+    const outstandingLabel = document.getElementById("salesOutstandingLabel");
+
+    if (sales.length === 0) {
+        table.innerHTML = "<tr class='empty-row'><td colspan='6'>No completed sales yet.</td></tr>";
+        outstandingLabel.innerText = '';
+        return;
+    }
+
+    const outstanding = sales
+        .filter(s => !s.collected)
+        .reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
+
+    outstandingLabel.innerText =
+        outstanding > 0
+            ? `GHS ${outstanding.toFixed(2)} outstanding`
+            : 'All settled ✓';
+
+    table.innerHTML = sales.map(sale => {
+        const dateStr = sale.soldAt
+            ? sale.soldAt.toDate().toLocaleDateString()
+            : '—';
+
+        let statusBadge;
+        let actionCell = '—';
+
+        if (sale.collected) {
+            statusBadge = '<span class="badge in-stock">Collected</span>';
+        } else if (sale.paymentClaimed) {
+            statusBadge = '<span class="badge low-stock">Pending</span>';
+        } else {
+            statusBadge = '<span class="badge out-stock">Outstanding</span>';
+            actionCell =
+                `<button class="icon-btn edit" onclick="claimPaymentMade('${sale.id}')">Paid</button>`;
+        }
+
+        return `
+            <tr>
+                <td>${sale.title || '—'}</td>
+                <td>GHS ${Number(sale.price || 0).toFixed(2)}</td>
+                <td>GHS ${Number(sale.commission || 0).toFixed(2)}</td>
+                <td>${statusBadge}</td>
+                <td>${dateStr}</td>
+                <td>${actionCell}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+
 function checkCommissionPaymentDeadline(sales) {
 
     const unpaidSales = sales.filter(sale =>
@@ -1854,7 +2031,6 @@ function checkCommissionPaymentDeadline(sales) {
 
     if (!overlay) return;
 
-    // No unpaid commission = no warning
     if (unpaidSales.length === 0) {
         overlay.style.display = "none";
         return;
@@ -1868,13 +2044,11 @@ function checkCommissionPaymentDeadline(sales) {
     );
 
     const oldestSale = unpaidSales.reduce((oldest, sale) => {
-
         if (!oldest) return sale;
 
         return sale.soldAt.toMillis() < oldest.soldAt.toMillis()
             ? sale
             : oldest;
-
     }, null);
 
     const ageMilliseconds =
@@ -1904,10 +2078,7 @@ function checkCommissionPaymentDeadline(sales) {
     ageElement.innerText =
         Math.floor(ageDays) + " day(s)";
 
-    /*
-     * DAY 0–2
-     * Friendly reminder only.
-     */
+
     if (ageDays < 3) {
 
         iconElement.innerText = "💰";
@@ -1925,10 +2096,7 @@ function checkCommissionPaymentDeadline(sales) {
         return;
     }
 
-    /*
-     * DAY 3–6
-     * First warning.
-     */
+
     if (ageDays < 7) {
 
         iconElement.innerText = "⚠️";
@@ -1946,10 +2114,7 @@ function checkCommissionPaymentDeadline(sales) {
         return;
     }
 
-    /*
-     * DAY 7+
-     * Final notice.
-     */
+
     iconElement.innerText = "🚨";
 
     titleElement.innerText =
@@ -1962,110 +2127,186 @@ function checkCommissionPaymentDeadline(sales) {
 
     overlay.style.display = "flex";
 }
-    const table = document.getElementById("salesHistoryTable");
-    const outstandingLabel = document.getElementById("salesOutstandingLabel");
+function renderSalesChart(sales) {
 
-    if (sales.length === 0) {
-        table.innerHTML = "<tr class='empty-row'><td colspan='5'>No completed sales yet.</td></tr>";
-        outstandingLabel.innerText = '';
+    const chart = document.getElementById("salesChart");
+
+    if (!chart) {
         return;
     }
 
-    const outstanding = sales.filter(s => !s.collected).reduce((sum, s) => sum + (Number(s.commission) || 0), 0);
-    outstandingLabel.innerText = outstanding > 0 ? `GHS ${outstanding.toFixed(2)} outstanding` : 'All settled ✓';
-
-  table.innerHTML = sales.map(sale => {
-        const dateStr = sale.soldAt ? sale.soldAt.toDate().toLocaleDateString() : '—';
-        let statusBadge;
-        let actionCell = '—';
-        if (sale.collected) {
-            statusBadge = '<span class="badge in-stock">Collected</span>';
-      } else if (sale.paymentClaimed) {
-            statusBadge = '<span class="badge low-stock">Pending</span>';
-
-        } else {
-            statusBadge = '<span class="badge out-stock">Outstanding</span>';
-            actionCell = `<button class="icon-btn edit" onclick="claimPaymentMade('${sale.id}')"> Paid</button>`;
-        }
-        return `
-            <tr>
-                <td>${sale.title}</td>
-                <td>GHS ${sale.price}</td>
-                <td>GHS ${Number(sale.commission).toFixed(2)}</td>
-                <td>${statusBadge}</td>
-                <td>${dateStr}</td>
-                <td>${actionCell}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function renderSalesChart(sales) {
-    const chart = document.getElementById("salesChart");
-
     const months = [];
     const now = new Date();
+
+    // Create the last 6 months
     for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push({ key: d.getFullYear() + '-' + d.getMonth(), label: d.toLocaleDateString('en-US', { month: 'short' }), total: 0 });
+
+        const d = new Date(
+            now.getFullYear(),
+            now.getMonth() - i,
+            1
+        );
+
+        months.push({
+            key: d.getFullYear() + "-" + d.getMonth(),
+            label: d.toLocaleDateString("en-US", {
+                month: "short"
+            }),
+            total: 0
+        });
     }
 
     sales.forEach(sale => {
-        if (!sale.soldAt) return;
-        const d = sale.soldAt.toDate();
-        const key = d.getFullYear() + '-' + d.getMonth();
-        const monthEntry = months.find(m => m.key === key);
-        if (monthEntry) monthEntry.total += Number(sale.price) || 0;
+
+        if (!sale.soldAt) {
+            return;
+        }
+
+        let d;
+
+        try {
+
+            if (typeof sale.soldAt.toDate === "function") {
+                d = sale.soldAt.toDate();
+
+            } else if (typeof sale.soldAt.toMillis === "function") {
+                d = new Date(sale.soldAt.toMillis());
+
+            } else if (sale.soldAt instanceof Date) {
+                d = sale.soldAt;
+
+            } else {
+                d = new Date(sale.soldAt);
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Could not read sale date:",
+                sale.soldAt,
+                error
+            );
+
+            return;
+        }
+
+        if (isNaN(d.getTime())) {
+            return;
+        }
+
+        const key =
+            d.getFullYear() + "-" + d.getMonth();
+
+        const monthEntry =
+            months.find(m => m.key === key);
+
+        if (monthEntry) {
+            monthEntry.total += Number(sale.price) || 0;
+        }
+
     });
 
-    const maxVal = Math.max(...months.map(m => m.total), 1);
-    const hasAnySales = months.some(m => m.total > 0);
+    const maxVal =
+        Math.max(
+            ...months.map(m => m.total),
+            1
+        );
+
+    const hasAnySales =
+        months.some(m => m.total > 0);
 
     if (!hasAnySales) {
-        chart.innerHTML = '<div class="chart-empty">No sales in the last 6 months yet.</div>';
+
+        chart.innerHTML =
+            '<div class="chart-empty">No sales in the last 6 months yet.</div>';
+
         return;
     }
 
     chart.innerHTML = months.map(m => {
-        const heightPct = Math.max((m.total / maxVal) * 100, m.total > 0 ? 6 : 2);
+
+        const heightPct =
+            Math.max(
+                (m.total / maxVal) * 100,
+                m.total > 0 ? 6 : 2
+            );
+
         return `
             <div class="chart-bar-wrap">
-                ${m.total > 0 ? `<div class="chart-value">GHS ${m.total}</div>` : ''}
-                <div class="chart-bar" style="height:${heightPct}%;"></div>
-                <div class="chart-label">${m.label}</div>
+
+                ${
+                    m.total > 0
+                        ? `<div class="chart-value">
+                             GHS ${m.total.toFixed(2)}
+                           </div>`
+                        : ""
+                }
+
+                <div
+                    class="chart-bar"
+                    style="height:${heightPct}%;">
+                </div>
+
+                <div class="chart-label">
+                    ${m.label}
+                </div>
+
             </div>
         `;
-    }).join('');
-}
 
+    }).join("");
+}
 function loadOrders() {
     db.collection("orders")
         .orderBy("createdAt", "desc")
-        .onSnapshot(snapshot => {
-            const relevantOrders = [];
+        .onSnapshot(
+            snapshot => {
+                const relevantOrders = [];
 
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                const myItems = (order.items || []).filter(it => it.sellerId === sellerId);
-                if (myItems.length === 0) return;
+                snapshot.forEach(doc => {
+                    const order = doc.data();
 
-                const subtotal = myItems.reduce((sum, it) => sum + (Number(it.price) * Number(it.qty)), 0);
-                relevantOrders.push({
-                    id: doc.id,
-                    buyerName: order.buyerName || 'Unknown',
-                    buyerPhone: order.buyerPhone || '',
-                    deliveryMethod: order.deliveryMethod || '',
-                    location: order.location || '',
-                    createdAt: order.createdAt,
-                    myItems,
-                    subtotal,
-                    status: order.status || 'pending'
+                    const myItems = (order.items || [])
+                        .filter(it => it.sellerId === sellerId);
+
+                    if (myItems.length === 0) return;
+
+                    const subtotal = myItems.reduce(
+                        (sum, it) =>
+                            sum +
+                            (Number(it.price) * Number(it.qty)),
+                        0
+                    );
+
+                    relevantOrders.push({
+                        id: doc.id,
+                        buyerName: order.buyerName || "Unknown",
+                        buyerPhone: order.buyerPhone || "",
+                        deliveryMethod: order.deliveryMethod || "",
+                        location: order.location || "",
+                        createdAt: order.createdAt,
+                        myItems,
+                        subtotal,
+                        status: order.status || "pending"
+                    });
                 });
-            });
 
-            document.getElementById("pendingOrdersCount").innerText = relevantOrders.length;
-            renderOrdersTable(relevantOrders);
-        });
+                document.getElementById("pendingOrdersCount").innerText =
+                    relevantOrders.length;
+
+                renderOrdersTable(relevantOrders);
+            },
+            error => {
+                console.error("ORDERS LOAD ERROR:", error);
+
+                document.getElementById("ordersTable").innerHTML =
+                    `<tr class="empty-row">
+                        <td colspan="7">
+                            Unable to load orders: ${error.message}
+                        </td>
+                    </tr>`;
+            }
+        );
 }
 function renderOrdersTable(orders) {
     const table = document.getElementById("ordersTable");
