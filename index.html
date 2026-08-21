@@ -3142,14 +3142,25 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <button onclick="skipGetStarted()" style="margin-top:8px;">Skip for now</button>
     </div>
 </div><div class="modal" id="chatModal">
-    <div class="modal-content" style="display:flex; flex-direction:column; height:70vh; max-height:500px; padding:15px;">
-        <h3 id="chatItemTitle" style="margin:0 0 10px 0;"></h3>
-        <div id="chatMessages" style="flex:1; overflow-y:auto; background:#f8f8f8; border-radius:8px; padding:10px; margin-bottom:10px;"></div>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="chatMessageInput" placeholder="Type a message..." style="flex:1; margin-bottom:0;" onkeypress="if(event.key==='Enter') sendChatMessage()">
-            <button onclick="sendChatMessage()" style="width:auto; background:#1a5c3a; color:white; border:none; border-radius:8px; padding:12px 16px;">Send</button>
+    <div class="modal-content">
+        <div class="chat-header">
+            <button class="chat-back-btn" onclick="closeChatWindow()">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                <span>Back to Market</span>
+            </button>
+            <div class="chat-header-avatar" id="chatHeaderAvatar">💬</div>
+            <div class="chat-header-info">
+                <div class="chat-header-title" id="chatItemTitle"></div>
+                <div class="chat-header-sub" id="chatHeaderSub">Active chat</div>
+            </div>
         </div>
-        <button onclick="closeChatWindow()" style="margin-top:8px;">Close</button>
+        <div id="chatMessages"></div>
+        <div class="chat-input-bar">
+            <input type="text" id="chatMessageInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+            <button class="chat-send-btn" onclick="sendChatMessage()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -4789,21 +4800,180 @@ function trackVisit() {
 
     let items = [];
 
-  function loadItemsFromFirestore() {
-        db.collection('items').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            items = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                data.firestoreId = doc.id;
-                items.push(data);
+ function loadItemsFromFirestore() {
+    const LOADING_TIMEOUT = 15000; // 15 seconds maximum
+
+    let loadingFinished = false;
+    let timeoutId = null;
+
+    function finishLoading(message = null) {
+        if (loadingFinished) return;
+        loadingFinished = true;
+
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        }
+
+        // Give the browser one frame to finish painting the product cards
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                hidePageLoadingOverlay();
+
+                if (message) {
+                    console.warn(message);
+                }
             });
-            renderItems();
-            toggleOwnerControls();
-            hidePageLoadingOverlay();
-            rebuildBanners();
         });
-        setInterval(rebuildBanners, 60000); // keep the Deal Rush countdown and expiry fresh
     }
+
+    // Safety net:
+    // The loading screen can NEVER remain forever.
+    timeoutId = setTimeout(() => {
+        if (!loadingFinished) {
+            finishLoading(
+                'KayaMart: product loading timed out. Showing available products.'
+            );
+        }
+    }, LOADING_TIMEOUT);
+
+    db.collection('items')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(
+            async (snapshot) => {
+                try {
+                    items = [];
+
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        data.firestoreId = doc.id;
+                        items.push(data);
+                    });
+
+                    // Render the products first.
+                    renderItems();
+                    toggleOwnerControls();
+                    rebuildBanners();
+
+                    /*
+                     * Wait for currently visible product images to either:
+                     * 1. load successfully, OR
+                     * 2. fail and use their fallback.
+                     *
+                     * This prevents the loading screen from disappearing
+                     * while the product cards are still visually empty.
+                     */
+                    const images = Array.from(
+                        document.querySelectorAll('#itemGrid img')
+                    );
+
+                    if (images.length > 0) {
+                        await Promise.all(
+                            images.map((img) => {
+                                return new Promise((resolve) => {
+                                    // Already loaded
+                                    if (img.complete) {
+                                        resolve();
+                                        return;
+                                    }
+
+                                    const done = () => {
+                                        img.removeEventListener('load', done);
+                                        img.removeEventListener('error', done);
+                                        resolve();
+                                    };
+
+                                    img.addEventListener('load', done, {
+                                        once: true
+                                    });
+
+                                    img.addEventListener('error', done, {
+                                        once: true
+                                    });
+
+                                    // Individual image safety timeout
+                                    setTimeout(done, 5000);
+                                });
+                            })
+                        );
+                    }
+
+                    finishLoading();
+                } catch (error) {
+                    console.error(
+                        'ERROR WHILE RENDERING PRODUCTS:',
+                        error
+                    );
+
+                    // Never leave the user trapped on the loading screen.
+                    finishLoading(
+                        'KayaMart: product rendering encountered an error.'
+                    );
+                }
+            },
+
+            (error) => {
+                console.error(
+                    'FIRESTORE PRODUCTS LOAD ERROR:',
+                    error
+                );
+
+                finishLoading(
+                    'KayaMart: unable to load products from Firestore.'
+                );
+
+                const grid = document.getElementById('itemGrid');
+
+                if (grid) {
+                    grid.innerHTML = `
+                        <div style="
+                            grid-column:1/-1;
+                            text-align:center;
+                            padding:50px 20px;
+                            color:#777;
+                        ">
+                            <div style="
+                                font-size:45px;
+                                margin-bottom:12px;
+                            ">⚠️</div>
+
+                            <h3 style="
+                                margin:0 0 8px;
+                                color:#444;
+                            ">
+                                Products couldn't be loaded
+                            </h3>
+
+                            <p style="
+                                margin:0 0 18px;
+                                font-size:14px;
+                            ">
+                                Please check your internet connection and try again.
+                            </p>
+
+                            <button
+                                onclick="location.reload()"
+                                style="
+                                    border:0;
+                                    padding:11px 20px;
+                                    border-radius:10px;
+                                    background:var(--accent);
+                                    color:white;
+                                    font-weight:700;
+                                    cursor:pointer;
+                                "
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        );
+
+    // Keep the Deal Rush countdown and expiry fresh.
+    setInterval(rebuildBanners, 60000);
+}
 
 
   function renderSearchSuggestions() {
@@ -4877,8 +5047,12 @@ const filtered = items.filter(item => {
     const matchesStatus = category === "MyListings" || isOwner || isMyOwnItem || item.status === 'approved';
     return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
 });
-        if (filtered.length === 0) {
-            grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
+     if (filtered.length === 0) {
+            if (!itemsHaveLoadedOnce) {
+                grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:40px 0; color:#999;'><div class='loading-spinner' style='margin:0 auto 14px; width:34px; height:34px; border:3px solid #eee; border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite;'></div><p>Loading items...</p></div>";
+            } else {
+                grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
+            }
             return;
         }
 
@@ -5254,8 +5428,8 @@ function setGalleryIndex(i) {
         }
     }
 
-   function getFollowerKey() {
-        return localStorage.getItem('kayaBuyerId') || localStorage.getItem('kayaVisitorId');
+       function getFollowerKey() {
+        return localStorage.getItem('kayaBuyerId') || null;
     }
 
     function followDocId(sellerDocId) {
@@ -5319,13 +5493,15 @@ function setGalleryIndex(i) {
         el.innerText = next + ' follower' + (next === 1 ? '' : 's');
     }
 
-    function toggleFollowSeller(sellerDocId) {
+       function toggleFollowSeller(sellerDocId) {
         const key = getFollowerKey();
         if (!key) {
-            alert("Please log in or continue as a buyer first.");
+            alert("Please create a buyer account to follow sellers.");
+            switchBuyerTab('register');
+            document.getElementById('getStartedModal').style.display = 'flex';
             return;
         }
-        const btn = document.getElementById('pdFollowBtn');
+       const btn = document.getElementById('pdFollowBtn');
         if (btn) btn.disabled = true;
 
         const followId = followDocId(sellerDocId);
@@ -6303,10 +6479,54 @@ function closeBuyerNameModal() {
 let currentChatId = null;
 let chatUnsubscribe = null;
 
+function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+}
+
+function formatChatTime(sentAt) {
+    if (!sentAt || !sentAt.toDate) return '';
+    const d = sentAt.toDate();
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderChatBubbles(snapshot, myRole) {
+    const messagesDiv = document.getElementById('chatMessages');
+    if (snapshot.empty) {
+        messagesDiv.innerHTML = `
+            <div class="chat-empty-state">
+                <div class="emoji">👋</div>
+                <div>No messages yet.<br>Say hello to get started!</div>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    snapshot.forEach(doc => {
+        const msg = doc.data();
+        const isMine = msg.sender === myRole;
+        html += `
+            <div class="chat-bubble-row ${isMine ? 'mine' : 'theirs'}">
+                ${!isMine ? `<div class="chat-mini-avatar">${getInitials(msg.senderName)}</div>` : ''}
+                <div class="chat-bubble-col">
+                    <div class="chat-sender-name">${msg.senderName || ''}</div>
+                    <div class="chat-bubble">${msg.text}</div>
+                    <div class="chat-timestamp">${formatChatTime(msg.sentAt)}</div>
+                </div>
+            </div>
+        `;
+    });
+    messagesDiv.innerHTML = html;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 function openChatWindow(item) {
     const buyerKey = localStorage.getItem('kayaBuyerId') || 'guest';
     currentChatId = item.sellerPhone + '_' + item.firestoreId + '_' + buyerKey;
-    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + item.title;    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    document.getElementById('chatItemTitle').innerText = item.title;
+    document.getElementById('chatHeaderSub').innerText = 'Chatting with ' + (item.sellerName || 'Seller');
+    document.getElementById('chatHeaderAvatar').innerText = getInitials(item.sellerName);
+    document.getElementById('chatMessages').innerHTML = '<div class="chat-empty-state"><div class="emoji">⏳</div>Loading...</div>';
     document.getElementById('chatModal').style.display = 'flex';
 
     if (chatUnsubscribe) chatUnsubscribe();
@@ -6314,25 +6534,7 @@ function openChatWindow(item) {
     chatUnsubscribe = db.collection('chats').doc(currentChatId).collection('messages')
         .orderBy('sentAt', 'asc')
         .onSnapshot((snapshot) => {
-            const messagesDiv = document.getElementById('chatMessages');
-            messagesDiv.innerHTML = '';
-            if (snapshot.empty) {
-                messagesDiv.innerHTML = '<p style="text-align:center; color:#999;">No messages yet. Say hi!</p>';
-                return;
-            }
-            snapshot.forEach(doc => {
-                const msg = doc.data();
-                const isBuyer = msg.sender === 'buyer';
-                messagesDiv.innerHTML += `
-                    <div style="display:flex; justify-content:${isBuyer ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
-                        <div style="max-width:75%; background:${isBuyer ? '#1a5c3a' : 'white'}; color:${isBuyer ? 'white' : '#333'}; padding:8px 12px; border-radius:12px; font-size:14px; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
-                            <div style="font-size:11px; opacity:0.8; margin-bottom:2px;">${msg.senderName}</div>
-                            ${msg.text}
-                        </div>
-                    </div>
-                `;
-            });
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            renderChatBubbles(snapshot, 'buyer');
         });
 
    db.collection('chats').doc(currentChatId).set({
@@ -6344,7 +6546,6 @@ function openChatWindow(item) {
         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 }
-
 function sendChatMessage() {
     const input = document.getElementById('chatMessageInput');
     const text = input.value.trim();
@@ -6372,6 +6573,7 @@ function sendChatMessage() {
 function closeChatWindow() {
     if (chatUnsubscribe) chatUnsubscribe();
     document.getElementById('chatModal').style.display = 'none';
+    document.body.style.overflow = '';
 }
 let sellerChatListenerUnsub = null;
 let buyerChatListenerUnsub = null;
@@ -6639,8 +6841,11 @@ function closeAnnouncementsPanel() {
 function openSellerChatView(chatId, itemTitle) {
     currentChatId = chatId;
     unreadChatIds.delete(chatId);
-    updateMessagesBadge();    document.getElementById('chatItemTitle').innerText = 'Chat about: ' + itemTitle;
-    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center; color:#999;">Loading...</p>';
+    updateMessagesBadge();
+    document.getElementById('chatItemTitle').innerText = itemTitle;
+    document.getElementById('chatHeaderSub').innerText = 'Buyer conversation';
+    document.getElementById('chatHeaderAvatar').innerText = '🛍️';
+    document.getElementById('chatMessages').innerHTML = '<div class="chat-empty-state"><div class="emoji">⏳</div>Loading...</div>';
     document.getElementById('messagesPanelModal').style.display = 'none';
     document.getElementById('chatModal').style.display = 'flex';
 
@@ -6649,29 +6854,9 @@ function openSellerChatView(chatId, itemTitle) {
     chatUnsubscribe = db.collection('chats').doc(currentChatId).collection('messages')
         .orderBy('sentAt', 'asc')
         .onSnapshot((snapshot) => {
-            const messagesDiv = document.getElementById('chatMessages');
-            messagesDiv.innerHTML = '';
-            if (snapshot.empty) {
-                messagesDiv.innerHTML = '<p style="text-align:center; color:#999;">No messages yet.</p>';
-                return;
-            }
-            snapshot.forEach(doc => {
-                const msg = doc.data();
-                const isSeller = msg.sender === 'seller';
-                messagesDiv.innerHTML += `
-                    <div style="display:flex; justify-content:${isSeller ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
-                        <div style="max-width:75%; background:${isSeller ? '#1a5c3a' : 'white'}; color:${isSeller ? 'white' : '#333'}; padding:8px 12px; border-radius:12px; font-size:14px; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
-                            <div style="font-size:11px; opacity:0.8; margin-bottom:2px;">${msg.senderName}</div>
-                            ${msg.text}
-                        </div>
-                    </div>
-                `;
-            });
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            renderChatBubbles(snapshot, 'seller');
         });
 }
-
-
 function markAsSold() {
     const item = items[currentDetailIndex];
     if (!item.postedBy || item.postedBy === 'OWNER') {
@@ -7324,9 +7509,191 @@ loadItemsFromFirestore();
     startGuestPromptTimer();
     trackVisit();
     loadAnnouncements();
-    setTimeout(hidePageLoadingOverlay, 6000);
+setTimeout(hidePageLoadingOverlay, 2000);
   </script>
     <style>
+/* ============================================================
+   CHAT — redesigned bubbles, avatars, timestamps, animations
+   ============================================================ */
+#chatModal .modal-content {
+    display: flex; flex-direction: column;
+    width: 100%; max-width: 100%;
+    height: 100vh; height: 100dvh;
+    max-height: 100vh; max-height: 100dvh;
+    padding: 0; overflow: hidden; border-radius: 0; margin: 0;
+    position: fixed; top: 0; left: 0;
+}
+.chat-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid #eee; flex-shrink: 0;
+    background: white;
+}
+.chat-header-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: var(--accent); color: white; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 14px;
+}
+.chat-header-info { flex: 1; min-width: 0; text-align: left; }
+.chat-header-title {
+    font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-header-sub { font-size: 11.5px; color: #999; }
+.chat-back-btn {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    border: none; background: none; cursor: pointer;
+    color: white; font-size: 13px; font-weight: 600; padding: 6px 4px 6px 0;
+}
+.chat-back-btn span { white-space: nowrap; }
+#chatMessages {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; background: #f4f5f7;
+    padding: 16px 12px; margin: 0; display: flex; flex-direction: column; gap: 2px;
+    -webkit-overflow-scrolling: touch;
+}
+.chat-bubble-row {
+    display: flex; align-items: flex-end; gap: 7px; margin-bottom: 10px;
+    animation: chatBubbleIn 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes chatBubbleIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.chat-bubble-row.mine { justify-content: flex-end; }
+.chat-bubble-row.theirs { justify-content: flex-start; }
+.chat-mini-avatar {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    background: #ddd; color: #555; font-size: 10.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+.chat-bubble-row.mine .chat-mini-avatar { background: var(--accent); color: white; }
+.chat-bubble-col { display: flex; flex-direction: column; max-width: 72%; }
+.chat-bubble-row.mine .chat-bubble-col { align-items: flex-end; }
+.chat-bubble-row.theirs .chat-bubble-col { align-items: flex-start; }
+.chat-sender-name { font-size: 10.5px; color: #999; margin-bottom: 2px; padding: 0 4px; }
+.chat-bubble {
+    padding: 9px 13px; font-size: 14px; line-height: 1.4; word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.chat-bubble-row.mine .chat-bubble {
+    background: var(--accent); color: white;
+    border-radius: 16px 16px 4px 16px;
+}
+.chat-bubble-row.theirs .chat-bubble {
+    background: white; color: #222;
+    border-radius: 16px 16px 16px 4px;
+}
+.chat-timestamp { font-size: 9.5px; color: #aaa; margin-top: 3px; padding: 0 4px; }
+.chat-empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: #999; text-align: center; padding: 30px;
+}
+.chat-empty-state .emoji { font-size: 38px; margin-bottom: 10px; }
+.chat-input-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: white; border-top: 1px solid #eee; flex-shrink: 0;
+    position: relative; z-index: 5;
+}
+.chat-input-bar #chatMessageInput {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-radius: 22px;
+    padding: 11px 16px;
+    border: 1px solid #e2e2e2;
+    background: #f4f5f7;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.chat-input-bar .chat-send-btn {
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-sizing: border-box;
+    transition: transform 0.15s ease;
+}
+.chat-input-bar .chat-send-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0;
+}
+.chat-send-btn:hover { transform: scale(1.06); }
+.chat-send-btn:active { transform: scale(0.92); }
+body.dark-mode #chatModal .modal-content { background: #1a1a1a; }
+body.dark-mode .chat-header { background: #2c2c2c; border-color: #444; }
+body.dark-mode #chatMessages { background: #141414; }
+body.dark-mode .chat-bubble-row.theirs .chat-bubble { background: #2c2c2c; color: #f0f0f0; }
+body.dark-mode .chat-input-bar { background: #2c2c2c; border-color: #444; }
+body.dark-mode #chatMessageInput { background: #1f1f1f; border-color: #444; color: #f0f0f0; }
+
+/* ---- WhatsApp-style refinements ---- */
+.chat-header { background: #075E54; }
+.chat-header-title, .chat-header-sub { color: white; }
+.chat-header-sub { opacity: 0.8; }
+.chat-header-avatar { background: rgba(255,255,255,0.25); }
+
+#chatMessages {
+    background-color: #ECE5DD;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(0,0,0,0.02) 1px, transparent 1px),
+        radial-gradient(circle at 60% 70%, rgba(0,0,0,0.02) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+.chat-bubble-row.mine .chat-bubble {
+    background: #DCF8C6; color: #111;
+    border-radius: 8px 8px 2px 8px;
+    position: relative;
+}
+.chat-bubble-row.theirs .chat-bubble {
+    background: white; color: #111;
+    border-radius: 8px 8px 8px 2px;
+    position: relative;
+}
+/* little pointed tail on the last-sent side of the bubble, like WhatsApp */
+.chat-bubble-row.mine .chat-bubble::after {
+    content: ''; position: absolute; right: -6px; bottom: 0;
+    width: 0; height: 0;
+    border-left: 7px solid #DCF8C6; border-bottom: 7px solid transparent;
+}
+.chat-bubble-row.theirs .chat-bubble::after {
+    content: ''; position: absolute; left: -6px; bottom: 0;
+    width: 0; height: 0;
+    border-right: 7px solid white; border-bottom: 7px solid transparent;
+}
+.chat-timestamp { display: flex; align-items: center; gap: 3px; }
+.chat-read-ticks { color: #4FC3F7; font-size: 12px; }
+
+.chat-date-divider {
+    text-align: center; margin: 14px 0 10px;
+}
+.chat-date-divider span {
+    background: rgba(255,255,255,0.85); color: #777; font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.chat-input-bar { background: #f0f0f0; border-top: none; padding: 8px 10px; }
+#chatMessageInput { background: white; border-radius: 24px; }
+.chat-send-btn { background: #075E54; }
+
+body.dark-mode .chat-header { background: #1f2c2b; }
+body.dark-mode #chatMessages { background-color: #0b141a; background-image: none; }
+body.dark-mode .chat-bubble-row.mine .chat-bubble { background: #005c4b; color: #e9edef; }
+body.dark-mode .chat-bubble-row.mine .chat-bubble::after { border-left-color: #005c4b; }
+body.dark-mode .chat-bubble-row.theirs .chat-bubble { background: #202c33; color: #e9edef; }
+body.dark-mode .chat-bubble-row.theirs .chat-bubble::after { border-right-color: #202c33; }
+body.dark-mode .chat-input-bar { background: #1f1f1f; }
+body.dark-mode #chatMessageInput { background: #2c2c2c; color: #f0f0f0; }
 .theme-swatch-row {
     display: flex;
     flex-wrap: wrap;
