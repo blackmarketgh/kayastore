@@ -1302,13 +1302,14 @@ function loadSeller() {
                 }
 
                 // Seller information
-                const sellerName = document.getElementById("sellerName");
-                const sellerEmail = document.getElementById("sellerEmail");
-                const sellerPhone = document.getElementById("sellerPhone");
-                const sellerPhoto = document.getElementById("sellerPhoto");
-                const totalSales = document.getElementById("totalSales");
-                const rating = document.getElementById("rating");
-                const pendingBanner = document.getElementById("pendingBanner");
+               const sellerName = document.getElementById("sellerName");
+const sellerEmail = document.getElementById("sellerEmail");
+const sellerPhone = document.getElementById("sellerPhone");
+const sellerPhoto = document.getElementById("sellerPhoto");
+const totalSales = document.getElementById("totalSales");
+const rating = document.getElementById("rating");
+const sellerFollowers = document.getElementById("sellerFollowers");
+const pendingBanner = document.getElementById("pendingBanner");
 
                 if (sellerName) {
                     sellerName.innerText =
@@ -1339,6 +1340,9 @@ function loadSeller() {
                     rating.innerText =
                         ((seller.avgRating || 0).toFixed(1)) + " ★";
                 }
+                if (sellerFollowers) {
+    sellerFollowers.innerText = seller.followerCount || 0;
+}
 
                 if (pendingBanner) {
                     pendingBanner.style.display =
