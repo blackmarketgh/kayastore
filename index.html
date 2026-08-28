@@ -11,7 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <script>
@@ -3125,6 +3125,18 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <button id="buyerLoginTab" class="seller-tab-btn" onclick="switchBuyerTab('login')">Log In</button>
         </div>
 
+        <div class="social-auth-col">
+            <button class="social-auth-btn" onclick="signInWithGoogle()">
+                <svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l6-6C33.5 6.5 29 4.5 24 4.5 12.7 4.5 3.5 13.7 3.5 25S12.7 45.5 24 45.5c11.3 0 20.5-9.2 20.5-20.5 0-1.4-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c2.8 0 5.3 1 7.3 2.7l6-6C33.5 6.5 29 4.5 24 4.5c-7.7 0-14.3 4.4-17.7 10.2z"/><path fill="#4CAF50" d="M24 45.5c5.2 0 9.9-1.8 13.5-4.9l-6.2-5.3c-2 1.4-4.6 2.2-7.3 2.2-5.3 0-9.7-3.6-11.3-8.4l-6.5 5C9.6 41 16.3 45.5 24 45.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.2 5.3c-.4.4 6.6-4.8 6.6-14.7 0-1.4-.1-2.7-.4-4z"/></svg>
+                <span>Continue with Google</span>
+            </button>
+            <button class="social-auth-btn social-auth-apple" onclick="signInWithApple()">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="white"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.696.91-1.377 0-2.415-1.25-3.348-2.58-1.83-2.63-3.24-7.43-1.348-10.67.93-1.6 2.6-2.62 4.398-2.65 1.377-.03 2.65.93 3.482.93.81 0 2.37-1.15 3.997-.98.68.03 2.6.28 3.83 2.06-.1.06-2.288 1.34-2.262 3.98.03 3.16 2.76 4.21 2.79 4.22-.02.07-.428 1.5-1.265 2.85z"/></svg>
+                <span>Continue with Apple</span>
+            </button>
+            <div class="social-auth-divider"><span>or</span></div>
+        </div>
+
       <div id="buyerRegisterForm">
             <h3>Create Your Buyer Account</h3>
             <input type="text" id="getStartedName" placeholder="Your name">
@@ -3643,6 +3655,47 @@ function submitBuyerLogin() {
             }).catch((err) => {
                 alert("Login failed: " + err.message);
             });
+    }
+
+    const auth = firebase.auth();
+
+    function findOrCreateSocialBuyer(user, provider) {
+        const name = user.displayName || 'Buyer';
+        const email = user.email || '';
+
+        db.collection('buyers').where('authUid', '==', user.uid).limit(1).get().then((snapshot) => {
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                const b = doc.data();
+                finishBuyerLogin(doc.id, b.name, b.phone || '', b.email || '');
+                return;
+            }
+            db.collection('buyers').add({
+                name, phone: '', email,
+                authUid: user.uid, authProvider: provider,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then((docRef) => {
+                finishBuyerLogin(docRef.id, name, '', email);
+            }).catch((err) => alert("Sign up failed: " + err.message));
+        }).catch((err) => alert("Sign in failed: " + err.message));
+    }
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then((result) => {
+            findOrCreateSocialBuyer(result.user, 'google');
+        }).catch((err) => {
+            if (err.code !== 'auth/popup-closed-by-user') alert("Google sign-in failed: " + err.message);
+        });
+    }
+
+    function signInWithApple() {
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        auth.signInWithPopup(provider).then((result) => {
+            findOrCreateSocialBuyer(result.user, 'apple');
+        }).catch((err) => {
+            if (err.code !== 'auth/popup-closed-by-user') alert("Apple sign-in failed: " + err.message);
+        });
     }
 
    function finishBuyerLogin(buyerId, name, phone, email) {
@@ -7694,6 +7747,30 @@ body.dark-mode .chat-bubble-row.theirs .chat-bubble { background: #202c33; color
 body.dark-mode .chat-bubble-row.theirs .chat-bubble::after { border-right-color: #202c33; }
 body.dark-mode .chat-input-bar { background: #1f1f1f; }
 body.dark-mode #chatMessageInput { background: #2c2c2c; color: #f0f0f0; }
+.social-auth-col {
+    display: flex; flex-direction: column; gap: 10px; margin: 14px 0 4px;
+}
+.social-auth-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 12px; border-radius: 12px; border: 1.5px solid #ddd;
+    background: white; font-size: 14px; font-weight: 600; color: #333;
+    cursor: pointer; font-family: 'Poppins', Arial, sans-serif;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.social-auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.social-auth-btn:active { transform: scale(0.97); }
+.social-auth-apple { background: #000; color: white; border-color: #000; }
+.social-auth-divider {
+    display: flex; align-items: center; text-align: center;
+    color: #aaa; font-size: 12px; margin: 6px 0;
+}
+.social-auth-divider::before, .social-auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e5e5e5;
+}
+.social-auth-divider span { padding: 0 10px; }
+body.dark-mode .social-auth-btn { background: #2c2c2c; color: #f0f0f0; border-color: #444; }
+body.dark-mode .social-auth-divider::before, body.dark-mode .social-auth-divider::after { background: #444; }
+
 .theme-swatch-row {
     display: flex;
     flex-wrap: wrap;
