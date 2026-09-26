@@ -43,13 +43,8 @@ header {
     z-index: 50;
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: 700;
-}
-.logo span:first-child { color: var(--accent); }
+.logo span:first-child { color: #000000; }
 .logo span:last-child { color: var(--accent-orange); }
-
 .backBtn {
     background: var(--accent);
     color: white;
@@ -871,32 +866,60 @@ tr:last-child td { border-bottom: none; }
     </div>
 </div>
 
+<div id="buyerDetailsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:16px; max-width:400px; width:100%; padding:26px; text-align:left;">
+        <h2 style="font-size:19px; margin-bottom:16px;">📍 Buyer & Delivery Details</h2>
+
+        <div style="margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:700; color:#777; text-transform:uppercase;">Buyer Name</div>
+            <div id="bdName" style="font-size:15px; font-weight:600;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:700; color:#777; text-transform:uppercase;">Phone Number</div>
+            <div id="bdPhone" style="font-size:15px; font-weight:600;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:700; color:#777; text-transform:uppercase;">Delivery Method</div>
+            <div id="bdMethod" style="font-size:14px;"></div>
+        </div>
+        <div style="margin-bottom:12px;">
+            <div style="font-size:11px; font-weight:700; color:#777; text-transform:uppercase;">Location / Area</div>
+            <div id="bdLocation" style="font-size:14px;"></div>
+        </div>
+        <div style="margin-bottom:12px; background:#fff4ea; padding:10px; border-radius:8px;">
+            <div style="font-size:11px; font-weight:700; color:#b85c0f; text-transform:uppercase;">Delivery Address</div>
+            <div id="bdAddress" style="font-size:14px; font-weight:600;"></div>
+        </div>
+        <div style="margin-bottom:14px;">
+            <div style="font-size:11px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:4px;">Items Ordered</div>
+            <div id="bdItems" style="background:#f7f7f7; padding:10px; border-radius:8px;"></div>
+            <div style="font-size:13px; font-weight:700; margin-top:6px;">Subtotal: <span id="bdSubtotal"></span></div>
+        </div>
+
+        <button class="icon-btn delete" style="width:100%; padding:12px;" onclick="closeBuyerDetailsModal()">Close</button>
+    </div>
+</div>
+
 <div id="editProductModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
     <div style="background:white; border-radius:16px; max-width:420px; width:100%; padding:26px; text-align:left; max-height:88vh; overflow-y:auto;">
         <h2 style="font-size:19px; margin-bottom:16px;">Manage Product</h2>
 
-        <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; padding:12px; background:#f7f7f7; border-radius:12px;">
-            <img id="epThumb" style="width:56px; height:56px; border-radius:10px; object-fit:cover; background:#eee;">
-            <div>
-                <div id="epTitle" style="font-weight:700; font-size:15px;"></div>
-                <div id="epPrice" style="color:var(--accent); font-weight:700; font-size:14px; margin-top:2px;"></div>
-                <div style="font-size:11px; color:#999; margin-top:2px;">🔒 Name & price are locked</div>
+        <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:10px;">
+            <img id="epThumb" style="width:56px; height:56px; border-radius:10px; object-fit:cover; background:#eee; flex-shrink:0;">
+            <div style="flex:1;">
+                <input type="text" id="epTitleInput" placeholder="Item name" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #ddd; font-weight:700; font-size:14px; margin-bottom:6px; font-family:inherit;">
+                <input type="number" id="epPriceInput" placeholder="Price (GHS)" style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #ddd; font-weight:700; font-size:13.5px; font-family:inherit;">
             </div>
         </div>
-
-        <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Description</div>
-            <div id="epDescription" style="font-size:13.5px; color:#444; background:#f7f7f7; padding:10px; border-radius:8px;"></div>
-        </div>
-
+        <button class="icon-btn edit" style="width:100%; margin-bottom:16px;" onclick="saveProductDetails()">💾 Save Name & Price</button>
         <div style="margin-bottom:14px;">
             <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Current Stock: <span id="epCurrentStock"></span></div>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; margin-bottom:8px;">
                 <input type="number" id="epRestockAmount" placeholder="Add quantity" min="1" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-family:inherit;">
                 <button class="icon-btn edit" style="width:auto; padding:10px 16px;" onclick="restockProduct()">➕ Restock</button>
             </div>
+            <button class="icon-btn delete" id="epOutOfStockBtn" style="width:100%;" onclick="toggleOutOfStock()">🚫 Mark as Out of Stock</button>
         </div>
-
         <div style="margin-bottom:18px;">
             <div style="font-size:12.5px; font-weight:700; color:#777; text-transform:uppercase; margin-bottom:6px;">Discount</div>
             <div id="epCurrentDiscount" style="font-size:12.5px; color:#e67e22; margin-bottom:6px;"></div>
@@ -1627,12 +1650,21 @@ function openEditProductModal(firestoreId) {
     currentEditProductId = firestoreId;
 
     document.getElementById("epThumb").src = (item.images && item.images[0]) || item.image || 'https://via.placeholder.com/56x56?text=No+Image';
-    document.getElementById("epTitle").innerText = item.title;
-    document.getElementById("epPrice").innerText = "GHS " + item.price;
+    document.getElementById("epTitleInput").value = item.title;
+    document.getElementById("epPriceInput").value = item.price;
     document.getElementById("epDescription").innerText = item.description || 'No description provided.';
     document.getElementById("epCurrentStock").innerText = (item.stock !== undefined && item.stock !== '') ? item.stock : 'Unlimited';
     document.getElementById("epRestockAmount").value = '';
 
+    const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
+    const outBtn = document.getElementById("epOutOfStockBtn");
+    if (stockNum !== null && stockNum <= 0) {
+        outBtn.innerText = "✅ Mark as Back in Stock";
+        outBtn.style.background = "#27ae60";
+    } else {
+        outBtn.innerText = "🚫 Mark as Out of Stock";
+        outBtn.style.background = "#e74c3c";
+    }
     const discountEl = document.getElementById("epCurrentDiscount");
     const removeBtn = document.getElementById("epRemoveDiscountBtn");
     if (item.discountPercent) {
@@ -1694,6 +1726,61 @@ function removeDiscount() {
         alert("Discount removed.");
         closeEditProductModal();
     }).catch(err => alert("Failed: " + err.message));
+}
+
+function saveProductDetails() {
+    if (!currentEditProductId) return;
+    const newTitle = document.getElementById("epTitleInput").value.trim();
+    const newPrice = document.getElementById("epPriceInput").value;
+
+    if (!newTitle) {
+        alert("Item name can't be empty.");
+        return;
+    }
+    if (!newPrice || Number(newPrice) <= 0) {
+        alert("Please enter a valid price.");
+        return;
+    }
+
+    db.collection('items').doc(currentEditProductId).update({
+        title: newTitle,
+        price: newPrice
+    }).then(() => {
+        alert("Name and price updated!");
+    }).catch(err => alert("Failed: " + err.message));
+}
+
+function toggleOutOfStock() {
+    if (!currentEditProductId) return;
+    const item = currentItems.find(i => i.firestoreId === currentEditProductId);
+    if (!item) return;
+
+    const stockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
+    const isCurrentlyOut = stockNum !== null && stockNum <= 0;
+
+    if (isCurrentlyOut) {
+        const newStock = prompt("Enter stock quantity to restore:", "1");
+        if (newStock === null) return;
+        const amount = Number(newStock);
+        if (!amount || amount <= 0) {
+            alert("Please enter a valid quantity.");
+            return;
+        }
+        db.collection('items').doc(currentEditProductId).update({ stock: amount }).then(() => {
+            document.getElementById("epCurrentStock").innerText = amount;
+            const outBtn = document.getElementById("epOutOfStockBtn");
+            outBtn.innerText = "🚫 Mark as Out of Stock";
+            outBtn.style.background = "#e74c3c";
+        }).catch(err => alert("Failed: " + err.message));
+    } else {
+        if (!confirm("Mark this item as out of stock? Buyers won't be able to order it until you restore stock.")) return;
+        db.collection('items').doc(currentEditProductId).update({ stock: 0 }).then(() => {
+            document.getElementById("epCurrentStock").innerText = 0;
+            const outBtn = document.getElementById("epOutOfStockBtn");
+            outBtn.innerText = "✅ Mark as Back in Stock";
+            outBtn.style.background = "#27ae60";
+        }).catch(err => alert("Failed: " + err.message));
+    }
 }
 function deleteProduct(firestoreId) {
     const item = currentItems.find(i => i.firestoreId === firestoreId);
@@ -2288,16 +2375,19 @@ function loadOrders() {
                         buyerPhone: order.buyerPhone || "",
                         deliveryMethod: order.deliveryMethod || "",
                         location: order.location || "",
+                        address: order.address || "",
                         createdAt: order.createdAt,
                         myItems,
                         subtotal,
-                        status: order.status || "pending"
+                        status: order.status || "pending",
+                        estimatedDeliveryDays: order.estimatedDeliveryDays || null
                     });
                 });
 
                 document.getElementById("pendingOrdersCount").innerText =
                     relevantOrders.length;
 
+                currentOrders = relevantOrders;
                 renderOrdersTable(relevantOrders);
             },
             error => {
@@ -2312,11 +2402,13 @@ function loadOrders() {
             }
         );
 }
+let currentOrders = [];
+
 function renderOrdersTable(orders) {
     const table = document.getElementById("ordersTable");
 
     if (orders.length === 0) {
-        table.innerHTML = "<tr class='empty-row'><td colspan='5'>No orders yet for your items.</td></tr>";
+        table.innerHTML = "<tr class='empty-row'><td colspan='7'>No orders yet for your items.</td></tr>";
         return;
     }
 
@@ -2326,8 +2418,8 @@ function renderOrdersTable(orders) {
       const statusBadge = order.status === 'completed'
     ? '<span class="badge in-stock">Completed</span>'
     : '<span class="badge pending">Pending</span>';
-const actionCell = order.status === 'completed'
-    ? '—'
+const completeBtn = order.status === 'completed'
+    ? ''
     : `<button class="icon-btn edit" onclick="markOrderCompleted('${order.id}')">✅ Complete</button>`;
 
 return `
@@ -2341,10 +2433,37 @@ return `
         <td>${order.deliveryMethod}${order.location ? ' • ' + order.location : ''}</td>
         <td>${dateStr}</td>
         <td>${statusBadge}</td>
-        <td>${actionCell}</td>
+        <td>
+            <div class="row-actions">
+                <button class="icon-btn" style="background:#8e44ad;" onclick="viewBuyerDetails('${order.id}')">📍 View Buyer</button>
+                <button class="icon-btn" style="background:#16a085;" onclick="setDeliveryEstimate('${order.id}', ${order.estimatedDeliveryDays || 3})">📅 ${order.estimatedDeliveryDays ? order.estimatedDeliveryDays + 'd Set' : 'Set Delivery'}</button>
+                ${completeBtn}
+            </div>
+        </td>
     </tr>
 `;
     }).join('');
+}
+
+function viewBuyerDetails(orderId) {
+    const order = currentOrders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const itemsListHtml = order.myItems.map(it => `<div style="font-size:13px; margin-bottom:2px;">• ${it.title} x${it.qty} — GHS ${it.price}</div>`).join('');
+
+    document.getElementById("bdName").innerText = order.buyerName;
+    document.getElementById("bdPhone").innerText = order.buyerPhone || 'Not provided';
+    document.getElementById("bdMethod").innerText = order.deliveryMethod || 'Not specified';
+    document.getElementById("bdLocation").innerText = order.location || 'Not specified';
+    document.getElementById("bdAddress").innerText = order.address || 'No address provided';
+    document.getElementById("bdItems").innerHTML = itemsListHtml;
+    document.getElementById("bdSubtotal").innerText = "GHS " + order.subtotal;
+
+    document.getElementById("buyerDetailsModal").style.display = "flex";
+}
+
+function closeBuyerDetailsModal() {
+    document.getElementById("buyerDetailsModal").style.display = "none";
 }
 function claimPaymentMade(saleId) {
     if (!confirm("Confirm you've sent this commission payment to KayaMart? The owner will verify and mark it collected.")) return;
@@ -2364,13 +2483,20 @@ function markOrderCompleted(orderId) {
         completedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(err => alert('Failed: ' + err.message));
 }
-function markOrderCompleted(orderId) {
-    if (!confirm("Mark this order as completed/delivered? The buyer will be prompted to confirm and leave a review.")) return;
+
+function setDeliveryEstimate(orderId, currentDays) {
+    const input = prompt("Estimated delivery time for this order, in days:", currentDays || 3);
+    if (input === null) return;
+    const days = Number(input);
+    if (!days || days <= 0) {
+        alert("Please enter a valid number of days.");
+        return;
+    }
     db.collection('orders').doc(orderId).update({
-        status: 'completed',
-        buyerConfirmed: false,
-        completedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(err => alert('Failed: ' + err.message));
+        estimatedDeliveryDays: days
+    }).then(() => {
+        alert("Delivery estimate set to " + days + " day(s). The buyer's tracker will update automatically.");
+    }).catch(err => alert("Failed: " + err.message));
 }
 </script>
 </body>
