@@ -6539,28 +6539,68 @@ let marketplaceLoadingTimeout = null;
 let marketplaceLoadingMessageIndex = 0;
 
 const marketplaceLoadingMessages = [
-    "Ɔkɔm de wo? 😋 We're finding something nice for you...",
-    "Ei 😂 you came to shop, right? Give us a second...",
-    "Chale, don't leave yet... we're almost there 👀",
-    "Something nice is loading... your wallet should be worried 😂💸",
-    "Ebi de wo? 😭 Hold on small, we're almost ready!",
-    "Yɛrehwehwɛ biribi pa ama wo... 🛍️",
-    "Your next 'I need this' might be loading right now 👀",
-    "KayaMart is cooking... 👨🏾‍🍳🔥",
-    "Ɛreba, ɛreba! Just hold on small 😂",
-    "Hmm... we found something interesting 👀",
-    "The good stuff doesn't like to rush 😌",
-    "Chale, make we check the market properly 😂",
-    "Fresh finds are getting ready for you 🔥",
-    "Wo ho te sɛ? 😭 We're almost done!",
-    "Don't blink... you might miss something good 👀",
-    "Okay okay... we're coming! 😂",
-    "Yɛresiesie market no ama wo... ✨",
-    "Something interesting is almost here... 🚀",
-    "Last check... then it's shopping time 🛒🔥",
-    "Welcome to KayaMart. Let's find you something good ❤️"
-];
 
+    // English + Ghanaian Pidgin
+    "😂 Chale, relax small... we're finding something nice for you.",
+    "👀 You said you're just looking? We know that story 😂",
+    "🛒 Ei! Your next unnecessary purchase might be loading.",
+    "💸 Your wallet is watching this loading screen nervously 😂",
+    "🔥 KayaMart is cooking... don't disturb the chef.",
+    "😂 One minute you're browsing, next minute: Add to cart.",
+    "👀 Something nice dey come... no go anywhere.",
+    "😭 Chale, patience oo... we're almost there.",
+    "🛍️ We're checking the market properly for you.",
+    "💸 Your bank account said no. KayaMart said maybe 😂",
+    "😂 Please relax. Shopping is about to happen.",
+    "🔥 Fresh finds are entering the building.",
+    "👀 Don't blink... you might miss something good.",
+    "🛒 Your cart is getting ready for trouble 😂",
+    "😭 You came for one thing? Hmm... we'll see.",
+    "💸 Financial discipline has left the chat 😂",
+    "😂 Chale, we're searching the whole market for you.",
+    "🛍️ Good things take small time. We dey come.",
+    "👀 Your next 'I need this' could be loading right now.",
+    "🔥 Something interesting is hiding in the market.",
+
+    // Twi
+    "😋 Ɔkɔm de wo? Yɛrehwehwɛ biribi pa ama wo.",
+    "😂 Yɛreba, yɛreba! Fa wo ho to fam kakra.",
+    "🛒 Biribi pa rebɛn wo... tena hɔ kakra.",
+    "👀 Wo pɛ biribi? Yɛbɛboa wo ahwehwɛ.",
+    "🔥 Yɛresiesie market no ama wo.",
+    "😂 Mma wo mpere wo ho, yɛreyɛ no yie ama wo.",
+    "🛍️ Biribi a ɛyɛ fɛ rebɛba wo nkyɛn.",
+    "😭 Fa abotare kakra... ɛreba.",
+    "👀 Hwɛ! Ebia biribi a wo ani begye ho rebɛba.",
+    "❤️ Yɛwɔ wo akyi. Ma yɛnhwehwɛ biribi pa.",
+    "😂 Wo deɛ, wopɛ sɛ wotɔ biribi anaa wopɛ sɛ wohwɛ kɛkɛ?",
+    "🛒 Yɛrehwehwɛ adeɛ pa ama wo.",
+
+    // Ghanaian mixed language
+    "😂 Chale, yɛrecheck market no. Hold on small.",
+    "🛍️ Biribi nice dey come, just relax.",
+    "👀 Wo pɛ ampa? Let's find the good one.",
+    "🔥 KayaMart no yɛ ready... ɛreba!",
+    "😂 Ei, your cart no go stay empty today.",
+    "💸 Sika no deɛ, ɛbɛyɛ okay 😂 let's shop.",
+    "🛒 Yɛrehwehwɛ something wey go make you happy.",
+    "😭 Chale, network no? We dey work on am.",
+    "👀 Biribi pa wɔ ha somewhere... yɛrehwehwɛ.",
+    "😂 Don't worry, yɛwɔ control.",
+
+    // Short playful messages
+    "😂 Small patience oo...",
+    "👀 Almost there...",
+    "🛒 We dey come!",
+    "🔥 Good stuff loading...",
+    "😭 Ei, hold on small!",
+    "😂 KayaMart is working...",
+    "💸 Wallet, prepare yourself.",
+    "🛍️ Let's find your next favourite.",
+    "👀 Something good is coming.",
+    "❤️ KayaMart dey find am for you."
+
+];
 function getMarketplaceLoadingHTML() {
 
     return `
@@ -6634,7 +6674,15 @@ function startMarketplaceLoadingMessages() {
 
     stopMarketplaceLoadingMessages();
 
-    marketplaceLoadingMessageIndex = 0;
+    /*
+     * Pick a completely different starting message
+     * every time the loading screen starts.
+     */
+    marketplaceLoadingMessageIndex =
+        Math.floor(
+            Math.random() *
+            marketplaceLoadingMessages.length
+        );
 
     const messageElement =
         document.getElementById(
@@ -6644,56 +6692,73 @@ function startMarketplaceLoadingMessages() {
     if (messageElement) {
 
         messageElement.textContent =
-            marketplaceLoadingMessages[0];
+            marketplaceLoadingMessages[
+                marketplaceLoadingMessageIndex
+            ];
 
         messageElement.style.opacity = '1';
     }
 
-    marketplaceLoadingMessageTimer = setInterval(() => {
+    marketplaceLoadingMessageTimer =
+        setInterval(() => {
 
-        const element =
-            document.getElementById(
-                'marketplaceLoadingMessage'
-            );
-
-        if (!element) {
-            return;
-        }
-
-        marketplaceLoadingMessageIndex++;
-
-        if (
-            marketplaceLoadingMessageIndex >=
-            marketplaceLoadingMessages.length
-        ) {
-            marketplaceLoadingMessageIndex = 0;
-        }
-
-        element.style.opacity = '0';
-
-        setTimeout(() => {
-
-            const current =
+            const element =
                 document.getElementById(
                     'marketplaceLoadingMessage'
                 );
 
-            if (!current) {
+            if (!element) {
                 return;
             }
 
-            current.textContent =
-                marketplaceLoadingMessages[
-                    marketplaceLoadingMessageIndex
-                ];
+            /*
+             * Pick a random message.
+             *
+             * Keep picking until it is different
+             * from the message currently showing.
+             */
+            let nextIndex;
 
-            current.style.opacity = '1';
+            do {
 
-        }, 250);
+                nextIndex =
+                    Math.floor(
+                        Math.random() *
+                        marketplaceLoadingMessages.length
+                    );
 
-    }, 5000);
+            } while (
+                nextIndex ===
+                marketplaceLoadingMessageIndex
+            );
+
+            marketplaceLoadingMessageIndex =
+                nextIndex;
+
+            element.style.opacity = '0';
+
+            setTimeout(() => {
+
+                const current =
+                    document.getElementById(
+                        'marketplaceLoadingMessage'
+                    );
+
+                if (!current) {
+                    return;
+                }
+
+                current.textContent =
+                    marketplaceLoadingMessages[
+                        marketplaceLoadingMessageIndex
+                    ];
+
+                current.style.opacity = '1';
+
+            }, 250);
+
+       }, 6000);
 }
-
 function stopMarketplaceLoadingMessages() {
 
     if (marketplaceLoadingMessageTimer) {
@@ -6710,30 +6775,31 @@ function stopMarketplaceLoadingMessages() {
 function startMarketplaceLoadingTimeout() {
 
     if (marketplaceLoadingTimeout) {
-        clearTimeout(
-            marketplaceLoadingTimeout
-        );
+        clearTimeout(marketplaceLoadingTimeout);
     }
 
     marketplaceLoadingTimeout = setTimeout(() => {
 
+        // If products have appeared, do nothing.
         if (itemsHaveLoadedOnce) {
             return;
         }
 
+        // Stop the loading messages.
         stopMarketplaceLoadingMessages();
 
+        // Mark loading as failed because it took too long.
         itemsLoadingFailed = true;
         itemsLoadingError = false;
 
+        // Hide any page loading overlay.
         hidePageLoadingOverlay();
 
+        // Show the network / try again screen.
         showMarketplaceRefresh();
 
-    }, 120000);
+    }, 30000); // 30 seconds
 }
-
-
 function stopMarketplaceLoading() {
 
     stopMarketplaceLoadingMessages();
@@ -6760,8 +6826,6 @@ function stopMarketplaceLoading() {
 
 function showMarketplaceRefresh() {
 
-    stopMarketplaceLoading();
-
     const grid =
         document.getElementById('itemGrid');
 
@@ -6769,11 +6833,13 @@ function showMarketplaceRefresh() {
         return;
     }
 
+    stopMarketplaceLoadingMessages();
+
     grid.innerHTML = `
         <div style="
             grid-column:1/-1;
             width:100%;
-            min-height:220px;
+            min-height:260px;
             display:flex;
             flex-direction:column;
             align-items:center;
@@ -6784,7 +6850,7 @@ function showMarketplaceRefresh() {
         ">
 
             <div style="
-                font-size:48px;
+                font-size:50px;
                 margin-bottom:12px;
                 animation:floatNetworkIcon 1.8s ease-in-out infinite;
             ">
@@ -6792,7 +6858,7 @@ function showMarketplaceRefresh() {
             </div>
 
             <p style="
-                margin:0 0 7px;
+                margin:0 0 8px;
                 font-size:17px;
                 font-weight:700;
                 color:#1a5c3a;
@@ -6833,7 +6899,6 @@ function showMarketplaceRefresh() {
         </div>
     `;
 }
-
 function refreshMarketplace() {
 
     itemsLoadingFailed = false;
@@ -7016,43 +7081,35 @@ function loadItemsFromFirestore() {
                          * If there are no products, show a
                          * clean empty state instead of an error.
                          */
-                        if (!items.length) {
+                       if (!items.length) {
 
-                            const emptyGrid =
-                                document.getElementById(
-                                    'itemGrid'
-                                );
+    itemsHaveLoadedOnce = false;
 
-                            if (emptyGrid) {
+    const emptyGrid =
+        document.getElementById('itemGrid');
 
-                                emptyGrid.innerHTML = `
-                                    <div style="
-                                        grid-column:1/-1;
-                                        width:100%;
-                                        text-align:center;
-                                        padding:50px 20px;
-                                        color:#777;
-                                    ">
-                                        <div style="
-                                            font-size:42px;
-                                            margin-bottom:12px;
-                                        ">
-                                            🛍️
-                                        </div>
+    if (emptyGrid) {
 
-                                        <p style="
-                                            margin:0;
-                                            font-size:16px;
-                                            font-weight:600;
-                                        ">
-                                            No products available right now.
-                                        </p>
-                                    </div>
-                                `;
-                            }
+        emptyGrid.innerHTML =
+            getMarketplaceLoadingHTML();
 
-                            return;
-                        }
+        startMarketplaceLoadingMessages();
+    }
+
+    if (!marketplaceRetryTimer) {
+
+        marketplaceRetryTimer =
+            setTimeout(() => {
+
+                marketplaceRetryTimer = null;
+
+                loadItemsFromFirestore();
+
+            }, 5000);
+    }
+
+    return;
+}
 
                         try {
 
@@ -7482,15 +7539,18 @@ function renderMainGridOnly() {
         return;
     }
 
-       if (!items.length) {
-        grid.innerHTML = `
-            <div style="grid-column:1/-1; width:100%; text-align:center; padding:50px 20px; color:#777;">
-                <div style="font-size:42px; margin-bottom:12px;">🛍️</div>
-                <p style="margin:0; font-size:16px; font-weight:600;">No products available right now.</p>
-            </div>
-        `;
-        return;
+      if (!items.length) {
+    itemsHaveLoadedOnce = false;
+
+    const grid = document.getElementById('itemGrid');
+
+    if (grid) {
+        grid.innerHTML = getMarketplaceLoadingHTML();
+        startMarketplaceLoadingMessages();
     }
+
+    return;
+}
 
     const searchInput =
         document.getElementById('searchInput');
