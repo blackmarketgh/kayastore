@@ -2160,7 +2160,7 @@ function renderStockDonut() {
         </div>
     `;
 }
-
+const SELLER_COMMISSION_RATE = 0.05; // 5% — must match index.html
 function loadSalesHistory() {
     db.collection("sales")
         .where("sellerId", "==", sellerId)
@@ -2598,7 +2598,7 @@ function loadOrders() {
                         0
                     );
 
-                    relevantOrders.push({
+                                       relevantOrders.push({
                         id: doc.id,
                         buyerName: order.buyerName || "Unknown",
                         buyerPhone: order.buyerPhone || "",
@@ -2609,7 +2609,10 @@ function loadOrders() {
                         myItems,
                         subtotal,
                         status: order.status || "pending",
-                        estimatedDeliveryDays: order.estimatedDeliveryDays || null
+                        estimatedDeliveryDays: order.estimatedDeliveryDays || null,
+                        orderRef: order.orderRef || "",
+                        paymentClaimed: order.paymentClaimed || false,
+                        paymentVerified: order.paymentVerified || false
                     });
                 });
 
@@ -2650,7 +2653,14 @@ function renderOrdersTable(orders) {
 const completeBtn = order.status === 'completed'
     ? ''
     : `<button class="icon-btn edit" onclick="markOrderCompleted('${order.id}')">✅ Complete</button>`;
-
+const paymentBadge = order.paymentVerified
+    ? '<span class="badge in-stock">✅ Payment Verified</span>'
+    : (order.paymentClaimed
+        ? '<span class="badge pending">⏳ Payment Claimed</span>'
+        : '<span class="badge pending">💳 Awaiting Payment</span>');
+const verifyBtn = (order.paymentClaimed && !order.paymentVerified)
+    ? `<button class="icon-btn" style="background:#27ae60;" onclick="verifyOrderPayment('${order.id}')">✅ Verify Payment (${order.orderRef})</button>`
+    : '';
 return `
     <tr>
         <td>
@@ -2661,11 +2671,12 @@ return `
         <td>GHS ${order.subtotal}</td>
         <td>${order.deliveryMethod}${order.location ? ' • ' + order.location : ''}</td>
         <td>${dateStr}</td>
-        <td>${statusBadge}</td>
+        <td>${statusBadge}<br>${paymentBadge}</td>
         <td>
             <div class="row-actions">
                 <button class="icon-btn" style="background:#8e44ad;" onclick="viewBuyerDetails('${order.id}')">📍 View Buyer</button>
                 <button class="icon-btn" style="background:#16a085;" onclick="setDeliveryEstimate('${order.id}', ${order.estimatedDeliveryDays || 3})">📅 ${order.estimatedDeliveryDays ? order.estimatedDeliveryDays + 'd Set' : 'Set Delivery'}</button>
+                ${verifyBtn}
                 ${completeBtn}
             </div>
         </td>
@@ -2673,6 +2684,78 @@ return `
 `;
     }).join('');
 }
+function verifyOrderPayment(orderId) {
+    db.collection('orders').doc(orderId).get().then((doc) => {
+        if (!doc.exists) { alert("Order not found."); return; }
+        const order = doc.data();
+        if (order.paymentVerified) { alert("This payment has already been verified."); return; }
+
+        const typed = (prompt("Enter the MTN MoMo reference from your statement for this order:") || '').trim().toUpperCase();
+        if (!typed) return;
+        if (typed !== (order.orderRef || '').toUpperCase()) {
+            alert("That doesn't match this order's reference (" + order.orderRef + ").");
+            return;
+        }
+        if (!confirm("Confirm you received payment for this order with reference " + typed + "?")) return;
+
+        const myItems = (order.items || []).filter(it => it.sellerId === sellerId);
+        if (myItems.length === 0) { alert("No items in this order belong to you."); return; }
+
+        const promises = myItems.map(it => {
+            const lineTotal = Number(it.price) * Number(it.qty);
+            const commission = lineTotal * SELLER_COMMISSION_RATE;
+
+            const salePromise = db.collection('sales').add({
+                sellerId: it.sellerId,
+                sellerName: it.sellerName || '',
+                title: it.title,
+                price: lineTotal,
+                commission: commission,
+                collected: false,
+                buyerName: order.buyerName || '',
+                orderId: orderId,
+                soldAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            const stockPromise = it.firestoreId
+                ? db.collection('items').doc(it.firestoreId).get().then(itemDoc => {
+                    if (!itemDoc.exists) return;
+                    const data = itemDoc.data();
+                    const currentStock = (data.stock !== undefined && data.stock !== null && data.stock !== '') ? Number(data.stock) : null;
+                    if (currentStock !== null) {
+                        const newStock = Math.max(0, currentStock - Number(it.qty));
+                        return db.collection('items').doc(it.firestoreId).update({ stock: newStock });
+                    }
+                })
+                : Promise.resolve();
+
+            return Promise.all([salePromise, stockPromise]);
+        });
+
+        const totalCommission = myItems.reduce((sum, it) => sum + (Number(it.price) * Number(it.qty) * SELLER_COMMISSION_RATE), 0);
+        const totalSalesValue = myItems.reduce((sum, it) => sum + (Number(it.price) * Number(it.qty)), 0);
+
+        Promise.all(promises).then(() => {
+            return db.collection('sellers').doc(sellerId).get().then(sellerDoc => {
+                const seller = sellerDoc.data() || {};
+                const currentCommission = seller.commissionEarned || 0;
+                const currentTotalSales = seller.totalSales || 0;
+                return db.collection('sellers').doc(sellerId).update({
+                    commissionEarned: currentCommission + totalCommission,
+                    totalSales: currentTotalSales + totalSalesValue
+                });
+            });
+        }).then(() => {
+            return db.collection('orders').doc(orderId).update({ paymentVerified: true });
+        }).then(() => {
+            alert("Payment verified. Commission of GHS " + totalCommission.toFixed(2) + " recorded and stock updated.");
+        }).catch((err) => {
+            alert("Something went wrong verifying this payment: " + err.message);
+        });
+    });
+}
+
+function viewBuyerDetails(orderId) {
 
 function viewBuyerDetails(orderId) {
     const order = currentOrders.find(o => o.id === orderId);
