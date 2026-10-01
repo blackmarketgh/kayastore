@@ -28,11 +28,26 @@
 
     firebase.initializeApp(firebaseConfig);
 
-const messaging = firebase.messaging();
+let messaging = null;
+
+try {
+    if (
+        typeof firebase !== 'undefined' &&
+        firebase.messaging &&
+        firebase.messaging.isSupported &&
+        firebase.messaging.isSupported()
+    ) {
+        messaging = firebase.messaging();
+    }
+} catch (err) {
+    console.warn("Firebase Messaging unavailable:", err);
+}
+
 const VAPID_KEY = "BD0GXSVlp2kzCEHiv_Ix8MQxW92lvzStwI6wLf3d_PDjJzPkVRfSd08zFvk3yE5hdYbFbB6kzAcYfryYio7DtAQ";
 
 function enablePushNotifications() {
     if (!sellerId) return;
+    if (!messaging) return;
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
 
     Notification.requestPermission().then((permission) => {
@@ -48,11 +63,23 @@ function enablePushNotifications() {
     });
 }
 
+const db = firebase.firestore();
+
 // Shows a toast if a notification arrives while the app is already open and in focus
-messaging.onMessage((payload) => {
-    showGreetingToast(payload.notification.title, '🔔');
-});
-    const db = firebase.firestore();
+if (messaging) {
+    messaging.onMessage((payload) => {
+        const title =
+            payload &&
+            payload.notification &&
+            payload.notification.title
+                ? payload.notification.title
+                : 'New notification';
+
+        if (typeof showGreetingToast === 'function') {
+            showGreetingToast(title, '🔔');
+        }
+    });
+}
 </script>
 
 
@@ -80,10 +107,10 @@ function sendOtpCode(email, purpose, onVerified) {
         verified: false
     }).then(() => {
 
-        emailjs.send("YOUR_EMAILJS_SERVICE_ID", "YOUR_OTP_TEMPLATE_ID", {
-            to_email: email,
-            otp_code: code
-        }).then(() => {
+       emailjs.send("service_cbiw5me", "template_hj8414k", {
+    to_email: email,
+    otp_code: code
+}).then(() => {
 
             otpPendingEmail = email;
             otpPendingPurpose = purpose;
@@ -190,6 +217,12 @@ function closeOtpModal() {
 
 </script>
     <title>KayaMart - Market</title>
+    <script>
+        // Logged-in sellers stay in their dashboard until they log out (owner is exempt)
+        if (localStorage.getItem('kayaSellerId') && localStorage.getItem('kayaOwner') !== 'true') {
+            window.location.replace('analytics.html');
+        }
+    </script>
    <style>
      :root {
     --accent: #e67e22;
@@ -2557,7 +2590,8 @@ body.dark-mode .lb-rail{ background:#2c2c2c; }
 body.dark-mode .lb-piece{ background:#1f1f1f; }
 body.dark-mode .lb-piece.lb-active{ background:#2c2c2c; }
 body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0; }
-    </style></head>
+    </style>
+</head>
 <body>
   <div id="pageLoadingOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; height:100dvh; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease;">
         <div class="pl-bubble" style="width:90px; height:90px; top:12%; left:10%; animation-duration:7s;"></div>
@@ -2575,10 +2609,10 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         <p class="pl-title">KayaMart</p>
         <p class="pl-subtitle">Loading your market</p>
     </div>
-    <div class="intro-splash" id="introSplash">        <button class="intro-skip-btn" onclick="closeIntroSplash()">Skip ▸</button>
-        <div id="introSlides"></div>
-        <div class="intro-dots" id="introDots"></div>
-    </div>
+<script>
+</script>
+
+   
 
    <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:75px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
 
@@ -3043,6 +3077,192 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <button onclick="closeMyOrdersPanel()" style="margin-top:10px;">Close</button>
         </div>
     </div>
+<div class="modal" id="orderReceiptModal">
+    <div class="modal-content" style="
+        max-width:500px;
+        max-height:90vh;
+        overflow-y:auto;
+        background:#fff;
+    ">
+
+        <div id="orderReceiptContent">
+
+            <div style="
+                text-align:center;
+                border-bottom:2px solid #2980b9;
+                padding-bottom:14px;
+                margin-bottom:16px;
+            ">
+                <div style="
+                    font-size:28px;
+                    font-weight:900;
+                    color:#2980b9;
+                    letter-spacing:-1px;
+                ">
+                    KayaMart
+                </div>
+
+                <div style="
+                    font-size:12px;
+                    color:#777;
+                    margin-top:3px;
+                ">
+                    You Marketplace, Your Way.
+                </div>
+
+                <div style="
+                    margin-top:12px;
+                    font-size:18px;
+                    font-weight:800;
+                    color:#222;
+                ">
+                    ORDER RECEIPT
+                </div>
+            </div>
+
+            <div style="
+                background:#f4f8fb;
+                border-radius:10px;
+                padding:12px;
+                margin-bottom:14px;
+            ">
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:10px;
+                    margin-bottom:7px;
+                ">
+                    <span style="color:#777;">Order Reference</span>
+                    <strong id="receiptOrderRef">—</strong>
+                </div>
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:10px;
+                    margin-bottom:7px;
+                ">
+                    <span style="color:#777;">Order Date</span>
+                    <strong id="receiptOrderDate">—</strong>
+                </div>
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:10px;
+                ">
+                    <span style="color:#777;">Payment</span>
+                    <strong id="receiptPaymentStatus" style="color:#e67e22;">
+                        Payment Submitted
+                    </strong>
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <div style="
+                    font-size:13px;
+                    font-weight:800;
+                    color:#2980b9;
+                    margin-bottom:8px;
+                    text-transform:uppercase;
+                ">
+                    Buyer Information
+                </div>
+
+                <div id="receiptBuyerInfo" style="
+                    font-size:13px;
+                    line-height:1.7;
+                    color:#555;
+                ">
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <div style="
+                    font-size:13px;
+                    font-weight:800;
+                    color:#2980b9;
+                    margin-bottom:8px;
+                    text-transform:uppercase;
+                ">
+                    Items
+                </div>
+
+                <div id="receiptItems"></div>
+            </div>
+
+            <div style="
+                border-top:1px solid #ddd;
+                padding-top:12px;
+                margin-top:12px;
+            ">
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    font-size:17px;
+                    font-weight:900;
+                ">
+                    <span>Total</span>
+                    <span id="receiptTotal">GHS 0.00</span>
+                </div>
+            </div>
+
+            <div style="
+                margin-top:16px;
+                background:#fff8e8;
+                border:1px solid #f0d58a;
+                border-radius:10px;
+                padding:12px;
+                font-size:12px;
+                line-height:1.6;
+                color:#705c20;
+            ">
+                <strong>Payment note:</strong><br>
+                This receipt confirms that the buyer reported sending the payment.
+                Payment verification may still be required by KayaMart or the seller.
+            </div>
+
+            <div style="
+                display:flex;
+                gap:8px;
+                margin-top:18px;
+            ">
+                <button
+                    onclick="printOrderReceipt()"
+                    style="
+                        flex:1;
+                        background:#2980b9;
+                        color:white;
+                        border:none;
+                        border-radius:8px;
+                        padding:12px;
+                        font-weight:700;
+                        cursor:pointer;
+                    "
+                >
+                    🖨️ Print / Save
+                </button>
+
+                <button
+                    onclick="closeOrderReceipt()"
+                    style="
+                        flex:1;
+                        background:#eee;
+                        color:#333;
+                        border:none;
+                        border-radius:8px;
+                        padding:12px;
+                        font-weight:700;
+                        cursor:pointer;
+                    "
+                >
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
    <div class="modal" id="sellersModal">
 
         <div class="modal-content">
@@ -3189,13 +3409,228 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
             <button id="buyerLoginTab" class="seller-tab-btn" onclick="switchBuyerTab('login')">Log In</button>
         </div>
 
-      <div id="buyerRegisterForm">
-            <h3>Create Your Buyer Account</h3>
-            <input type="text" id="getStartedName" placeholder="Your name">
-            <input type="text" id="getStartedPhone" placeholder="Phone number">
-            <input type="email" id="getStartedEmail" placeholder="Email address (optional)">
-            <button class="add-btn" id="submitBuyerRegisterBtn" onclick="submitGetStarted()">Sign Up</button>
+     <div id="buyerRegisterForm">
+
+    <h3>Create Your Buyer Account</h3>
+
+    <input
+        type="text"
+        id="getStartedName"
+        placeholder="Your name"
+    >
+
+    <input
+        type="text"
+        id="getStartedPhone"
+        placeholder="Phone number"
+    >
+
+    <input
+        type="email"
+        id="getStartedEmail"
+        placeholder="Email address (optional)"
+    >
+
+    <!-- STUDENT STATUS -->
+    <div style="
+        margin-top:14px;
+        margin-bottom:12px;
+        text-align:left;
+    ">
+
+        <label style="
+            display:block;
+            font-size:13px;
+            font-weight:700;
+            color:#333;
+            margin-bottom:8px;
+        ">
+            Are you a university/tertiary student?
+        </label>
+
+        <div style="
+            display:flex;
+            gap:10px;
+        ">
+
+            <label style="
+                flex:1;
+                border:1px solid #ddd;
+                border-radius:10px;
+                padding:11px;
+                cursor:pointer;
+                text-align:center;
+            ">
+                <input
+                    type="radio"
+                    name="buyerStudentStatus"
+                    value="yes"
+                    onchange="toggleBuyerStudentFields()"
+                >
+                <span style="margin-left:5px;">Yes</span>
+            </label>
+
+            <label style="
+                flex:1;
+                border:1px solid #ddd;
+                border-radius:10px;
+                padding:11px;
+                cursor:pointer;
+                text-align:center;
+            ">
+                <input
+                    type="radio"
+                    name="buyerStudentStatus"
+                    value="no"
+                    onchange="toggleBuyerStudentFields()"
+                >
+                <span style="margin-left:5px;">No</span>
+            </label>
+
         </div>
+
+    </div>
+
+
+    <!-- STUDENT INFORMATION -->
+    <div
+        id="buyerStudentFields"
+        style="display:none;"
+    >
+
+        <label style="
+            display:block;
+            font-size:13px;
+            font-weight:700;
+            color:#333;
+            margin-bottom:6px;
+        ">
+            Institution type
+        </label>
+
+        <select
+            id="buyerInstitutionType"
+            onchange="updateBuyerInstitutionList()"
+            style="
+                width:100%;
+                margin-bottom:10px;
+            "
+        >
+
+            <option value="">
+                Select institution type
+            </option>
+
+            <option value="Traditional University">
+                Traditional University
+            </option>
+
+            <option value="Private University">
+                Private University
+            </option>
+
+            <option value="Public Technical University">
+                Public Technical University
+            </option>
+
+            <option value="Private Tertiary Institution">
+                Private Tertiary Institution
+            </option>
+
+            <option value="Public College of Education">
+                Public College of Education
+            </option>
+
+            <option value="Private College of Education">
+                Private College of Education
+            </option>
+
+            <option value="Public Nurses/Health Training College">
+                Public Nurses/Health Training College
+            </option>
+
+            <option value="Private Nurses/Health Training College">
+                Private Nurses/Health Training College
+            </option>
+
+            <option value="Public Degree Awarding Institution">
+                Public Degree Awarding Institution
+            </option>
+
+            <option value="Agricultural College">
+                Agricultural College
+            </option>
+
+            <option value="Tutorial College">
+                Tutorial College
+            </option>
+
+            <option value="Other Tertiary Institution">
+                Other Tertiary Institution
+            </option>
+
+        </select>
+
+
+        <label style="
+            display:block;
+            font-size:13px;
+            font-weight:700;
+            color:#333;
+            margin-bottom:6px;
+        ">
+            Search and select your institution
+        </label>
+
+        <input
+            type="text"
+            id="buyerInstitutionSearch"
+            placeholder="Type your school name..."
+            oninput="filterBuyerInstitutions()"
+            autocomplete="off"
+            style="
+                width:100%;
+                margin-bottom:5px;
+            "
+        >
+
+        <select
+            id="buyerInstitutionName"
+            size="5"
+            style="
+                width:100%;
+                margin-bottom:12px;
+                display:none;
+            "
+            onchange="selectBuyerInstitution()"
+        ></select>
+
+        <div
+            id="buyerSelectedInstitution"
+            style="
+                display:none;
+                background:#eef7ff;
+                border:1px solid #b9dcfa;
+                border-radius:9px;
+                padding:10px;
+                margin-bottom:12px;
+                font-size:12.5px;
+                color:#245a80;
+            "
+        ></div>
+
+    </div>
+
+
+    <button
+        class="add-btn"
+        id="submitBuyerRegisterBtn"
+        onclick="submitGetStarted()"
+    >
+        Sign Up
+    </button>
+
+</div>
 
         <div id="buyerLoginForm" style="display:none;">
             <h3>Buyer Log In</h3>
@@ -3320,6 +3755,210 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
 </select>
 <input type="text" id="regGhanaCard" placeholder="Ghana Card number (e.g. GHA-123456789-0)">
 <input type="text" id="regAddress" placeholder="Residential address">
+<!-- STUDENT STATUS -->
+<div style="
+    margin-top:14px;
+    margin-bottom:12px;
+    text-align:left;
+">
+
+    <label style="
+        display:block;
+        font-size:13px;
+        font-weight:700;
+        color:#333;
+        margin-bottom:8px;
+    ">
+        Are you a university/tertiary student?
+    </label>
+
+    <div style="
+        display:flex;
+        gap:10px;
+    ">
+
+        <label style="
+            flex:1;
+            border:1px solid #ddd;
+            border-radius:10px;
+            padding:11px;
+            cursor:pointer;
+            text-align:center;
+        ">
+
+            <input
+                type="radio"
+                name="sellerStudentStatus"
+                value="yes"
+                onchange="toggleSellerStudentFields()"
+            >
+
+            <span style="margin-left:5px;">
+                Yes
+            </span>
+
+        </label>
+
+
+        <label style="
+            flex:1;
+            border:1px solid #ddd;
+            border-radius:10px;
+            padding:11px;
+            cursor:pointer;
+            text-align:center;
+        ">
+
+            <input
+                type="radio"
+                name="sellerStudentStatus"
+                value="no"
+                onchange="toggleSellerStudentFields()"
+            >
+
+            <span style="margin-left:5px;">
+                No
+            </span>
+
+        </label>
+
+    </div>
+
+</div>
+
+
+<!-- STUDENT INFORMATION -->
+<div
+    id="sellerStudentFields"
+    style="display:none;"
+>
+
+    <label style="
+        display:block;
+        font-size:13px;
+        font-weight:700;
+        color:#333;
+        margin-bottom:6px;
+    ">
+        Institution type
+    </label>
+
+
+    <select
+        id="sellerInstitutionType"
+        onchange="updateSellerInstitutionList()"
+        style="
+            width:100%;
+            margin-bottom:10px;
+        "
+    >
+
+        <option value="">
+            Select institution type
+        </option>
+
+        <option value="Traditional University">
+            Traditional University
+        </option>
+
+        <option value="Private University">
+            Private University
+        </option>
+
+        <option value="Public Technical University">
+            Public Technical University
+        </option>
+
+        <option value="Private Tertiary Institution">
+            Private Tertiary Institution
+        </option>
+
+        <option value="Public College of Education">
+            Public College of Education
+        </option>
+
+        <option value="Private College of Education">
+            Private College of Education
+        </option>
+
+        <option value="Public Nurses/Health Training College">
+            Public Nurses/Health Training College
+        </option>
+
+        <option value="Private Nurses/Health Training College">
+            Private Nurses/Health Training College
+        </option>
+
+        <option value="Public Degree Awarding Institution">
+            Public Degree Awarding Institution
+        </option>
+
+        <option value="Agricultural College">
+            Agricultural College
+        </option>
+
+        <option value="Tutorial College">
+            Tutorial College
+        </option>
+
+        <option value="Other Tertiary Institution">
+            Other Tertiary Institution
+        </option>
+
+    </select>
+
+
+    <label style="
+        display:block;
+        font-size:13px;
+        font-weight:700;
+        color:#333;
+        margin-bottom:6px;
+    ">
+        Search and select your institution
+    </label>
+
+
+    <input
+        type="text"
+        id="sellerInstitutionSearch"
+        placeholder="Type your school name..."
+        oninput="filterSellerInstitutions()"
+        autocomplete="off"
+        style="
+            width:100%;
+            margin-bottom:5px;
+        "
+    >
+
+
+    <select
+        id="sellerInstitutionName"
+        size="5"
+        style="
+            width:100%;
+            margin-bottom:12px;
+            display:none;
+        "
+        onchange="selectSellerInstitution()"
+    ></select>
+
+
+    <div
+        id="sellerSelectedInstitution"
+        style="
+            display:none;
+            background:#eef7ff;
+            border:1px solid #b9dcfa;
+            border-radius:9px;
+            padding:10px;
+            margin-bottom:12px;
+            font-size:12.5px;
+            color:#245a80;
+        "
+    ></div>
+
+</div>
 <input type="password" id="regPassword" placeholder="Create a password">
 <label style="font-size:13px; color:#777; display:block; margin-bottom:5px;">Choose a profile avatar</label>                <div id="avatarPickerRow" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
                 <input type="hidden" id="regSelectedAvatar">
@@ -3327,10 +3966,9 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
                 <div style="background:#fff4ea; border:1.5px solid #e67e22; border-radius:12px; padding:14px; margin-bottom:14px; text-align:center;">
                     <div style="font-size:10.5px; font-weight:700; color:#b85c0f; text-transform:uppercase; letter-spacing:0.5px;">Seller Registration Fee</div>
                     <div style="margin:6px 0 2px;">
-                        <span style="font-size:22px; font-weight:800; color:#b85c0f;">GHS FREE</span>
-                        <span style="font-size:14px; color:#999; text-decoration:line-through; margin-left:6px;">GHS 29.99</span>
+                        <span style="font-size:22px; font-weight:800; color:#b85c0f;">GHS 29.99</span>
                     </div>
-                    <div style="font-size:11.5px; color:#b85c0f;">Launch discount — one-time fee to start selling</div>
+                    <div style="font-size:11.5px; color:#b85c0f;">One-time fee to start selling</div>
                 </div>
 
                <button class="add-btn" id="submitRegisterBtn" onclick="submitSellerRegister()">Continue to Payment</button>
@@ -3365,11 +4003,17 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
                 <div style="font-size:22px; font-weight:800; margin:4px 0;">0591616403</div>
                 <div style="font-size:12.5px; color:#777;">Account name: Bright Asamoah Banson</div>
             </div>
-          <div style="background:#e8f8ef; border-radius:12px; padding:14px; margin-bottom:16px;">
+<div style="background:white; border:1.5px dashed #2980b9; border-radius:12px; padding:12px; margin-bottom:14px;">
+    <div style="font-size:11.5px; color:#777;">Copy this and use it as your MTN payment reference:</div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-top:4px;">
+        <strong id="payRegRefText" style="font-size:20px; letter-spacing:1px;">—</strong>
+        <button type="button" onclick="copyRegPaymentRef()" style="width:auto; padding:6px 12px; font-size:12px; background:#2980b9; color:white; border:none; border-radius:6px; cursor:pointer;">📋 Copy</button>
+    </div>
+</div>
                 <div style="font-size:11px; color:#27ae60; text-transform:uppercase; letter-spacing:0.5px;">Amount due</div>
-                <div style="font-size:20px; font-weight:800; color:#27ae60;">GHS 0.00 — FREE 🎉</div>
+                <div style="font-size:20px; font-weight:800; color:#27ae60;">GHS 29.99</div>
             </div>
-          <button class="add-btn" style="background:#27ae60;" onclick="markRegistrationPaid()">✅ Confirm — No Payment Needed</button>
+          <button class="add-btn" id="payRegDoneBtn" style="background:#27ae60;" onclick="markRegistrationPaid()">✅ Done, I've Paid</button>
         </div>
 
         <div id="payRegReviewView" style="display:none;">
@@ -3417,6 +4061,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
 <script>
    // Path or full URL to the mannequin .glb — change this one line for whichever hosting option you use.
     const MANNEQUIN_GLB_URL = "mannequin.glb";
+ const SELLER_REGISTRATION_NUMBER = "0591616403";
 
     const THEME_SWATCHES = ['#2980b9', '#8e44ad', '#e74c3c', '#16a085', '#e67e22', '#c0392b', '#34495e', '#d63384'];
     const COLOR_NAME_TO_HEX = {
@@ -3462,18 +4107,31 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
         `).join('');
     }
 
-    applyThemeColor(localStorage.getItem('kayaThemeColor') || '#2980b9');
-    let pageOverlayHidden = false;
-    function hidePageLoadingOverlay() {
-        if (pageOverlayHidden) return;
-        pageOverlayHidden = true;
-        const overlay = document.getElementById('pageLoadingOverlay');
-        if (!overlay) return;
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-            overlay.style.display = 'none';
-        }, 500);
+  applyThemeColor(localStorage.getItem('kayaThemeColor') || '#2980b9');
+
+let pageOverlayHidden = false;
+
+function hidePageLoadingOverlay() {
+    const overlay = document.getElementById('pageLoadingOverlay');
+
+    if (!overlay) {
+        return;
     }
+
+    if (pageOverlayHidden) {
+        return;
+    }
+
+    pageOverlayHidden = true;
+
+    overlay.style.pointerEvents = 'none';
+    overlay.style.opacity = '0';
+
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        overlay.removeAttribute('aria-hidden');
+    }, 500);
+}
 const OWNER_PASSWORD_HASH = "98c3607e9532b8e48a3576e0574d2259b866d720afe94d956b3e9b77d4eb0cb5";
     let isOwner = localStorage.getItem('kayaOwner') === 'true';
     let logoClickCount = 0;
@@ -3621,70 +4279,649 @@ const introSlidesData = [
     }
 
    function startIntroSplash() {
-        if (localStorage.getItem('kayaIntroSeen') === 'true') {
-            document.getElementById('introSplash').style.display = 'none';
-            showWelcomeGateIfNeeded();
-            return;
-        }
-        document.body.classList.add('intro-locked');
-        renderIntroSplash();
-        introInterval = setInterval(nextIntroSlide, 3500);
-    }
 
- function closeIntroSplash() {
-        clearInterval(introInterval);
-        const splash = document.getElementById('introSplash');
-        splash.style.transition = 'opacity 0.6s ease';
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.style.display = 'none';
-            document.body.classList.remove('intro-locked');
-        }, 600);
-        localStorage.setItem('kayaIntroSeen', 'true');
+    introSplashActive = true;
+
+    if (localStorage.getItem('kayaIntroSeen') === 'true') {
+
+        introSplashActive = false;
+
+        document.getElementById('introSplash').style.display = 'none';
+
         showWelcomeGateIfNeeded();
+
+        /*
+         * If products have already loaded while
+         * the splash was hidden, show them now.
+         */
+        if (itemsHaveLoadedOnce) {
+            renderItems();
+        } else {
+            const grid = document.getElementById('itemGrid');
+
+            if (grid) {
+                grid.innerHTML = getMarketplaceLoadingHTML();
+                startMarketplaceLoadingMessages();
+                startMarketplaceLoadingTimeout();
+            }
+        }
+
+        return;
     }
 
-    function handleGetStarted() {
-        clearInterval(introInterval);
-        const splash = document.getElementById('introSplash');
-        splash.style.transition = 'opacity 0.6s ease';
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.style.display = 'none';
-            document.body.classList.remove('intro-locked');
-        }, 600);
-        localStorage.setItem('kayaIntroSeen', 'true');
-        document.getElementById('getStartedModal').style.display = 'flex';
+    document.body.classList.add('intro-locked');
+
+    renderIntroSplash();
+
+    introInterval = setInterval(nextIntroSlide, 3500);
+}
+
+function closeIntroSplash() {
+
+    clearInterval(introInterval);
+
+    const splash = document.getElementById('introSplash');
+
+    splash.style.transition = 'opacity 0.6s ease';
+    splash.style.opacity = '0';
+
+    setTimeout(() => {
+
+        splash.style.display = 'none';
+
+        document.body.classList.remove('intro-locked');
+
+        introSplashActive = false;
+
+        /*
+         * The splash is completely gone.
+         * NOW allow the marketplace loading screen
+         * to appear if products are not ready.
+         */
+
+        if (itemsHaveLoadedOnce) {
+
+            renderItems();
+
+        } else {
+
+            const grid = document.getElementById('itemGrid');
+
+            if (grid) {
+
+                grid.innerHTML =
+                    getMarketplaceLoadingHTML();
+
+                startMarketplaceLoadingMessages();
+
+                startMarketplaceLoadingTimeout();
+            }
+        }
+
+    }, 600);
+
+    localStorage.setItem('kayaIntroSeen', 'true');
+
+    showWelcomeGateIfNeeded();
+}
+   function handleGetStarted() {
+
+    clearInterval(introInterval);
+
+    const splash = document.getElementById('introSplash');
+
+    splash.style.transition = 'opacity 0.6s ease';
+    splash.style.opacity = '0';
+
+    setTimeout(() => {
+
+        splash.style.display = 'none';
+
+        document.body.classList.remove('intro-locked');
+
+        introSplashActive = false;
+
+        /*
+         * Only now can the marketplace loader appear.
+         */
+
+        if (itemsHaveLoadedOnce) {
+
+            renderItems();
+
+        } else {
+
+            const grid = document.getElementById('itemGrid');
+
+            if (grid) {
+
+                grid.innerHTML =
+                    getMarketplaceLoadingHTML();
+
+                startMarketplaceLoadingMessages();
+
+                startMarketplaceLoadingTimeout();
+            }
+        }
+
+    }, 600);
+
+    localStorage.setItem('kayaIntroSeen', 'true');
+
+    document.getElementById('getStartedModal').style.display = 'flex';
+}
+
+const GHANA_TERTIARY_INSTITUTIONS = {
+
+    "Traditional University": [
+
+        "University of Ghana",
+        "Kwame Nkrumah University of Science and Technology",
+        "University of Cape Coast",
+        "University of Education, Winneba",
+        "University for Development Studies",
+        "University of Mines and Technology",
+        "University of Energy and Natural Resources",
+        "University of Health and Allied Sciences",
+        "Ghana Communication Technology University",
+        "C.K. Tedam University of Technology and Applied Sciences",
+        "S.D. Dombo University of Business and Integrated Development Studies",
+        "Accra Technical University",
+        "Kumasi Technical University",
+        "Takoradi Technical University",
+        "Koforidua Technical University",
+        "Ho Technical University",
+        "Sunyani Technical University",
+        "Cape Coast Technical University",
+        "Bolgatanga Technical University",
+        "Tamale Technical University"
+
+    ],
+
+    "Private University": [
+
+        "Ashesi University",
+        "Central University",
+        "Valley View University",
+        "Pentecost University",
+        "Presbyterian University",
+        "Methodist University",
+        "Catholic University College of Ghana",
+        "All Nations University",
+        "Academic City University",
+        "Lancaster University Ghana",
+        "Regent University College of Science and Technology",
+        "Wisconsin International University College",
+        "Ghana Christian University College",
+        "Knutsford University College",
+        "Garden City University College",
+        "Christian Service University",
+        "Dominion University College",
+        "Mountcrest University",
+        "Radford University College",
+        "BlueCrest University College",
+        "Islamic University College, Ghana",
+        "Kings University College",
+        "Data Link Institute",
+        "Marshalls University College",
+        "Accra Institute of Technology",
+        "Zenith University College"
+
+    ],
+
+    "Public Technical University": [
+
+        "Accra Technical University",
+        "Kumasi Technical University",
+        "Takoradi Technical University",
+        "Koforidua Technical University",
+        "Ho Technical University",
+        "Sunyani Technical University",
+        "Cape Coast Technical University",
+        "Bolgatanga Technical University",
+        "Tamale Technical University",
+        "Dr. Hilla Limann Technical University"
+
+    ],
+
+    "Public College of Education": [
+
+        "Accra College of Education",
+        "Ada College of Education",
+        "Abetifi College of Education",
+        "Agogo Presbyterian College of Education",
+        "Akatsi College of Education",
+        "Akrokerri College of Education",
+        "Al-Faruq College of Education",
+        "Bagabaga College of Education",
+        "Berekum College of Education",
+        "Enchi College of Education",
+        "Foso College of Education",
+        "Holy Child College of Education",
+        "Jasikan College of Education",
+        "Kibi Presbyterian College of Education",
+        "Komenda College of Education",
+        "Mount Mary College of Education",
+        "Nusrat Jahan Ahmadiyya College of Education",
+        "OLA College of Education",
+        "Offinso College of Education",
+        "Presbyterian Women's College of Education",
+        "SDA College of Education",
+        "St. John Bosco's College of Education",
+        "St. Louis College of Education",
+        "St. Teresa's College of Education",
+        "Tamale College of Education",
+        "Tumu College of Education",
+        "Wesley College of Education",
+        "Wiawso College of Education",
+        "St. Monica's College of Education",
+        "St. Vincent College of Education",
+        "Dambai College of Education",
+        "Gambaga College of Education",
+        "Kpembi College of Education",
+        "Peki College of Education",
+        "Presbyterian College of Education",
+        "Tepa College of Education",
+        "Mampong Technical College of Education"
+
+    ],
+
+    "Private College of Education": [
+
+        "Christ The Teacher College of Education",
+        "Jackson College of Education"
+
+    ],
+
+    "Public Nurses/Health Training College": [
+
+        "Accra School of Hygiene",
+        "College of Health and Well-Being",
+        "College of Community Health Nursing, Winneba",
+        "Bibiani College of Health Sciences",
+        "Assinman Nursing and Midwifrey Training College",
+        "Kpembi Nursing and Midwifery Training College",
+        "Nursing and Midwifery Training College, Kumasi",
+        "Nursing and Midwifery Training College, Cape Coast",
+        "Nursing and Midwifery Training College, Tamale",
+        "Nursing and Midwifery Training College, Bolgatanga",
+        "Nursing and Midwifery Training College, Ho",
+        "Nursing and Midwifery Training College, Sunyani",
+        "Nursing and Midwifery Training College, Sekondi",
+        "Nursing and Midwifery Training College, Koforidua",
+        "Nursing and Midwifery Training College, Fomena",
+        "Nursing and Midwifery Training College, Tarkwa"
+
+    ],
+
+    "Private Nurses/Health Training College": [
+
+        "Narh-Bita College",
+        "Martin Luther Health Training School",
+        "Nightingale School of Nursing",
+        "Premier Nurses' Training College",
+        "Royal Ann College of Health",
+        "St. Karol School of Nursing",
+        "Western Hills School of Nursing"
+
+    ],
+
+    "Agricultural College": [
+
+        "Kwadaso Agricultural College",
+        "Ejura Agricultural College",
+        "Damongo Agricultural College",
+        "Ohawu Agricultural College",
+        "Animal Health and Production College"
+
+    ],
+
+    "Public Degree Awarding Institution": [
+
+        "Ghana Institute of Management and Public Administration",
+        "Ghana Institute of Journalism",
+        "Ghana Institute of Languages",
+        "Kofi Annan International Peacekeeping Training Centre",
+        "Institute of Local Government Studies",
+        "Regional Maritime University"
+
+    ],
+
+    "Tutorial College": [
+
+        "Various GTEC-registered tutorial colleges"
+
+    ],
+
+    "Other Tertiary Institution": [
+
+        "Other GTEC-recognized tertiary institution"
+
+    ]
+
+};
+function toggleBuyerStudentFields() {
+
+    const selected =
+        document.querySelector(
+            'input[name="buyerStudentStatus"]:checked'
+        );
+
+    const fields =
+        document.getElementById('buyerStudentFields');
+
+    if (!selected) {
+        fields.style.display = 'none';
+        return;
     }
 
+    if (selected.value === 'yes') {
+
+        fields.style.display = 'block';
+
+    } else {
+
+        fields.style.display = 'none';
+
+        document.getElementById(
+            'buyerInstitutionType'
+        ).value = '';
+
+        document.getElementById(
+            'buyerInstitutionSearch'
+        ).value = '';
+
+        document.getElementById(
+            'buyerInstitutionName'
+        ).innerHTML = '';
+
+        document.getElementById(
+            'buyerSelectedInstitution'
+        ).style.display = 'none';
+
+    }
+}
+
+
+function updateBuyerInstitutionList() {
+
+    const type =
+        document.getElementById(
+            'buyerInstitutionType'
+        ).value;
+
+    const select =
+        document.getElementById(
+            'buyerInstitutionName'
+        );
+
+    const search =
+        document.getElementById(
+            'buyerInstitutionSearch'
+        );
+
+    select.innerHTML = '';
+
+    search.value = '';
+
+    if (!type) {
+
+        select.style.display = 'none';
+
+        return;
+    }
+
+    const institutions =
+        GHANA_TERTIARY_INSTITUTIONS[type] || [];
+
+    institutions.forEach((institution) => {
+
+        const option =
+            document.createElement('option');
+
+        option.value = institution;
+        option.textContent = institution;
+
+        select.appendChild(option);
+
+    });
+
+    select.style.display =
+        institutions.length ? 'block' : 'none';
+
+}
+
+
+function filterBuyerInstitutions() {
+
+    const search =
+        document.getElementById(
+            'buyerInstitutionSearch'
+        ).value
+        .trim()
+        .toLowerCase();
+
+    const type =
+        document.getElementById(
+            'buyerInstitutionType'
+        ).value;
+
+    const select =
+        document.getElementById(
+            'buyerInstitutionName'
+        );
+
+    if (!type) {
+
+        select.style.display = 'none';
+
+        return;
+    }
+
+    const institutions =
+        GHANA_TERTIARY_INSTITUTIONS[type] || [];
+
+    const filtered =
+        institutions.filter((institution) =>
+            institution.toLowerCase().includes(search)
+        );
+
+    select.innerHTML = '';
+
+    filtered.forEach((institution) => {
+
+        const option =
+            document.createElement('option');
+
+        option.value = institution;
+        option.textContent = institution;
+
+        select.appendChild(option);
+
+    });
+
+    select.style.display =
+        filtered.length ? 'block' : 'none';
+
+}
+
+
+function selectBuyerInstitution() {
+
+    const select =
+        document.getElementById(
+            'buyerInstitutionName'
+        );
+
+    const selected =
+        select.value;
+
+    const box =
+        document.getElementById(
+            'buyerSelectedInstitution'
+        );
+
+    if (!selected) {
+
+        box.style.display = 'none';
+
+        return;
+    }
+
+    box.innerHTML =
+        '🎓 Selected institution: <strong>' +
+        escapeReceiptText(selected) +
+        '</strong>';
+
+    box.style.display = 'block';
+
+}
  function submitGetStarted() {
-        const name = document.getElementById('getStartedName').value.trim();
-        const phone = document.getElementById('getStartedPhone').value.trim();
-        const email = document.getElementById('getStartedEmail').value.trim();
 
-        if (!name || !phone) {
-            alert("Please enter your name and phone number.");
+    const name =
+        document.getElementById('getStartedName').value.trim();
+
+    const phone =
+        document.getElementById('getStartedPhone').value.trim();
+
+    const email =
+        document.getElementById('getStartedEmail').value.trim();
+
+
+    // STUDENT STATUS
+
+    const studentSelection =
+        document.querySelector(
+            'input[name="buyerStudentStatus"]:checked'
+        );
+
+    const isStudent =
+        studentSelection
+            ? studentSelection.value === 'yes'
+            : false;
+
+
+    let institutionType = '';
+    let institutionName = '';
+
+
+    // STUDENT INFORMATION
+
+    if (isStudent) {
+
+        const institutionTypeElement =
+            document.getElementById(
+                'buyerInstitutionType'
+            );
+
+        const institutionNameElement =
+            document.getElementById(
+                'buyerInstitutionName'
+            );
+
+        institutionType =
+            institutionTypeElement
+                ? institutionTypeElement.value
+                : '';
+
+        institutionName =
+            institutionNameElement
+                ? institutionNameElement.value
+                : '';
+
+
+        if (!institutionType) {
+
+            alert(
+                "Please select your institution type."
+            );
+
             return;
         }
 
-        const btn = document.getElementById('submitBuyerRegisterBtn');
-        btn.disabled = true;
-        btn.innerText = "Signing up...";
 
-        db.collection('buyers').add({
-            name, phone: formatPhone(phone), email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then((docRef) => {
-            finishBuyerLogin(docRef.id, name, phone, email);
-            btn.disabled = false;
-            btn.innerText = "Sign Up";
-        }).catch((err) => {
-            alert("Sign up failed: " + err.message);
-            btn.disabled = false;
-            btn.innerText = "Sign Up";
-        });
+        if (!institutionName) {
+
+            alert(
+                "Please select your institution."
+            );
+
+            return;
+        }
     }
 
+
+    // BASIC VALIDATION
+
+    if (!name || !phone) {
+
+        alert(
+            "Please enter your name and phone number."
+        );
+
+        return;
+    }
+
+
+    // DISABLE BUTTON
+
+    const btn =
+        document.getElementById(
+            'submitBuyerRegisterBtn'
+        );
+
+    btn.disabled = true;
+    btn.innerText = "Signing up...";
+
+
+    // SAVE BUYER
+
+    db.collection('buyers').add({
+
+        name: name,
+
+        phone: formatPhone(phone),
+
+        email: email,
+
+        isStudent: isStudent,
+
+        institutionType: institutionType,
+
+        institutionName: institutionName,
+
+        createdAt:
+            firebase.firestore.FieldValue.serverTimestamp()
+
+    }).then((docRef) => {
+
+        finishBuyerLogin(
+            docRef.id,
+            name,
+            phone,
+            email
+        );
+
+        btn.disabled = false;
+        btn.innerText = "Sign Up";
+
+    }).catch((err) => {
+
+        console.error(
+            "Buyer registration error:",
+            err
+        );
+
+        alert(
+            "Sign up failed: " +
+            err.message
+        );
+
+        btn.disabled = false;
+        btn.innerText = "Sign Up";
+
+    });
+}
 function submitBuyerLogin() {
         const phone = document.getElementById('buyerLoginPhone').value.trim();
         if (!phone) {
@@ -3794,13 +5031,14 @@ function switchBuyerTab(tab) {
 function closeSellerAuth() {
         document.getElementById('sellerAuthModal').style.display = 'none';
     }
-  function openBuyerLoginFromBanner(event) {
+ function openBuyerLoginFromBanner(event) {
         event.stopPropagation();
         if (buyerName) {
             alert("You're already logged in as " + buyerName + "!");
             return;
         }
-        document.getElementById('buyerNameModal').style.display = 'flex';
+        switchBuyerTab('login');
+        document.getElementById('getStartedModal').style.display = 'flex';
     }
 function openSellerAuthFromBanner(event) {
         event.stopPropagation();
@@ -3915,6 +5153,277 @@ function readFileAsDataUrl(file) {
         reader.readAsDataURL(file);
     });
 }
+// ============================================================
+// SELLER STUDENT / INSTITUTION FUNCTIONS
+// ============================================================
+
+function toggleSellerStudentFields() {
+
+    const selected = document.querySelector(
+        'input[name="sellerStudentStatus"]:checked'
+    );
+
+    const studentFields = document.getElementById(
+        'sellerStudentFields'
+    );
+
+    const institutionType = document.getElementById(
+        'sellerInstitutionType'
+    );
+
+    const institutionSearch = document.getElementById(
+        'sellerInstitutionSearch'
+    );
+
+    const institutionName = document.getElementById(
+        'sellerInstitutionName'
+    );
+
+    const selectedInstitution = document.getElementById(
+        'sellerSelectedInstitution'
+    );
+
+    if (!selected) {
+        if (studentFields) {
+            studentFields.style.display = 'none';
+        }
+        return;
+    }
+
+    const isStudent = selected.value === 'yes';
+
+    if (!isStudent) {
+
+        if (studentFields) {
+            studentFields.style.display = 'none';
+        }
+
+        if (institutionType) {
+            institutionType.value = '';
+        }
+
+        if (institutionSearch) {
+            institutionSearch.value = '';
+        }
+
+        if (institutionName) {
+            institutionName.innerHTML = '';
+            institutionName.style.display = 'none';
+        }
+
+        if (selectedInstitution) {
+            selectedInstitution.innerHTML = '';
+            selectedInstitution.style.display = 'none';
+        }
+
+        return;
+    }
+
+    if (studentFields) {
+        studentFields.style.display = 'block';
+    }
+}
+
+
+// ============================================================
+// LOAD SELLER INSTITUTIONS
+// ============================================================
+
+function updateSellerInstitutionList() {
+
+    const type = document.getElementById(
+        'sellerInstitutionType'
+    ).value;
+
+    const select = document.getElementById(
+        'sellerInstitutionName'
+    );
+
+    const search = document.getElementById(
+        'sellerInstitutionSearch'
+    );
+
+    const selectedBox = document.getElementById(
+        'sellerSelectedInstitution'
+    );
+
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML = '';
+
+    if (search) {
+        search.value = '';
+    }
+
+    if (selectedBox) {
+        selectedBox.innerHTML = '';
+        selectedBox.style.display = 'none';
+    }
+
+    if (!type) {
+        select.style.display = 'none';
+        return;
+    }
+
+    const institutions =
+        GHANA_TERTIARY_INSTITUTIONS[type] || [];
+
+    institutions.forEach((institution) => {
+
+        const option =
+            document.createElement('option');
+
+        option.value = institution;
+        option.textContent = institution;
+
+        select.appendChild(option);
+
+    });
+
+    select.style.display =
+        institutions.length > 0
+            ? 'block'
+            : 'none';
+}
+
+
+// ============================================================
+// SEARCH / FILTER SELLER INSTITUTIONS
+// ============================================================
+
+function filterSellerInstitutions() {
+
+    const searchInput =
+        document.getElementById(
+            'sellerInstitutionSearch'
+        );
+
+    const typeSelect =
+        document.getElementById(
+            'sellerInstitutionType'
+        );
+
+    const institutionSelect =
+        document.getElementById(
+            'sellerInstitutionName'
+        );
+
+    const selectedBox =
+        document.getElementById(
+            'sellerSelectedInstitution'
+        );
+
+    if (
+        !searchInput ||
+        !typeSelect ||
+        !institutionSelect
+    ) {
+        return;
+    }
+
+    const search =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const type =
+        typeSelect.value;
+
+    if (!type) {
+
+        institutionSelect.innerHTML = '';
+        institutionSelect.style.display = 'none';
+
+        if (selectedBox) {
+            selectedBox.innerHTML = '';
+            selectedBox.style.display = 'none';
+        }
+
+        return;
+    }
+
+    const institutions =
+        GHANA_TERTIARY_INSTITUTIONS[type] || [];
+
+    const filtered =
+        institutions.filter((institution) =>
+            institution
+                .toLowerCase()
+                .includes(search)
+        );
+
+    institutionSelect.innerHTML = '';
+
+    filtered.forEach((institution) => {
+
+        const option =
+            document.createElement('option');
+
+        option.value = institution;
+        option.textContent = institution;
+
+        institutionSelect.appendChild(option);
+
+    });
+
+    institutionSelect.style.display =
+        filtered.length > 0
+            ? 'block'
+            : 'none';
+
+    if (selectedBox) {
+        selectedBox.innerHTML = '';
+        selectedBox.style.display = 'none';
+    }
+}
+
+
+// ============================================================
+// SELECT SELLER INSTITUTION
+// ============================================================
+
+function selectSellerInstitution() {
+
+    const select =
+        document.getElementById(
+            'sellerInstitutionName'
+        );
+
+    const selectedBox =
+        document.getElementById(
+            'sellerSelectedInstitution'
+        );
+
+    if (!select || !selectedBox) {
+        return;
+    }
+
+    const selected =
+        select.value;
+
+    if (!selected) {
+
+        selectedBox.innerHTML = '';
+        selectedBox.style.display = 'none';
+
+        return;
+    }
+
+    selectedBox.innerHTML =
+        '🎓 Selected institution: <strong>' +
+        escapeReceiptText(selected) +
+        '</strong>';
+
+    selectedBox.style.display = 'block';
+}
+
+
+// ============================================================
+// SELLER REGISTRATION
+// ============================================================
+
 function submitSellerRegister() {
 
     const name = document.getElementById('regName').value.trim();
@@ -3925,6 +5434,20 @@ function submitSellerRegister() {
     const password = document.getElementById('regPassword').value;
     const ghanaCard = document.getElementById('regGhanaCard').value.trim().toUpperCase();
     const address = document.getElementById('regAddress').value.trim();
+const studentStatus = document.querySelector('input[name="sellerStudentStatus"]:checked');
+const isStudent = studentStatus ? studentStatus.value === 'yes' : false;
+
+const institutionType = isStudent
+    ? document.getElementById('sellerInstitutionType').value
+    : "";
+
+const institutionName = isStudent
+    ? document.getElementById('sellerInstitutionName').value
+    : "";
+if (isStudent && (!institutionType || !institutionName)) {
+    alert("Please select your institution type and institution name.");
+    return;
+}
     const photoData = selectedAvatarUrl || AVATAR_OPTIONS[0];
 
     if (!name || !phone || !email || !location || !password || !ghanaCard) {
@@ -3970,10 +5493,14 @@ function submitSellerRegister() {
             status: "pending",
             photo: photoData,
             ghanaCard: ghanaCard,
-            address: address,
+          address: address,
 
-            followerCount: 0,
-            likeCount: 0,
+isStudent: isStudent,
+institutionType: institutionType,
+institutionName: institutionName,
+
+followerCount: 0,
+likeCount: 0,
 
             paymentClaimed: false,
 
@@ -4013,12 +5540,39 @@ function submitSellerRegister() {
     });
 }
 function openPayRegistrationModal(newSellerId) {
+    const modal = document.getElementById('payRegistrationModal');
+    modal.setAttribute('data-seller-id', newSellerId);
     document.getElementById('payRegPayView').style.display = 'block';
     document.getElementById('payRegReviewView').style.display = 'none';
-    document.getElementById('payRegistrationModal').setAttribute('data-seller-id', newSellerId);
-    document.getElementById('payRegistrationModal').style.display = 'flex';
-}
 
+    // Lock the "Done" button until the seller copies their code
+    const doneBtn = document.getElementById('payRegDoneBtn');
+    if (doneBtn) { doneBtn.disabled = true; doneBtn.style.opacity = '0.5'; }
+
+    document.getElementById('payRegRefText').innerText = 'Generating...';
+    modal.style.display = 'flex';
+
+    const sellerRef = db.collection('sellers').doc(newSellerId);
+    sellerRef.get().then((doc) => {
+        // If this seller already has a code, just show it again
+        if (doc.exists && doc.data().regPaymentRef) {
+            document.getElementById('payRegRefText').innerText = doc.data().regPaymentRef;
+            return;
+        }
+
+        // GENERATE: make a new random code like KMR-7XK2PA
+        const ref = generateOrderRef().replace('KM-', 'KMR-');
+
+        // Make sure no other seller already has this exact code
+        return db.collection('sellers').where('regPaymentRef', '==', ref).get().then((snap) => {
+            if (!snap.empty) { openPayRegistrationModal(newSellerId); return; } // clash, try again
+
+            // RECORD: save the code on this seller's record
+            return sellerRef.update({ regPaymentRef: ref, regRefCopied: false, regRefUsed: false })
+                .then(() => { document.getElementById('payRegRefText').innerText = ref; });
+        });
+    }).catch((err) => alert("Couldn't create your payment reference: " + err.message));
+}
 function closePayRegistrationModal() {
     document.getElementById('payRegistrationModal').style.display = 'none';
 }
@@ -4175,32 +5729,79 @@ function submitSellerLogin() {
 
     });
 }
-function startForgotPassword() {
-    const phone = prompt("Enter your registered WhatsApp/phone number:");
 
-    if (!phone) {
+function startForgotPassword() {
+
+    const email = prompt(
+        "Enter the email address you used to register your seller account:"
+    );
+
+    if (!email) {
         return;
     }
 
-    db.collection('sellers')
-        .where('phone', '==', formatPhone(phone))
-        .get()
-        .then((snapshot) => {
+    const cleanEmail = email.trim().toLowerCase();
 
-            if (snapshot.empty) {
-                alert("No seller account found with that number.");
-                return;
-            }
+    if (!cleanEmail) {
+        alert("Please enter your email address.");
+        return;
+    }
 
-            const doc = snapshot.docs[0];
-            const seller = doc.data();
+    // Search both the permanent registration email
+    // and the older email field.
+    Promise.all([
+        db.collection('sellers')
+            .where('registrationEmail', '==', cleanEmail)
+            .limit(1)
+            .get(),
 
-            if (!seller.email) {
-                alert("No email is on file for this account — please contact support.");
-                return;
-            }
+        db.collection('sellers')
+            .where('email', '==', cleanEmail)
+            .limit(1)
+            .get()
 
-            sendOtpCode(seller.email, 'reset', () => {
+    ])
+    .then(([registrationSnapshot, oldSnapshot]) => {
+
+        let doc = null;
+
+        // First check the permanent registrationEmail field.
+        if (!registrationSnapshot.empty) {
+            doc = registrationSnapshot.docs[0];
+        }
+
+        // If not found, check the old email field.
+        if (!doc && !oldSnapshot.empty) {
+            doc = oldSnapshot.docs[0];
+        }
+
+        if (!doc) {
+            alert(
+                "No seller account was found with that email address."
+            );
+            return;
+        }
+
+        const seller = doc.data();
+
+        // Accept either email field.
+        const sellerEmail = (
+            seller.registrationEmail ||
+            seller.email ||
+            ""
+        ).trim().toLowerCase();
+
+        if (!sellerEmail) {
+            alert(
+                "There is no email address attached to this seller account. Please contact support."
+            );
+            return;
+        }
+
+        sendOtpCode(
+            sellerEmail,
+            'reset',
+            () => {
 
                 const newPassword = prompt(
                     "Code verified! Enter your new password:"
@@ -4210,54 +5811,79 @@ function startForgotPassword() {
                     return;
                 }
 
+                if (newPassword.length < 6) {
+                    alert(
+                        "Your new password must be at least 6 characters."
+                    );
+                    return;
+                }
+
                 hashPassword(newPassword)
                     .then((hashed) => {
 
+                        // Update BOTH password fields so
+                        // old and new login systems stay synchronized.
                         db.collection('sellers')
                             .doc(doc.id)
                             .update({
-                                password: hashed
+                                password: hashed,
+                                registrationPassword: hashed
                             })
                             .then(() => {
-                                alert("Password updated! You can now log in.");
+
+                                alert(
+                                    "Password updated successfully! You can now log in with your new password."
+                                );
+
                             })
                             .catch((err) => {
+
                                 console.error(
                                     "Password update error:",
                                     err
                                 );
+
                                 alert(
                                     "Couldn't update your password: " +
                                     err.message
                                 );
+
                             });
 
                     })
                     .catch((err) => {
+
                         console.error(
                             "Password hashing error:",
                             err
                         );
+
                         alert(
-                            "Couldn't process the new password: " +
+                            "Couldn't process your new password: " +
                             err.message
                         );
+
                     });
 
-            });
+            }
+        );
 
-        })
-        .catch((err) => {
-            console.error(
-                "Forgot password error:",
-                err
-            );
-            alert(
-                "Couldn't find your seller account: " +
-                err.message
-            );
-        });
+    })
+    .catch((err) => {
+
+        console.error(
+            "Forgot password error:",
+            err
+        );
+
+        alert(
+            "Couldn't process your request: " +
+            err.message
+        );
+
+    });
 }
+
 
 
 function finishSellerLogin(doc) {
@@ -4324,8 +5950,10 @@ window.location.href = 'analytics.html';
        <strong onclick="openSellerDetail('${doc.id}')" style="cursor:pointer;">${s.name}</strong> <span style="color:${statusColor}; font-size:12px;">(${s.status})</span>${paymentTag}
             <div style="font-size:11px; color:#999;">ID: ${sellerShortId(doc.id)}</div>
 
-            <div style="font-size:13px; color:#777;">${s.phone}</div>
-            <div style="display:flex; gap:6px; margin-top:6px;">
+<div style="font-size:13px; color:#777;">${s.phone}</div>
+<div style="font-size:12px; margin-top:2px;">Ref: <strong>${s.regPaymentRef || '—'}</strong> • ${s.regRefCopied ? '📋 Copied' : 'Not copied'} • ${s.regRefUsed ? '✅ Verified &amp; used' : '⏳ Unverified'}</div>
+            <div style="display:flex; gap:6px; margin-top:6px;">${(s.regRefUsed || !s.regPaymentRef) ? '' : `<button onclick="verifyRegPayment('${doc.id}')" style="width:auto; background:#e67e22; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Verify Payment</button>`}
+
                 <button onclick="setSellerStatus('${doc.id}', 'approved')" style="width:auto; background:#27ae60; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Approve</button>
                 <button onclick="setSellerStatus('${doc.id}', 'declined')" style="width:auto; background:#e74c3c; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">Decline</button>
                 <button onclick="openSellerDetail('${doc.id}')" style="width:auto; background:#1a5c3a; color:white; border:none; border-radius:6px; padding:6px 10px; font-size:12px; cursor:pointer;">View</button>
@@ -4635,6 +6263,24 @@ function sendSellerWarning() {
     });
 }
     function setSellerStatus(id, status) {
+function verifyRegPayment(id) {
+    db.collection('sellers').doc(id).get().then((doc) => {
+        const s = doc.data();
+        if (s.regRefUsed) { alert("This reference has already been used."); return; }
+        const typed = (prompt("Enter the reference shown on the MoMo transaction in your statement:") || '').trim().toUpperCase();
+        if (!typed) return;
+        if (typed !== s.regPaymentRef) {
+            alert("That doesn't match this seller's reference (" + s.regPaymentRef + ").");
+            return;
+        }
+        if (!confirm("Did you receive GHS 29.99 with reference " + typed + "?")) return;
+        db.collection('sellers').doc(id).update({
+            regRefUsed: true,
+            feePaid: true,
+            paymentVerifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => openSellersPanel());
+    });
+}
         db.collection('sellers').doc(id).get().then((doc) => {
             const seller = doc.data();
             db.collection('sellers').doc(id).update({ status }).then(() => {
@@ -4867,25 +6513,866 @@ function trackVisit() {
         }, { merge: true });
     }
 
-    let items = [];
+let items = [];
 
-   function loadItemsFromFirestore() {
-        db.collection('items').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            items = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                data.firestoreId = doc.id;
-                data._idx = items.length;
-                items.push(data);
-            });
-            renderItems();
-            toggleOwnerControls();
-            hidePageLoadingOverlay();
-            rebuildBanners();
-        });
-        setInterval(rebuildBanners, 60000); // keep the Deal Rush countdown and expiry fresh
+/* =========================================
+   KAYAMART SPLASH / MARKETPLACE LOADING STATE
+   ========================================= */
+
+let introSplashActive = false;
+let itemsHaveLoadedOnce = false;
+let itemsLoadingFailed = false;
+let itemsLoadingError = false;
+
+let marketplaceRefreshTimer = null;
+let marketplaceRetryTimer = null;
+
+let itemsRenderToken = 0;
+let itemsUnsubscribe = null;
+
+/* =========================================
+   KAYAMART MARKETPLACE LOADING SYSTEM
+   ========================================= */
+
+let marketplaceLoadingMessageTimer = null;
+let marketplaceLoadingTimeout = null;
+let marketplaceLoadingMessageIndex = 0;
+
+const marketplaceLoadingMessages = [
+    "Ɔkɔm de wo? 😋 We're finding something nice for you...",
+    "Ei 😂 you came to shop, right? Give us a second...",
+    "Chale, don't leave yet... we're almost there 👀",
+    "Something nice is loading... your wallet should be worried 😂💸",
+    "Ebi de wo? 😭 Hold on small, we're almost ready!",
+    "Yɛrehwehwɛ biribi pa ama wo... 🛍️",
+    "Your next 'I need this' might be loading right now 👀",
+    "KayaMart is cooking... 👨🏾‍🍳🔥",
+    "Ɛreba, ɛreba! Just hold on small 😂",
+    "Hmm... we found something interesting 👀",
+    "The good stuff doesn't like to rush 😌",
+    "Chale, make we check the market properly 😂",
+    "Fresh finds are getting ready for you 🔥",
+    "Wo ho te sɛ? 😭 We're almost done!",
+    "Don't blink... you might miss something good 👀",
+    "Okay okay... we're coming! 😂",
+    "Yɛresiesie market no ama wo... ✨",
+    "Something interesting is almost here... 🚀",
+    "Last check... then it's shopping time 🛒🔥",
+    "Welcome to KayaMart. Let's find you something good ❤️"
+];
+
+function getMarketplaceLoadingHTML() {
+
+    return `
+        <div style="
+            grid-column:1/-1;
+            width:100%;
+            min-height:220px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            padding:40px 20px;
+            box-sizing:border-box;
+        ">
+
+            <div
+                class="spin"
+                style="
+                    position:relative;
+                    display:inline-block;
+                    font-size:50px;
+                    margin-bottom:10px;
+                "
+            >
+                🛒
+
+                <span style="
+                    position:absolute;
+                    top:48%;
+                    left:50%;
+                    transform:translate(-50%,-50%);
+                    font-size:14px;
+                    font-weight:700;
+                ">
+                    <span style="color:#1a5c3a;">K</span><span style="color:#e67e22;">M</span>
+                </span>
+            </div>
+
+           <p style="
+    color:#1a5c3a;
+    font-weight:600;
+    margin:0 0 7px;
+">
+    Loading KayaMart...
+</p>
+
+<p
+    id="marketplaceLoadingMessage"
+    style="
+        margin:0;
+        font-size:14px;
+        line-height:1.5;
+        max-width:330px;
+        min-height:42px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        color:#777;
+        transition:opacity 0.25s ease;
+    "
+>
+    ${marketplaceLoadingMessages[0]}
+</p>
+
+        </div>
+    `;
+}
+function startMarketplaceLoadingMessages() {
+
+    stopMarketplaceLoadingMessages();
+
+    marketplaceLoadingMessageIndex = 0;
+
+    const messageElement =
+        document.getElementById(
+            'marketplaceLoadingMessage'
+        );
+
+    if (messageElement) {
+
+        messageElement.textContent =
+            marketplaceLoadingMessages[0];
+
+        messageElement.style.opacity = '1';
     }
 
+    marketplaceLoadingMessageTimer = setInterval(() => {
+
+        const element =
+            document.getElementById(
+                'marketplaceLoadingMessage'
+            );
+
+        if (!element) {
+            return;
+        }
+
+        marketplaceLoadingMessageIndex++;
+
+        if (
+            marketplaceLoadingMessageIndex >=
+            marketplaceLoadingMessages.length
+        ) {
+            marketplaceLoadingMessageIndex = 0;
+        }
+
+        element.style.opacity = '0';
+
+        setTimeout(() => {
+
+            const current =
+                document.getElementById(
+                    'marketplaceLoadingMessage'
+                );
+
+            if (!current) {
+                return;
+            }
+
+            current.textContent =
+                marketplaceLoadingMessages[
+                    marketplaceLoadingMessageIndex
+                ];
+
+            current.style.opacity = '1';
+
+        }, 250);
+
+    }, 5000);
+}
+
+function stopMarketplaceLoadingMessages() {
+
+    if (marketplaceLoadingMessageTimer) {
+
+        clearInterval(
+            marketplaceLoadingMessageTimer
+        );
+
+        marketplaceLoadingMessageTimer = null;
+    }
+}
+
+
+function startMarketplaceLoadingTimeout() {
+
+    if (marketplaceLoadingTimeout) {
+        clearTimeout(
+            marketplaceLoadingTimeout
+        );
+    }
+
+    marketplaceLoadingTimeout = setTimeout(() => {
+
+        if (itemsHaveLoadedOnce) {
+            return;
+        }
+
+        stopMarketplaceLoadingMessages();
+
+        itemsLoadingFailed = true;
+        itemsLoadingError = false;
+
+        hidePageLoadingOverlay();
+
+        showMarketplaceRefresh();
+
+    }, 120000);
+}
+
+
+function stopMarketplaceLoading() {
+
+    stopMarketplaceLoadingMessages();
+
+    if (marketplaceLoadingTimeout) {
+
+        clearTimeout(
+            marketplaceLoadingTimeout
+        );
+
+        marketplaceLoadingTimeout = null;
+    }
+
+    if (marketplaceRetryTimer) {
+
+        clearTimeout(
+            marketplaceRetryTimer
+        );
+
+        marketplaceRetryTimer = null;
+    }
+}
+
+
+function showMarketplaceRefresh() {
+
+    stopMarketplaceLoading();
+
+    const grid =
+        document.getElementById('itemGrid');
+
+    if (!grid) {
+        return;
+    }
+
+    grid.innerHTML = `
+        <div style="
+            grid-column:1/-1;
+            width:100%;
+            min-height:220px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            padding:45px 20px;
+            box-sizing:border-box;
+        ">
+
+            <div style="
+                font-size:48px;
+                margin-bottom:12px;
+                animation:floatNetworkIcon 1.8s ease-in-out infinite;
+            ">
+                📡
+            </div>
+
+            <p style="
+                margin:0 0 7px;
+                font-size:17px;
+                font-weight:700;
+                color:#1a5c3a;
+            ">
+                Chale, your network dey misbehave 😂
+            </p>
+
+            <p style="
+                margin:0;
+                max-width:330px;
+                font-size:14px;
+                line-height:1.5;
+                color:#777;
+            ">
+                We couldn't connect to the market right now.
+                Check your internet connection and try again.
+            </p>
+
+            <button
+                type="button"
+                onclick="refreshMarketplace()"
+                style="
+                    margin-top:18px;
+                    border:none;
+                    background:#1a5c3a;
+                    color:#fff;
+                    padding:11px 22px;
+                    border-radius:10px;
+                    font-size:14px;
+                    font-weight:700;
+                    cursor:pointer;
+                    box-shadow:0 3px 10px rgba(0,0,0,0.12);
+                "
+            >
+                🔄 Try Again
+            </button>
+
+        </div>
+    `;
+}
+
+function refreshMarketplace() {
+
+    itemsLoadingFailed = false;
+    itemsLoadingError = false;
+    itemsHaveLoadedOnce = false;
+
+    items = [];
+
+    itemsRenderToken++;
+
+    const grid =
+        document.getElementById('itemGrid');
+
+    if (grid) {
+
+        grid.innerHTML =
+            getMarketplaceLoadingHTML();
+
+        startMarketplaceLoadingMessages();
+    }
+
+    startMarketplaceLoadingTimeout();
+
+    loadItemsFromFirestore();
+}
+
+
+function renderItemsProgressively(
+    renderedItems,
+    token
+) {
+
+    const grid =
+        document.getElementById('itemGrid');
+
+    if (!grid) {
+        return;
+    }
+
+    if (token !== itemsRenderToken) {
+        return;
+    }
+
+    grid.innerHTML = '';
+
+    let currentIndex = 0;
+
+    const batchSize = 8;
+
+    function renderNextBatch() {
+
+        if (token !== itemsRenderToken) {
+            return;
+        }
+
+        const fragment =
+            document.createDocumentFragment();
+
+        const endIndex =
+            Math.min(
+                currentIndex + batchSize,
+                renderedItems.length
+            );
+
+        for (
+            ;
+            currentIndex < endIndex;
+            currentIndex++
+        ) {
+
+            const item =
+                renderedItems[currentIndex];
+
+            try {
+
+                const card =
+                    buildItemCardElement(item);
+
+                if (card) {
+                    fragment.appendChild(card);
+                }
+
+            } catch (error) {
+
+                // Keep the customer-facing UI clean.
+                // One bad item should not stop the marketplace.
+            }
+        }
+
+        grid.appendChild(fragment);
+
+        if (
+            currentIndex <
+            renderedItems.length
+        ) {
+
+            requestAnimationFrame(
+                renderNextBatch
+            );
+        }
+    }
+
+    renderNextBatch();
+}
+
+
+function loadItemsFromFirestore() {
+
+    if (
+        typeof itemsUnsubscribe === 'function'
+    ) {
+
+        try {
+            itemsUnsubscribe();
+        } catch (error) {
+            // Silent cleanup.
+        }
+
+        itemsUnsubscribe = null;
+    }
+
+    itemsLoadingFailed = false;
+    itemsLoadingError = false;
+
+    const grid =
+        document.getElementById('itemGrid');
+
+    if (grid && !itemsHaveLoadedOnce) {
+
+        grid.innerHTML =
+            getMarketplaceLoadingHTML();
+
+        startMarketplaceLoadingMessages();
+    }
+
+    if (!marketplaceLoadingTimeout) {
+        startMarketplaceLoadingTimeout();
+    }
+
+    try {
+
+        itemsUnsubscribe =
+            db
+                .collection('items')
+                .orderBy(
+                    'createdAt',
+                    'desc'
+                )
+                .onSnapshot(
+
+                    (snapshot) => {
+
+                        items = [];
+
+                        snapshot.forEach((doc) => {
+
+                            const data =
+                                doc.data() || {};
+
+                            data.firestoreId =
+                                doc.id;
+
+                            data._idx =
+                                items.length;
+
+                            items.push(data);
+                        });
+
+                        itemsHaveLoadedOnce = true;
+
+                        itemsLoadingFailed = false;
+                        itemsLoadingError = false;
+
+                        stopMarketplaceLoading();
+
+                        hidePageLoadingOverlay();
+
+                        /*
+                         * Firebase successfully responded.
+                         * If there are no products, show a
+                         * clean empty state instead of an error.
+                         */
+                        if (!items.length) {
+
+                            const emptyGrid =
+                                document.getElementById(
+                                    'itemGrid'
+                                );
+
+                            if (emptyGrid) {
+
+                                emptyGrid.innerHTML = `
+                                    <div style="
+                                        grid-column:1/-1;
+                                        width:100%;
+                                        text-align:center;
+                                        padding:50px 20px;
+                                        color:#777;
+                                    ">
+                                        <div style="
+                                            font-size:42px;
+                                            margin-bottom:12px;
+                                        ">
+                                            🛍️
+                                        </div>
+
+                                        <p style="
+                                            margin:0;
+                                            font-size:16px;
+                                            font-weight:600;
+                                        ">
+                                            No products available right now.
+                                        </p>
+                                    </div>
+                                `;
+                            }
+
+                            return;
+                        }
+
+                        try {
+
+                            renderItems();
+
+                            toggleOwnerControls();
+
+                            rebuildBanners();
+
+                        } catch (renderError) {
+
+                            /*
+                             * Do not expose technical errors
+                             * to customers.
+                             *
+                             * Give the marketplace another chance
+                             * instead.
+                             */
+
+                            itemsHaveLoadedOnce = false;
+
+                            if (!marketplaceLoadingTimeout) {
+                                startMarketplaceLoadingTimeout();
+                            }
+
+                            if (!marketplaceRetryTimer) {
+
+                                marketplaceRetryTimer =
+                                    setTimeout(() => {
+
+                                        marketplaceRetryTimer =
+                                            null;
+
+                                        loadItemsFromFirestore();
+
+                                    }, 5000);
+                            }
+                        }
+                    },
+
+                    (error) => {
+
+                        /*
+                         * NEVER show the Firebase error
+                         * to the customer.
+                         *
+                         * Keep the loading screen alive
+                         * and quietly try again.
+                         */
+
+                        itemsLoadingFailed = false;
+                        itemsLoadingError = false;
+
+                        if (!marketplaceRetryTimer) {
+
+                            marketplaceRetryTimer =
+                                setTimeout(() => {
+
+                                    marketplaceRetryTimer =
+                                        null;
+
+                                    loadItemsFromFirestore();
+
+                                }, 5000);
+                        }
+                    }
+                );
+
+    } catch (error) {
+
+        /*
+         * Keep all technical errors invisible
+         * to customers.
+         */
+
+        itemsLoadingFailed = false;
+        itemsLoadingError = false;
+
+        if (!marketplaceRetryTimer) {
+
+            marketplaceRetryTimer =
+                setTimeout(() => {
+
+                    marketplaceRetryTimer =
+                        null;
+
+                    loadItemsFromFirestore();
+
+                }, 5000);
+        }
+    }
+
+    if (
+        !marketplaceRefreshTimer
+    ) {
+
+        marketplaceRefreshTimer =
+            setInterval(() => {
+
+                try {
+                    rebuildBanners();
+                } catch (error) {
+                    // Silent background refresh.
+                }
+
+            }, 60000);
+    }
+}
+
+
+function renderItems() {
+
+    renderPromotedRow();
+    renderRecommendedRow();
+    renderCategoryRows();
+    renderMainGridOnly();
+}
+
+
+function renderMainGridOnly() {
+
+    const grid =
+        document.getElementById(
+            'itemGrid'
+        );
+
+    if (!grid) {
+        return;
+    }
+
+    /*
+     * While Firebase is still loading,
+     * keep the clean loading screen.
+     */
+    if (!itemsHaveLoadedOnce) {
+
+        grid.innerHTML =
+            getMarketplaceLoadingHTML();
+
+        startMarketplaceLoadingMessages();
+
+        return;
+    }
+
+    /*
+     * Firebase successfully returned,
+     * but there are no products.
+     */
+    if (!items.length) {
+
+        grid.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                width:100%;
+                text-align:center;
+                padding:50px 20px;
+                color:#777;
+            ">
+                <div style="
+                    font-size:42px;
+                    margin-bottom:12px;
+                ">
+                    🛍️
+                </div>
+
+                <p style="
+                    margin:0;
+                    font-size:16px;
+                    font-weight:600;
+                ">
+                    No products available right now.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    const searchInput =
+        document.getElementById(
+            'searchInput'
+        );
+
+    const search =
+        searchInput
+            ? searchInput.value.toLowerCase()
+            : '';
+
+    const categorySelect =
+        document.getElementById(
+            'categoryFilter'
+        );
+
+    const category =
+        categorySelect
+            ? categorySelect.value
+            : 'All';
+
+    const locationSelect =
+        document.getElementById(
+            'locationFilter'
+        );
+
+    const locationFilterValue =
+        locationSelect
+            ? locationSelect.value
+            : 'All';
+
+    const filtered =
+        items.filter((item) => {
+
+            const title =
+                String(
+                    item.title || ''
+                ).toLowerCase();
+
+            const matchesSearch =
+                title.includes(search);
+
+            let matchesCategory;
+
+            if (
+                category === 'Favorites'
+            ) {
+
+                matchesCategory =
+                    favorites.includes(
+                        item._idx
+                    );
+
+            } else if (
+                category === 'MyListings'
+            ) {
+
+                matchesCategory =
+                    isOwner
+                        ? true
+                        : (
+                            item.postedBy &&
+                            item.postedBy ===
+                                sellerId
+                        );
+
+            } else {
+
+                matchesCategory =
+                    category === 'All' ||
+                    item.category === category;
+            }
+
+            const matchesLocation =
+                category === 'MyListings'
+                    ? true
+                    : (
+                        locationFilterValue ===
+                            'All' ||
+                        item.sellerLocation ===
+                            locationFilterValue
+                    );
+
+            const isMyOwnItem =
+                item.postedBy &&
+                item.postedBy === sellerId;
+
+            const matchesStatus =
+                category === 'MyListings' ||
+                isOwner ||
+                isMyOwnItem ||
+                item.status === 'approved';
+
+            return (
+                matchesSearch &&
+                matchesCategory &&
+                matchesLocation &&
+                matchesStatus
+            );
+        });
+
+    /*
+     * A search/filter returning zero products
+     * is NOT a loading error.
+     */
+    if (!filtered.length) {
+
+        grid.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                width:100%;
+                text-align:center;
+                padding:50px 20px;
+                color:#777;
+            ">
+                <div style="
+                    font-size:40px;
+                    margin-bottom:12px;
+                ">
+                    🔎
+                </div>
+
+                <p style="
+                    margin:0;
+                    font-size:16px;
+                    font-weight:600;
+                ">
+                    No matching products found.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    const token =
+        ++itemsRenderToken;
+
+    renderItemsProgressively(
+        filtered,
+        token
+    );
+}
 
   function renderSearchSuggestions() {
         const wrap = document.getElementById('searchSuggestions');
@@ -4897,7 +7384,7 @@ function trackVisit() {
             return;
         }
 
-        const matches = items.filter(item => item.title.toLowerCase().includes(search)).slice(0, 6);
+        const matches = items.filter(item => String(item.title || '').toLowerCase().includes(search)).slice(0, 6);
 
         if (matches.length === 0) {
             wrap.innerHTML = '<div class="search-suggestion-empty">No matching items found.</div>';
@@ -4946,39 +7433,165 @@ function trackVisit() {
         renderMainGridOnly();
     }
 
-    function renderMainGridOnly() {
-        const grid = document.getElementById('itemGrid');
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const category = document.getElementById('categoryFilter').value;
-        const locationFilterValue = document.getElementById('locationFilter').value;
-const filtered = items.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(search);
-    let matchesCategory;
-    if (category === "Favorites") {
-        matchesCategory =favorites.includes(item._idx);
-    } else if (category === "MyListings") {
-        matchesCategory = isOwner ? true : (item.postedBy && item.postedBy === sellerId);
-    } else {
-        matchesCategory = category === "All" || item.category === category;
+function renderMainGridOnly() {
+
+    const grid = document.getElementById('itemGrid');
+
+    if (!grid) return;
+
+    if (itemsLoadingFailed || itemsLoadingError) {
+        showMarketplaceRefresh('Please refresh');
+        return;
     }
-    const matchesLocation = category === "MyListings" ? true : (locationFilterValue === "All" || item.sellerLocation === locationFilterValue);
-    const isMyOwnItem = item.postedBy && item.postedBy === sellerId;
-    const matchesStatus = category === "MyListings" || isOwner || isMyOwnItem || item.status === 'approved';
-    return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
-});
-     if (filtered.length === 0) {
-            if (!itemsHaveLoadedOnce) {
-                grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:40px 0; color:#999;'><div class='loading-spinner' style='margin:0 auto 14px; width:34px; height:34px; border:3px solid #eee; border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite;'></div><p>Loading items...</p></div>";
-            } else {
-                grid.innerHTML = "<div style='grid-column: 1/-1; text-align:center; padding:30px 0; color:#999;'><div style='font-size:40px; margin-bottom:10px;'>🔍</div><p>No items found. Try a different search or category.</p></div>";
-            }
-            return;
+
+    if (!itemsHaveLoadedOnce) {
+
+        grid.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                width:100%;
+                min-height:220px;
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                text-align:center;
+                padding:40px 20px;
+                box-sizing:border-box;
+                color:#777;
+            ">
+                <div class="loading-spinner" style="
+                    margin:0 auto 14px;
+                    width:34px;
+                    height:34px;
+                    border:3px solid #eee;
+                    border-top-color:var(--accent);
+                    border-radius:50%;
+                    animation:spin 0.8s linear infinite;
+                "></div>
+
+                <p style="
+                    margin:0;
+                    font-size:15px;
+                ">
+                    Loading marketplace...
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+       if (!items.length) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1; width:100%; text-align:center; padding:50px 20px; color:#777;">
+                <div style="font-size:42px; margin-bottom:12px;">🛍️</div>
+                <p style="margin:0; font-size:16px; font-weight:600;">No products available right now.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const searchInput =
+        document.getElementById('searchInput');
+
+    const search =
+        searchInput
+            ? searchInput.value.toLowerCase()
+            : '';
+
+    const categorySelect =
+        document.getElementById('categoryFilter');
+
+    const category =
+        categorySelect
+            ? categorySelect.value
+            : 'All';
+
+    const locationSelect =
+        document.getElementById('locationFilter');
+
+    const locationFilterValue =
+        locationSelect
+            ? locationSelect.value
+            : 'All';
+
+    const filtered = items.filter((item) => {
+
+        const title =
+            String(item.title || '')
+                .toLowerCase();
+
+        const matchesSearch =
+            title.includes(search);
+
+        let matchesCategory;
+
+        if (category === 'Favorites') {
+
+            matchesCategory =
+                favorites.includes(item._idx);
+
+        } else if (category === 'MyListings') {
+
+            matchesCategory =
+                isOwner
+                    ? true
+                    : (
+                        item.postedBy &&
+                        item.postedBy === sellerId
+                    );
+
+        } else {
+
+            matchesCategory =
+                category === 'All' ||
+                item.category === category;
         }
 
-  filtered.forEach((item) => {
-            grid.appendChild(buildItemCardElement(item));
-        });
+        const matchesLocation =
+            category === 'MyListings'
+                ? true
+                : (
+                    locationFilterValue === 'All' ||
+                    item.sellerLocation ===
+                        locationFilterValue
+                );
+
+        const isMyOwnItem =
+            item.postedBy &&
+            item.postedBy === sellerId;
+
+        const matchesStatus =
+            category === 'MyListings' ||
+            isOwner ||
+            isMyOwnItem ||
+            item.status === 'approved';
+
+        return (
+            matchesSearch &&
+            matchesCategory &&
+            matchesLocation &&
+            matchesStatus
+        );
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1; width:100%; text-align:center; padding:50px 20px; color:#777;">
+                <div style="font-size:40px; margin-bottom:12px;">🔎</div>
+                <p style="margin:0; font-size:16px; font-weight:600;">No matching products found.</p>
+            </div>
+        `;
+        return;
     }
+    const token = ++itemsRenderToken;
+
+    renderItemsProgressively(
+        filtered,
+        token
+    );
+}
 
    function buildItemCardElement(item) {
         const card = document.createElement('div');
@@ -5504,14 +8117,14 @@ function setGalleryIndex(i) {
         renderOptionPickers(item);
         renderSellerStrip(item);
 
-       const favBtn = document.getElementById('detailFavBtn');
-        const isFav = favorites.includes(index);
-        if (favBtn) favBtn.innerText = isFav ? '❤️' : '🤍';
-        const wishBtn = document.getElementById('pdWishlistBtn');
-        if (wishBtn) {
-            wishBtn.innerText = isFav ? '❤️ Wishlisted' : '🤍 Wishlist';
-            wishBtn.classList.toggle('wishlisted', isFav);
-        }
+      const isFav = favorites.includes(index);
+const wishBtn = document.getElementById('pdWishlistBtn');
+
+if (wishBtn) {
+    wishBtn.innerText = isFav ? '❤️ Wishlisted' : '🤍 Wishlist';
+    wishBtn.classList.toggle('wishlisted', isFav);
+}
+     
 
       const stockEl = document.getElementById('detailStock');
         const detailStockNum = (item.stock !== undefined && item.stock !== null && item.stock !== '') ? Number(item.stock) : null;
@@ -6244,21 +8857,27 @@ function submitOrderForm() {
     btn.disabled = true;
     btn.innerText = "Submitting...";
 
-   db.collection('orders').add({
-        items: pendingOrderItems,
-        total: total,
-        deliveryMethod: deliveryMethod,
-        location: location,
-        address: address,
-        buyerName: name,
-        buyerPhone: formatPhone(phone),
-        buyerId: localStorage.getItem('kayaBuyerId') || null,
-        status: 'pending',
-        orderRef: pendingOrderRef,
-        paymentClaimed: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-   }).then((docRef) => {
-        billSellerCommission(pendingOrderItems, name);
+ db.collection('orders').add({
+    items: pendingOrderItems,
+    total: total,
+    deliveryMethod: deliveryMethod,
+    location: location,
+    address: address,
+    buyerName: name,
+    buyerPhone: formatPhone(phone),
+    buyerId: localStorage.getItem('kayaBuyerId') || null,
+
+    status: 'pending',
+
+    // Order/payment information
+    orderRef: pendingOrderRef,
+    paymentMethod: 'MTN MoMo',
+    paymentClaimed: false,
+    paymentVerified: false,
+    paymentStatus: 'awaiting_payment',
+
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}).then((docRef) => {
         closeOrderForm();
 
         if (pendingOrderIsCart) {
@@ -6303,17 +8922,31 @@ function openMyOrdersPanel() {
         return;
     }
 
-    db.collection('orders')
-        .where('buyerId', '==', buyerId)
-        .orderBy('createdAt', 'desc')
-        .get()
+   db.collection('orders')
+    .where('buyerId', '==', buyerId)
+    .get()
         .then((snapshot) => {
             if (snapshot.empty) {
                 list.innerHTML = '<p style="text-align:center; color:#999; padding:20px 0;">You haven\'t placed any orders yet.</p>';
                 return;
             }
 
-            list.innerHTML = snapshot.docs.map(doc => {
+           const orders = snapshot.docs.sort((a, b) => {
+    const aDate = a.data().createdAt;
+    const bDate = b.data().createdAt;
+
+    const aTime = aDate && aDate.toDate
+        ? aDate.toDate().getTime()
+        : 0;
+
+    const bTime = bDate && bDate.toDate
+        ? bDate.toDate().getTime()
+        : 0;
+
+    return bTime - aTime;
+});
+
+list.innerHTML = orders.map(doc => {
                 const order = doc.data();
                 const itemsText = (order.items || []).map(it => it.title + ' x' + (it.qty || 1)).join(', ');
                 const createdDate = order.createdAt ? order.createdAt.toDate() : null;
@@ -6335,16 +8968,70 @@ function openMyOrdersPanel() {
                     statusHtml = '<span style="background:#fff4ea; color:#e67e22; padding:4px 10px; border-radius:20px; font-size:11.5px; font-weight:700;">🚚 Processing</span>';
                 }
 
-                return `
-                    <div style="background:#f7f7f7; border-radius:12px; padding:14px; margin-bottom:10px; text-align:left;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;">
-                            <div style="font-size:13.5px; font-weight:700; flex:1;">${itemsText}</div>
-                            ${statusHtml}
-                        </div>
-                        <div style="font-size:12px; color:#777;">GHS ${order.total} • Ordered ${dateStr}</div>
-                        <div style="font-size:12px; color:#777;">${order.deliveryMethod || ''}${order.location ? ' • ' + order.location : ''}</div>
-                    </div>
-                `;
+               return `
+    <div style="
+        background:#f7f7f7;
+        border-radius:12px;
+        padding:14px;
+        margin-bottom:10px;
+        text-align:left;
+    ">
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:8px;
+            margin-bottom:6px;
+        ">
+            <div style="
+                font-size:13.5px;
+                font-weight:700;
+                flex:1;
+            ">
+                ${itemsText}
+            </div>
+
+            ${statusHtml}
+        </div>
+
+        <div style="
+            font-size:12px;
+            color:#777;
+            margin-bottom:4px;
+        ">
+            GHS ${Number(order.total || 0).toFixed(2)}
+            • Ordered ${dateStr}
+        </div>
+
+        <div style="
+            font-size:12px;
+            color:#777;
+            margin-bottom:10px;
+        ">
+            ${order.deliveryMethod || ''}
+            ${order.location ? ' • ' + order.location : ''}
+        </div>
+
+        <button
+            onclick="openOrderReceipt('${doc.id}')"
+            style="
+                width:100%;
+                background:#2980b9;
+                color:white;
+                border:none;
+                border-radius:8px;
+                padding:9px;
+                font-size:12px;
+                font-weight:700;
+                cursor:pointer;
+            "
+        >
+            🧾 View Receipt
+        </button>
+
+    </div>
+`;
             }).join('');
         })
         .catch((err) => {
@@ -6413,23 +9100,383 @@ function updateDeliveryTrackerBar() {
 }
 function markPaymentSent(orderId) {
     const confirmBtn = document.getElementById('paymentClaimConfirmBtn');
+
+    if (!confirmBtn) return;
+
     confirmBtn.disabled = true;
     confirmBtn.innerText = "Recording...";
+
     db.collection('orders').doc(orderId).update({
         paymentClaimed: true,
+        paymentStatus: 'claimed',
         paymentClaimedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        alert("Thanks! We've recorded that you sent payment. The seller will confirm receipt shortly.");
+    })
+    .then(() => {
+
         closePaymentClaimModal();
+
+        // Open the receipt automatically after payment is recorded
+        openOrderReceipt(orderId);
+
         confirmBtn.disabled = false;
         confirmBtn.innerText = "✅ Yes, I've Sent It";
-    }).catch(err => {
-        alert("Couldn't record this right now: " + err.message);
+
+    })
+    .catch(err => {
+
+        alert(
+            "Couldn't record this right now: " +
+            err.message
+        );
+
         confirmBtn.disabled = false;
         confirmBtn.innerText = "✅ Yes, I've Sent It";
+
     });
 }
+function openOrderReceipt(orderId) {
 
+    const receiptModal =
+        document.getElementById('orderReceiptModal');
+
+    if (!receiptModal) return;
+
+    receiptModal.style.display = 'flex';
+
+    document.getElementById('receiptOrderRef').innerText = 'Loading...';
+    document.getElementById('receiptOrderDate').innerText = 'Loading...';
+    document.getElementById('receiptPaymentStatus').innerText = 'Loading...';
+    document.getElementById('receiptBuyerInfo').innerHTML = 'Loading...';
+    document.getElementById('receiptItems').innerHTML = 'Loading...';
+    document.getElementById('receiptTotal').innerText = 'GHS 0.00';
+
+    db.collection('orders')
+        .doc(orderId)
+        .get()
+        .then((doc) => {
+
+            if (!doc.exists) {
+                alert('Order receipt could not be found.');
+                closeOrderReceipt();
+                return;
+            }
+
+            const order = doc.data();
+
+            document.getElementById('receiptOrderRef').innerText =
+                order.orderRef || orderId;
+
+            let dateText = '—';
+
+            if (order.createdAt) {
+                try {
+                    dateText =
+                        order.createdAt
+                            .toDate()
+                            .toLocaleString();
+                } catch (e) {
+                    dateText = '—';
+                }
+            }
+
+            document.getElementById('receiptOrderDate').innerText =
+                dateText;
+
+            const paymentStatus =
+                order.paymentClaimed ||
+                order.paymentStatus === 'claimed';
+
+            const paymentStatusEl =
+                document.getElementById('receiptPaymentStatus');
+
+            if (paymentStatus) {
+                paymentStatusEl.innerText =
+                    'Payment Submitted';
+
+                paymentStatusEl.style.color =
+                    '#e67e22';
+            } else {
+                paymentStatusEl.innerText =
+                    'Awaiting Payment';
+
+                paymentStatusEl.style.color =
+                    '#e67e22';
+            }
+
+            document.getElementById('receiptBuyerInfo').innerHTML = `
+                <div>
+                    <strong>Name:</strong>
+                    ${escapeReceiptText(order.buyerName || '—')}
+                </div>
+
+                <div>
+                    <strong>Phone:</strong>
+                    ${escapeReceiptText(order.buyerPhone || '—')}
+                </div>
+
+                <div>
+                    <strong>Location:</strong>
+                    ${escapeReceiptText(order.location || '—')}
+                </div>
+
+                <div>
+                    <strong>Delivery:</strong>
+                    ${escapeReceiptText(order.deliveryMethod || '—')}
+                </div>
+
+                ${
+                    order.address
+                        ? `<div>
+                            <strong>Address:</strong>
+                            ${escapeReceiptText(order.address)}
+                           </div>`
+                        : ''
+                }
+
+                <div>
+                    <strong>Payment:</strong>
+                    ${escapeReceiptText(
+                        order.paymentMethod || 'MTN MoMo'
+                    )}
+                </div>
+            `;
+
+            const items = order.items || [];
+
+            if (items.length === 0) {
+
+                document.getElementById('receiptItems').innerHTML =
+                    '<div style="color:#999;">No items found.</div>';
+
+            } else {
+
+                document.getElementById('receiptItems').innerHTML =
+                    items.map((item) => {
+
+                        const qty =
+                            Number(item.qty) || 1;
+
+                        const price =
+                            Number(item.price) || 0;
+
+                        const lineTotal =
+                            qty * price;
+
+                        let options = '';
+
+                        if (item.color) {
+                            options += `
+                                <div style="
+                                    font-size:11px;
+                                    color:#888;
+                                ">
+                                    Color:
+                                    ${escapeReceiptText(item.color)}
+                                </div>
+                            `;
+                        }
+
+                        if (item.size) {
+                            options += `
+                                <div style="
+                                    font-size:11px;
+                                    color:#888;
+                                ">
+                                    Size:
+                                    ${escapeReceiptText(item.size)}
+                                </div>
+                            `;
+                        }
+
+                        return `
+                            <div style="
+                                padding:10px 0;
+                                border-bottom:1px solid #eee;
+                            ">
+
+                                <div style="
+                                    display:flex;
+                                    justify-content:space-between;
+                                    gap:10px;
+                                ">
+
+                                    <div style="flex:1;">
+
+                                        <div style="
+                                            font-weight:700;
+                                            font-size:13px;
+                                        ">
+                                            ${escapeReceiptText(
+                                                item.title || 'Item'
+                                            )}
+                                        </div>
+
+                                        <div style="
+                                            font-size:11.5px;
+                                            color:#777;
+                                            margin-top:2px;
+                                        ">
+                                            GHS ${price.toFixed(2)}
+                                            × ${qty}
+                                        </div>
+
+                                        ${options}
+
+                                    </div>
+
+                                    <div style="
+                                        font-weight:800;
+                                        font-size:13px;
+                                    ">
+                                        GHS ${lineTotal.toFixed(2)}
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        `;
+
+                    }).join('');
+            }
+
+            document.getElementById('receiptTotal').innerText =
+                'GHS ' +
+                Number(order.total || 0).toFixed(2);
+
+        })
+        .catch((err) => {
+
+            console.error(
+                'Receipt loading error:',
+                err
+            );
+
+            alert(
+                'Could not load the receipt: ' +
+                err.message
+            );
+
+            closeOrderReceipt();
+        });
+}
+
+
+function closeOrderReceipt() {
+
+    const modal =
+        document.getElementById('orderReceiptModal');
+
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+
+function escapeReceiptText(value) {
+
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function printOrderReceipt() {
+
+    const receiptContent =
+        document.getElementById('orderReceiptContent');
+
+    if (!receiptContent) return;
+
+    const printWindow =
+        window.open('', '_blank', 'width=600,height=800');
+
+    if (!printWindow) {
+        alert(
+            'Please allow pop-ups in your browser to print the receipt.'
+        );
+        return;
+    }
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+
+            <title>KayaMart Order Receipt</title>
+
+            <meta name="viewport"
+                  content="width=device-width, initial-scale=1.0">
+
+            <style>
+
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    background: #fff;
+                    font-family: Arial, sans-serif;
+                    color: #222;
+                }
+
+                .receipt {
+                    max-width: 520px;
+                    margin: 0 auto;
+                }
+
+                @media print {
+
+                    body {
+                        padding: 0;
+                    }
+
+                    .receipt {
+                        max-width: none;
+                    }
+
+                }
+            @keyframes floatNetworkIcon {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+}
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="receipt">
+
+                ${receiptContent.innerHTML}
+
+            </div>
+
+            <script>
+
+                window.onload = function() {
+
+                    window.print();
+
+                };
+
+            <\/script>
+
+        </body>
+
+        </html>
+    `);
+
+    printWindow.document.close();
+}
 function startChat() {
     const item = items[currentDetailIndex];
     if (!item.postedBy || item.postedBy === 'OWNER') {
@@ -6458,8 +9505,16 @@ function saveBuyerName() {
     showGreetingToast(name, '🛍️');
     listenForBuyerMessages();
    checkPendingDeliveryConfirmations();
-        updateDeliveryTrackerBar();
-        setInterval(updateDeliveryTrackerBar, 5 * 60 * 1000); // refresh every 5 minutes
+       updateDeliveryTrackerBar();
+
+if (window.kayaDeliveryTrackerInterval) {
+    clearInterval(window.kayaDeliveryTrackerInterval);
+}
+
+window.kayaDeliveryTrackerInterval = setInterval(
+    updateDeliveryTrackerBar,
+    5 * 60 * 1000
+);
 
     const buyerLogoutLink = document.getElementById('buyerLogoutLink');
     if (buyerLogoutLink) buyerLogoutLink.style.display = 'block';
@@ -7611,11 +10666,6 @@ renderBanners();
     setActiveBanner(0);
     restartProgress();
     initBannerSwipe();
-
-    renderBanners();
-    setActiveBanner(0);
-    restartProgress();
-    initBannerSwipe();
     initGallerySwipe();
     resetBannerAutoplay();
     renderCategoryIconRow();
@@ -7628,12 +10678,25 @@ loadItemsFromFirestore();
     checkPendingDeliveryConfirmations();
     renderAvatarPicker();
 
-    renderThemeSwatches();
-    startIntroSplash();
-    startGuestPromptTimer();
-    trackVisit();
-    loadAnnouncements();
-setTimeout(hidePageLoadingOverlay, 2000);
+  renderThemeSwatches();
+
+/* =========================================
+   OLD KAYAMART STARTUP
+   Splash → normal marketplace
+   ========================================= */
+
+startGuestPromptTimer();
+trackVisit();
+loadAnnouncements();
+
+/*
+ * Automatically remove the splash.
+ * The marketplace underneath is allowed
+ * to appear normally.
+ */
+setTimeout(() => {
+    hidePageLoadingOverlay();
+}, 2500);
   </script>
     <style>
 /* ============================================================
