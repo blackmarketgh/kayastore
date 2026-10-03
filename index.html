@@ -489,14 +489,10 @@ tr:last-child td { border-bottom: none; }
     <div class="chart-row" id="salesChart"></div>
 </div>
 
-       <div class="section">
+    <div class="section">
         <div class="section-header">
-            <h2>🛒 My Products</h2>
-            <button class="icon-btn edit" style="width:auto;" onclick="openAddItemModal()">+ Add Item</button>
-        </div>
-        <div class="section-header" style="margin-top:-10px;">
-            <span></span>
-            <span class="section-sub" id="productsCountLabel"></span>
+            <h2>📊 Stock Overview</h2>
+            <span class="section-sub" id="stockTotalLabel"></span>
         </div>
         <div class="donut-row" id="stockDonutRow"></div>
     </div>
@@ -504,6 +500,10 @@ tr:last-child td { border-bottom: none; }
     <div class="section">
         <div class="section-header">
             <h2>🛒 My Products</h2>
+            <button class="icon-btn edit" style="width:auto;" onclick="openAddItemModal()">+ Add Item</button>
+        </div>
+        <div class="section-header" style="margin-top:-10px;">
+            <span></span>
             <span class="section-sub" id="productsCountLabel"></span>
         </div>
        <div class="table-wrap">
@@ -1131,8 +1131,8 @@ function submitNewItemFromAnalytics() {
     const sizes = sizesRaw ? sizesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
     const description = document.getElementById('naiDescription').value.trim();
 
-    const sellerName = (currentSellerPaymentData && (currentSellerPaymentData.businessName || currentSellerPaymentData.name)) || 'Seller';
-    const sellerPhone = (currentSellerPaymentData && currentSellerPaymentData.phone) || '';
+    const sellerName = (currentSellerPaymentData && (currentSellerPaymentData.momoName || currentSellerPaymentData.businessName || currentSellerPaymentData.name)) || 'Seller';
+    const sellerPhone = (currentSellerPaymentData && (currentSellerPaymentData.momoPhone || currentSellerPaymentData.phone)) || '';
     const sellerLocation = (currentSellerPaymentData && currentSellerPaymentData.location) || 'Other';
 
     if (!title) { alert("Please enter the item name."); return; }
@@ -1466,13 +1466,14 @@ function confirmPaymentDetailsChange() {
 
             itemUpdates.push(
                 doc.ref.update({
+                    sellerName: newMomoName,
+                    sellerPhone: cleanPhone,
                     sellerMomoName: newMomoName,
                     sellerMomoPhone: cleanPhone
                 })
             );
 
         });
-
         return Promise.all(itemUpdates);
 
     }).then(() => {
