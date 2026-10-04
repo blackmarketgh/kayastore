@@ -1440,14 +1440,14 @@ function submitNewItemFromAnalytics() {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     }).then(docRef => {
-        return db.collection('activityAlerts').add({
+        db.collection('activityAlerts').add({
             type: 'new_item',
             itemId: docRef.id,
             title,
             sellerName,
             sellerId,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }).catch(e => console.warn("Alert not saved:", e.message));
     }).then(() => {
         closeAddItemModal();
         alert("Item posted and is now live!");
