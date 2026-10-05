@@ -8704,8 +8704,7 @@ function billSellerCommission(orderItems, buyerNameForSale) {
 }
 // ===== EMAIL SELLERS ABOUT AN ORDER =====
 const ORDER_EMAIL_SERVICE_ID  = "service_cbiw5me";
-const ORDER_EMAIL_TEMPLATE_ID = "template_PASTE_YOUR_NEW_ID";
-
+const ORDER_EMAIL_TEMPLATE_ID = "template_ugc41z2";
 function notifySellersByEmail(orderId, stage) {
     db.collection('orders').doc(orderId).get().then(function (doc) {
         if (!doc.exists) return;
