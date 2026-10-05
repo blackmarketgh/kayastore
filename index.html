@@ -2652,6 +2652,7 @@ body.dark-mode .lb-stage-caption{ background:rgba(44,44,44,0.85); color:#f0f0f0;
  <a href="analytics.html" id="sellerAnalyticsLink" class="tab-btn" style="display:none; margin:4px 0;"> Seller Analytics</a>
   <a href="#" id="closedDealsLink" onclick="openClosedDealsPanel(); return false;" class="tab-btn" style="display:none; margin:4px 0;"> Closed Deals</a>
   <a href="#" onclick="openThemePicker(); return false;" class="tab-btn" style="display:block; margin:4px 0;"> Theme Color</a>
+  <a href="#" id="installAppLink" onclick="installKayaMart(); return false;" class="tab-btn" style="display:none; margin:4px 0; color:#e67e22; font-weight:700;">📲 Install App</a>
  <a href="#" id="buyerLogoutLink" onclick="handleBuyerLogout(); return false;" class="tab-btn" style="display:none; margin:4px 0; color:#e74c3c; font-weight:700;"> Log Out</a>
    </div>
    <div class="container">
@@ -10804,6 +10805,61 @@ body.dark-mode .theme-swatch.selected {
         <button onclick="closeOtpModal()">Cancel</button>
     </div>
 </div>
+<!-- Install App (Android prompt + iPhone instructions) -->
+<div id="iosInstallOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000; align-items:flex-end; justify-content:center; padding:16px;">
+    <div style="background:white; border-radius:18px; max-width:420px; width:100%; padding:22px; text-align:center;">
+        <img src="/icon-192.png" style="width:64px; height:64px; border-radius:14px; margin-bottom:8px;">
+        <h2 style="font-size:18px; margin-bottom:6px;">Install KayaMart</h2>
+        <p style="font-size:13.5px; color:#666; line-height:1.7; margin-bottom:14px;">
+            1. Tap the <b>Share</b> button <span style="font-size:17px;">⎋</span> at the bottom of Safari<br>
+            2. Scroll down and tap <b>Add to Home Screen</b><br>
+            3. Tap <b>Add</b>
+        </p>
+        <button onclick="document.getElementById('iosInstallOverlay').style.display='none'"
+                style="width:100%; background:#e67e22; color:white; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:700; cursor:pointer;">Got it</button>
+    </div>
+</div>
 
+<script>
+(function () {
+    var deferredInstallPrompt = null;
+    var link = document.getElementById('installAppLink');
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // already installed and opened as an app: hide the button
+    if (isStandalone) return;
+
+    // Android / Chrome: the browser tells us the app can be installed
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (link) link.style.display = 'block';
+    });
+
+    // iPhone / iPad: no automatic prompt exists, so show the button and the steps
+    if (isIOS && link) link.style.display = 'block';
+
+    window.addEventListener('appinstalled', function () {
+        deferredInstallPrompt = null;
+        if (link) link.style.display = 'none';
+    });
+
+    window.installKayaMart = function () {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.finally(function () {
+                deferredInstallPrompt = null;
+                if (link) link.style.display = 'none';
+            });
+        } else if (isIOS) {
+            document.getElementById('iosInstallOverlay').style.display = 'flex';
+        } else {
+            alert('To install: open your browser menu (⋮) and tap "Install app" or "Add to Home screen".');
+        }
+    };
+})();
+</script>
 </body>
 </html>
