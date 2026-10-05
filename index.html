@@ -8702,6 +8702,57 @@ function billSellerCommission(orderItems, buyerNameForSale) {
         }
     });
 }
+// ===== EMAIL SELLERS ABOUT AN ORDER =====
+const ORDER_EMAIL_SERVICE_ID  = "service_cbiw5me";
+const ORDER_EMAIL_TEMPLATE_ID = "template_PASTE_YOUR_NEW_ID";
+
+function notifySellersByEmail(orderId, stage) {
+    db.collection('orders').doc(orderId).get().then(function (doc) {
+        if (!doc.exists) return;
+        var order = doc.data();
+        var paid = (stage === 'paid');
+
+        // group this order's items by seller
+        var bySeller = {};
+        (order.items || []).forEach(function (it) {
+            if (!it.sellerId || it.sellerId === 'OWNER') return;
+            (bySeller[it.sellerId] = bySeller[it.sellerId] || []).push(it);
+        });
+
+        var link = new URL('analytics.html?order=' + orderId, window.location.href).href;
+
+        Object.keys(bySeller).forEach(function (sid) {
+            var myItems = bySeller[sid];
+
+            db.collection('sellers').doc(sid).get().then(function (sdoc) {
+                if (!sdoc.exists) return;
+                var s = sdoc.data();
+                var to = s.email || s.registrationEmail;
+                if (!to) return;
+
+                var amount = myItems.reduce(function (sum, it) {
+                    return sum + Number(it.price) * Number(it.qty);
+                }, 0);
+
+                return emailjs.send(ORDER_EMAIL_SERVICE_ID, ORDER_EMAIL_TEMPLATE_ID, {
+                    to_email: to,
+                    seller_name: s.sellerName || s.businessName || s.name || 'Seller',
+                    headline: paid ? "Buyer says payment has been sent" : "New order received",
+                    message: paid
+                        ? "The buyer says they have sent the payment. Please check your MoMo statement for the reference below, then confirm it on your dashboard."
+                        : "A buyer has placed an order for your item(s). You will get another email when they say the payment has been sent.",
+                    order_ref: order.orderRef || '',
+                    items: myItems.map(function (it) { return it.title + ' x' + it.qty; }).join(', '),
+                    amount: amount.toFixed(2),
+                    buyer_name: order.buyerName || '',
+                    delivery: (order.deliveryMethod || '') + (order.location ? ' - ' + order.location : ''),
+                    confirm_link: link,
+                    button_text: paid ? "Confirm payment received" : "View this order"
+                });
+            }).catch(function (err) { console.warn("Seller email failed:", err); });
+        });
+    }).catch(function (err) { console.warn("Order email failed:", err); });
+}
 function submitOrderForm() {
     const deliveryMethod = document.getElementById('orderDeliveryMethod').value;
     const location = document.getElementById('orderLocationSelect').value;
@@ -8747,7 +8798,7 @@ function submitOrderForm() {
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
 }).then((docRef) => {
         closeOrderForm();
-
+        notifySellersByEmail(docRef.id, 'new');
         if (pendingOrderIsCart) {
             cart = [];
             saveCart();
@@ -8979,8 +9030,8 @@ function markPaymentSent(orderId) {
     })
     .then(() => {
 
+        notifySellersByEmail(orderId, 'paid');
         closePaymentClaimModal();
-
         // Open the receipt automatically after payment is recorded
         openOrderReceipt(orderId);
 
