@@ -1162,8 +1162,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-const sellerId = localStorage.getItem("kayaSellerId");
+// remember which order the email link points to (survives a login step)
+const linkedOrder = new URLSearchParams(window.location.search).get('order');
+if (linkedOrder) localStorage.setItem('kayaPendingOrder', linkedOrder);
 
+const sellerId = localStorage.getItem("kayaSellerId");
 if (!sellerId) {
     alert("Please log in as a seller first.");
     window.location.href = "index.html";
@@ -2892,13 +2895,14 @@ function loadOrders() {
 
                 currentOrders = relevantOrders;
                 renderOrdersTable(relevantOrders);
+                focusOrderFromEmailLink();
             },
             error => {
                 console.error("ORDERS LOAD ERROR:", error);
 
                 document.getElementById("ordersTable").innerHTML =
                     `<tr class="empty-row">
-                        <td colspan="7">
+                        <td colspan="7">https://github.com/blackmarketgh/kayastore/edit/main/Analytics.html
                             Unable to load orders: ${error.message}
                         </td>
                     </tr>`;
@@ -2906,7 +2910,24 @@ function loadOrders() {
         );
 }
 let currentOrders = [];
+function focusOrderFromEmailLink() {
+    var id = localStorage.getItem('kayaPendingOrder');
+    if (!id) return;
+    localStorage.removeItem('kayaPendingOrder');
 
+    var row = document.getElementById('order-row-' + id);
+    if (!row) return;   // not this seller's order
+
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.style.transition = 'background .4s';
+    row.style.background = '#fff4ea';
+    setTimeout(function () { row.style.background = ''; }, 6000);
+
+    var order = currentOrders.find(function (o) { return o.id === id; });
+    if (order && order.paymentClaimed && !order.paymentVerified) {
+        setTimeout(function () { verifyOrderPayment(id); }, 700);
+    }
+}
 function renderOrdersTable(orders) {
     const table = document.getElementById("ordersTable");
 
@@ -2933,7 +2954,7 @@ const verifyBtn = (order.paymentClaimed && !order.paymentVerified)
     ? `<button class="icon-btn" style="background:#27ae60;" onclick="verifyOrderPayment('${order.id}')">✅ Verify Payment (${order.orderRef})</button>`
     : '';
 return `
-    <tr>
+    <tr id="order-row-${order.id}">
         <td>
             <div style="font-weight:600;">${order.buyerName}</div>
             <div style="font-size:11.5px; color:#999;">${order.buyerPhone}</div>
