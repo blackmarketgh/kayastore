@@ -1,127 +1,334 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>About Owner - KayaMart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banson Asamoah Bright | Founder & CEO of KayaMart</title>
+    <meta name="description" content="Learn about Banson Asamoah Bright, Founder and CEO of KayaMart, a Ghanaian marketplace connecting buyers and sellers.">
+    <meta name="keywords" content="Banson Asamoah Bright, KayaMart, KayaMart Ghana, KayaMart founder, KayaMart owner, Ghanaian entrepreneur, Kaya Group of Companies">
+    <meta name="author" content="Banson Asamoah Bright">
+    <meta property="og:title" content="Banson Asamoah Bright | Founder & CEO of KayaMart">
+    <meta property="og:description" content="Meet Banson Asamoah Bright, Founder and CEO of KayaMart.">
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="https://www.kayamartgh.com/">
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background: #f4f4f4;
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            transition: 0.3s ease;
+        }
+        .back-btn,
+        .mode-btn {
+            position: fixed;
+            top: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .back-btn {
+            left: 20px;
+        }
+        .mode-btn {
+            right: 20px;
         }
         .container {
-            max-width: 700px;
-            width: 100%;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            animation: fadeIn 0.4s ease-in;
-            text-align: left;
+            max-width: 760px;
+            margin: 70px auto 30px;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        h1 {
-            color: #2c3e50;
+        .brand {
             text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 35px;
+        }
+        .brand .kaya {
+            color: #1a5c3a;
+        }
+        .brand .mart {
+            color: #e67e22;
+        }
+        .profile {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .profile img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e67e22;
+        }
+        .profile h1 {
+            margin: 15px 0 5px;
+            font-size: 28px;
+            color: #222;
+        }
+        .position {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .location {
+            margin-top: 8px;
+            color: #777;
+            font-size: 14px;
         }
         h2 {
-            color: #2980b9;
+            margin-top: 32px;
+            color: #1a5c3a;
+            font-size: 21px;
+        }
+        p {
+            line-height: 1.8;
+            font-size: 16px;
         }
         ul {
-            line-height: 1.8;
+            line-height: 2;
+            padding-left: 22px;
         }
-        .tabs {
+        .company-box {
+            background: #fafafa;
+            border-left: 4px solid #e67e22;
+            padding: 18px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .company-box strong {
+            color: #1a5c3a;
+        }
+        .links {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
             flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 30px;
         }
-        .tab-btn {
-            padding: 10px 18px;
-            border-radius: 6px;
-            background-color: #eee;
-            color: #333;
-            cursor: pointer;
-            font-weight: bold;
+        .links a {
             text-decoration: none;
-            display: inline-block;
-        }
-        .tab-btn.active {
-            background-color: #2980b9;
+            padding: 11px 18px;
+            border-radius: 7px;
+            background: #1a5c3a;
             color: white;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+        .links a:hover {
+            opacity: 0.85;
         }
         footer {
-            margin-top: 30px;
-            color: #888;
-            font-size: 14px;
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
             text-align: center;
+            color: #888;
+            font-size: 13px;
         }
+        /* Dark mode */
         body.dark-mode {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
+            background: #111;
+            color: #eee;
         }
         body.dark-mode .container {
-            background-color: #2c2c2c;
-            color: #f0f0f0;
+            background: #1d1d1d;
+        }
+        body.dark-mode .profile h1 {
+            color: #fff;
+        }
+        body.dark-mode .company-box {
+            background: #252525;
+        }
+        body.dark-mode .profile {
+            border-color: #333;
+        }
+        body.dark-mode footer {
+            border-color: #333;
+        }
+        body.dark-mode .back-btn,
+        body.dark-mode .mode-btn {
+            background: #222;
+            color: white;
+            border-color: #444;
         }
         @media (max-width: 600px) {
-            body { padding: 15px; }
-            .container { padding: 15px; }
+            body {
+                padding: 12px;
+            }
+            .container {
+                padding: 25px 20px;
+                margin-top: 65px;
+            }
+            .profile h1 {
+                font-size: 24px;
+            }
+            .brand {
+                font-size: 28px;
+            }
         }
     </style>
-</head>
-<body>
-   <button onclick="window.location.href='index.html'" style="position:fixed; top:20px; left:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">←</button>
-
- <button id="modeToggle" onclick="toggleDarkMode()" style="position:fixed; top:20px; right:20px; width:44px; height:44px; border-radius:50%; border:1px solid #ccc; background-color:white; font-size:20px; cursor:pointer; z-index:100;">☀️</button>
-
-    <div class="container">
-        <h1>
-<span style="color:#1a5c3a;">Kaya</span><span style="color:#e67e22;">Mart</span>
-</h1>
-
-      
-
-        <div style="text-align:center;">
-            <img src="myphoto.jpg" alt="Banson Asamoah Bright" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #2980b9;">
-            <h3 style="margin:10px 0 0 0;">Banson Asamoah Bright</h3>
-            <p style="margin:0; color:#555; font-size:14px;">Store Owner</p>
-        </div>
-
-        <h2>About Owner</h2>
-        <p>Banson is a young Ghanaian entrepreneur who started to find ends meet at age 16. He started with trading and tried TikTok as well. He started the Kaya Store project at age 20 in 2026 and is yet to see what the future holds for all Ghanaians.</p>
-
-        <h2>Interests</h2>
-        <ul>
-            <li>Self-taught Coding</li>
-            <li>Marketing Strategist</li>
-            <li>Learning new skills</li>
-        </ul>
-
-        <footer>
-            &copy; 2026 Banson. Built with HTML &amp; CSS.
-        </footer>
-    </div>
-
-    <script>
-    function toggleDarkMode() {
-        document.body.classList.toggle("dark-mode");
-        const btn = document.getElementById("modeToggle");
-        if (document.body.classList.contains("dark-mode")) {
-            btn.innerHTML = "🌙";
-        } else {
-            btn.innerHTML = "☀️";
+    <!-- Search Engine Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Banson Asamoah Bright",
+        "jobTitle": "Founder & CEO",
+        "worksFor": {
+            "@type": "Organization",
+            "name": "KayaMart",
+            "url": "https://www.kayamartgh.com/"
+        },
+        "url": "https://www.kayamartgh.com/",
+        "image": "https://www.kayamartgh.com/myphoto.jpg",
+        "nationality": {
+            "@type": "Country",
+            "name": "Ghana"
         }
     }
+    </script>
+</head>
+<body>
+    <button
+        class="back-btn"
+        onclick="window.location.href='index.html'"
+        aria-label="Go back to KayaMart">
+        ←
+    </button>
+    <button
+        id="modeToggle"
+        class="mode-btn"
+        onclick="toggleDarkMode()"
+        aria-label="Toggle dark mode">
+        ☀️
+    </button>
+    <main class="container">
+        <div class="brand">
+            <span class="kaya">Kaya</span><span class="mart">Mart</span>
+        </div>
+        <section class="profile">
+            <img
+                src="myphoto.jpg"
+                alt="Banson Asamoah Bright, Founder and CEO of KayaMart">
+            <h1>Banson Asamoah Bright</h1>
+            <p class="position">
+                Founder &amp; CEO of KayaMart
+            </p>
+            <p class="location">
+                Ghana
+            </p>
+        </section>
+        <section>
+            <h2>About the Founder</h2>
+            <p>
+                Banson Asamoah Bright is a Ghanaian entrepreneur and self-taught
+                technology enthusiast with an interest in business, digital
+                marketing and entrepreneurship.
+            </p>
+            <p>
+                He began exploring entrepreneurship at a young age through
+                trading and other small business activities. His interest in
+                technology and digital platforms later led him to explore
+                coding, marketing and online business.
+            </p>
+            <p>
+                In 2026, Banson began developing KayaMart with the vision of
+                creating a marketplace where buyers and sellers can connect
+                more conveniently in one place.
+            </p>
+        </section>
+        <section>
+            <h2>About KayaMart</h2>
+            <p>
+                KayaMart is a Ghanaian marketplace designed to connect buyers
+                with entrepreneurs, businesses and store owners. The platform
+                provides a virtual marketplace where sellers can showcase
+                products and reach potential customers.
+            </p>
+            <div class="company-box">
+                <strong>KayaMart</strong><br>
+                Your Marketplace. Your Way.
+                <br><br>
+                Official website:
+                <a href="https://www.kayamartgh.com/"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    www.kayamartgh.com
+                </a>
+            </div>
+        </section>
+        <section>
+            <h2>Kaya Group of Companies</h2>
+            <p>
+                KayaMart is associated with the Kaya Group of Companies (KGOC),
+                a business group founded and led by Banson Asamoah Bright.
+            </p>
+        </section>
+        <section>
+            <h2>Interests &amp; Skills</h2>
+            <ul>
+                <li>Entrepreneurship</li>
+                <li>Self-taught coding</li>
+                <li>Digital marketing</li>
+                <li>Marketing strategy</li>
+                <li>Learning new skills</li>
+                <li>Technology and digital business</li>
+            </ul>
+        </section>
+        <div class="links">
+            <a href="https://www.kayamartgh.com/"
+               target="_blank"
+               rel="noopener noreferrer">
+                Visit KayaMart
+            </a>
+            <a href="https://www.kayamartgh.com/"
+               target="_blank"
+               rel="noopener noreferrer">
+                Official Website
+            </a>
+        </div>
+        <footer>
+            © 2026 KayaMart. All rights reserved.<br>
+            Founded by Banson Asamoah Bright.
+        </footer>
+    </main>
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            const btn = document.getElementById("modeToggle");
+            if (document.body.classList.contains("dark-mode")) {
+                btn.innerHTML = "🌙";
+            } else {
+                btn.innerHTML = "☀️";
+            }
+        }
     </script>
 </body>
 </html>
