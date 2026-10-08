@@ -1,334 +1,815 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banson Asamoah Bright | Founder & CEO of KayaMart</title>
-    <meta name="description" content="Learn about Banson Asamoah Bright, Founder and CEO of KayaMart, a Ghanaian marketplace connecting buyers and sellers.">
-    <meta name="keywords" content="Banson Asamoah Bright, KayaMart, KayaMart Ghana, KayaMart founder, KayaMart owner, Ghanaian entrepreneur, Kaya Group of Companies">
-    <meta name="author" content="Banson Asamoah Bright">
-    <meta property="og:title" content="Banson Asamoah Bright | Founder & CEO of KayaMart">
-    <meta property="og:description" content="Meet Banson Asamoah Bright, Founder and CEO of KayaMart.">
-    <meta property="og:type" content="profile">
-    <meta property="og:url" content="https://www.kayamartgh.com/">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            transition: 0.3s ease;
-        }
-        .back-btn,
-        .mode-btn {
-            position: fixed;
-            top: 20px;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
-            background: white;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        .back-btn {
-            left: 20px;
-        }
-        .mode-btn {
-            right: 20px;
-        }
-        .container {
-            max-width: 760px;
-            margin: 70px auto 30px;
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .brand {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 35px;
-        }
-        .brand .kaya {
-            color: #1a5c3a;
-        }
-        .brand .mart {
-            color: #e67e22;
-        }
-        .profile {
-            text-align: center;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #eee;
-        }
-        .profile img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #e67e22;
-        }
-        .profile h1 {
-            margin: 15px 0 5px;
-            font-size: 28px;
-            color: #222;
-        }
-        .position {
-            margin: 0;
-            font-size: 16px;
-            font-weight: bold;
-            color: #e67e22;
-        }
-        .location {
-            margin-top: 8px;
-            color: #777;
-            font-size: 14px;
-        }
-        h2 {
-            margin-top: 32px;
-            color: #1a5c3a;
-            font-size: 21px;
-        }
-        p {
-            line-height: 1.8;
-            font-size: 16px;
-        }
-        ul {
-            line-height: 2;
-            padding-left: 22px;
-        }
-        .company-box {
-            background: #fafafa;
-            border-left: 4px solid #e67e22;
-            padding: 18px;
-            margin-top: 20px;
-            border-radius: 8px;
-        }
-        .company-box strong {
-            color: #1a5c3a;
-        }
-        .links {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        .links a {
-            text-decoration: none;
-            padding: 11px 18px;
-            border-radius: 7px;
-            background: #1a5c3a;
-            color: white;
-            font-weight: bold;
-            transition: 0.2s ease;
-        }
-        .links a:hover {
-            opacity: 0.85;
-        }
-        footer {
-            margin-top: 35px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            text-align: center;
-            color: #888;
-            font-size: 13px;
-        }
-        /* Dark mode */
-        body.dark-mode {
-            background: #111;
-            color: #eee;
-        }
-        body.dark-mode .container {
-            background: #1d1d1d;
-        }
-        body.dark-mode .profile h1 {
-            color: #fff;
-        }
-        body.dark-mode .company-box {
-            background: #252525;
-        }
-        body.dark-mode .profile {
-            border-color: #333;
-        }
-        body.dark-mode footer {
-            border-color: #333;
-        }
-        body.dark-mode .back-btn,
-        body.dark-mode .mode-btn {
-            background: #222;
-            color: white;
-            border-color: #444;
-        }
-        @media (max-width: 600px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                padding: 25px 20px;
-                margin-top: 65px;
-            }
-            .profile h1 {
-                font-size: 24px;
-            }
-            .brand {
-                font-size: 28px;
-            }
-        }
-    </style>
-    <!-- Search Engine Structured Data -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Banson Asamoah Bright",
-        "jobTitle": "Founder & CEO",
-        "worksFor": {
-            "@type": "Organization",
-            "name": "KayaMart",
-            "url": "https://www.kayamartgh.com/"
-        },
-        "url": "https://www.kayamartgh.com/",
-        "image": "https://www.kayamartgh.com/myphoto.jpg",
-        "nationality": {
-            "@type": "Country",
-            "name": "Ghana"
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KayaMart | Your Marketplace. Your Way.</title>
+<meta name="description" content="Discover the story behind KayaMart and its founder Banson Asamoah Bright. Your Marketplace. Your Way.">
+<meta name="keywords" content="KayaMart, KayaMart Ghana, Banson Asamoah Bright, KayaMart founder, KayaMart owner, Ghanaian entrepreneur, Kaya Group of Companies">
+<meta name="author" content="Banson Asamoah Bright">
+<meta property="og:title" content="KayaMart | Your Marketplace. Your Way.">
+<meta property="og:description" content="Discover the story behind KayaMart and its founder Banson Asamoah Bright.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.kayamartgh.com/">
+<style>
+/* =====================================================
+   BASIC
+===================================================== */
+* {
+    box-sizing: border-box;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #080808;
+    color: #ffffff;
+    overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
+}
+/* =====================================================
+   SCROLL PROGRESS
+===================================================== */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: #e67e22;
+    z-index: 9999;
+}
+/* =====================================================
+   DARK MODE BUTTON
+===================================================== */
+.mode-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.65);
+    color: #ffffff;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+}
+/* =====================================================
+   HERO
+===================================================== */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 25px;
+    position: relative;
+    overflow: hidden;
+}
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: #e67e22;
+    opacity: 0.06;
+    filter: blur(100px);
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 850px;
+}
+/* =====================================================
+   BRAND
+===================================================== */
+.brand {
+    font-size: clamp(55px, 13vw, 110px);
+    font-weight: 900;
+    letter-spacing: -6px;
+    margin-bottom: 25px;
+}
+.kaya {
+    color: #ffffff;
+}
+.mart {
+    color: #e67e22;
+}
+/* =====================================================
+   HERO LINE
+===================================================== */
+.hero-line {
+    width: 0;
+    height: 2px;
+    background: #e67e22;
+    margin: 0 auto 30px;
+    animation: lineGrow 1.5s ease forwards;
+}
+@keyframes lineGrow {
+    to {
+        width: 120px;
     }
-    </script>
+}
+/* =====================================================
+   HERO TEXT
+===================================================== */
+.hero h1 {
+    font-size: clamp(28px, 6vw, 52px);
+    line-height: 1.1;
+    margin: 0;
+}
+.hero p {
+    color: #999999;
+    font-size: 18px;
+    line-height: 1.8;
+    max-width: 650px;
+    margin: 25px auto;
+}
+/* =====================================================
+   SCROLL INDICATOR
+===================================================== */
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #777777;
+    font-size: 11px;
+    letter-spacing: 4px;
+}
+.scroll-indicator::after {
+    content: "";
+    display: block;
+    width: 1px;
+    height: 45px;
+    background: #e67e22;
+    margin: 12px auto 0;
+    animation: scrollAnimation 1.5s infinite;
+}
+@keyframes scrollAnimation {
+    0% {
+        transform: scaleY(0);
+        transform-origin: top;
+    }
+    50% {
+        transform: scaleY(1);
+        transform-origin: top;
+    }
+    100% {
+        transform: scaleY(0);
+        transform-origin: bottom;
+    }
+}
+/* =====================================================
+   STORY SECTIONS
+===================================================== */
+.story {
+    min-height: 100vh;
+    padding: 120px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.story-inner {
+    width: 100%;
+    max-width: 900px;
+}
+.section-number {
+    color: #e67e22;
+    font-size: 13px;
+    letter-spacing: 4px;
+    margin-bottom: 22px;
+    font-weight: bold;
+}
+.story h2 {
+    font-size: clamp(42px, 8vw, 78px);
+    line-height: 0.98;
+    margin: 0 0 35px;
+    letter-spacing: -2px;
+}
+.story p {
+    color: #999999;
+    font-size: 18px;
+    line-height: 1.9;
+    max-width: 720px;
+}
+/* =====================================================
+   SCROLL REVEAL
+===================================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(80px);
+    transition:
+        opacity 1s ease,
+        transform 1s cubic-bezier(.2,.7,.2,1);
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* =====================================================
+   FOUNDER
+===================================================== */
+.founder-section {
+    text-align: center;
+}
+.founder-photo {
+    width: 175px;
+    height: 175px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #e67e22;
+    padding: 4px;
+    margin-bottom: 30px;
+}
+.founder-section h2 {
+    margin-bottom: 12px;
+}
+.position {
+    color: #e67e22 !important;
+    font-size: 17px !important;
+    font-weight: bold;
+}
+/* =====================================================
+   CARDS
+===================================================== */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 45px;
+}
+.card {
+    padding: 32px;
+    border-radius: 18px;
+    background: #111111;
+    border: 1px solid #292929;
+    transition: 0.35s ease;
+}
+.card:hover {
+    transform: translateY(-8px);
+    border-color: #e67e22;
+}
+.card h3 {
+    font-size: 24px;
+    margin: 0 0 15px;
+}
+.card p {
+    font-size: 15px;
+    margin: 0;
+}
+/* =====================================================
+   COMPANY BOX
+===================================================== */
+.company-box {
+    margin-top: 40px;
+    padding: 25px;
+    border-left: 3px solid #e67e22;
+    background: #101010;
+    border-radius: 10px;
+}
+.company-box strong {
+    font-size: 22px;
+}
+.company-box span {
+    color: #e67e22;
+}
+.company-box a {
+    color: #e67e22;
+    text-decoration: none;
+}
+/* =====================================================
+   SKILLS
+===================================================== */
+.skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+}
+.skill {
+    padding: 12px 18px;
+    border: 1px solid #333333;
+    border-radius: 30px;
+    color: #cccccc;
+    transition: 0.3s ease;
+}
+.skill:hover {
+    border-color: #e67e22;
+    color: #e67e22;
+}
+/* =====================================================
+   FINAL SECTION
+===================================================== */
+.final {
+    min-height: 100vh;
+    padding: 50px 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #0d0d0d;
+}
+.final h2 {
+    font-size: clamp(48px, 10vw, 105px);
+    line-height: 0.95;
+    letter-spacing: -4px;
+    margin: 0;
+}
+.final p {
+    color: #999999;
+    max-width: 600px;
+    margin: 30px auto 40px;
+    line-height: 1.8;
+    font-size: 18px;
+}
+/* =====================================================
+   ENTER BUTTON
+===================================================== */
+.enter-btn {
+    display: inline-block;
+    padding: 17px 35px;
+    border-radius: 50px;
+    background: #e67e22;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+.enter-btn:hover {
+    transform: scale(1.06);
+    background: #f28c28;
+}
+/* =====================================================
+   FOOTER
+===================================================== */
+footer {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666666;
+    font-size: 13px;
+}
+/* =====================================================
+   LIGHT MODE
+===================================================== */
+body.light {
+    background: #f5f5f5;
+    color: #111111;
+}
+body.light .hero p,
+body.light .story p,
+body.light .final p {
+    color: #555555;
+}
+body.light .kaya {
+    color: #111111;
+}
+body.light .card,
+body.light .company-box,
+body.light .final {
+    background: #ffffff;
+}
+body.light .card {
+    border-color: #dddddd;
+}
+body.light .skill {
+    border-color: #cccccc;
+    color: #444444;
+}
+body.light .mode-btn {
+    background: #ffffff;
+    color: #111111;
+    border-color: #dddddd;
+}
+/* =====================================================
+   MOBILE
+===================================================== */
+@media (max-width: 650px) {
+    .brand {
+        letter-spacing: -4px;
+    }
+    .story {
+        min-height: 90vh;
+        padding: 100px 22px;
+    }
+    .cards {
+        grid-template-columns: 1fr;
+    }
+    .founder-photo {
+        width: 145px;
+        height: 145px;
+    }
+    .final h2 {
+        letter-spacing: -2px;
+    }
+}
+</style>
+<!-- =====================================================
+     SEARCH ENGINE STRUCTURED DATA
+===================================================== -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Banson Asamoah Bright",
+    "jobTitle": "Founder",
+    "worksFor": {
+        "@type": "Organization",
+        "name": "KayaMart",
+        "url": "https://www.kayamartgh.com/"
+    },
+    "url": "https://www.kayamartgh.com/",
+    "image": "https://www.kayamartgh.com/myphoto.jpg",
+    "nationality": {
+        "@type": "Country",
+        "name": "Ghana"
+    }
+}
+</script>
 </head>
 <body>
-    <button
-        class="back-btn"
-        onclick="window.location.href='index.html'"
-        aria-label="Go back to KayaMart">
-        ←
-    </button>
-    <button
-        id="modeToggle"
-        class="mode-btn"
-        onclick="toggleDarkMode()"
-        aria-label="Toggle dark mode">
-        ☀️
-    </button>
-    <main class="container">
-        <div class="brand">
-            <span class="kaya">Kaya</span><span class="mart">Mart</span>
+<!-- =====================================================
+     PROGRESS BAR
+===================================================== -->
+<div
+    class="progress-bar"
+    id="progressBar">
+</div>
+<!-- =====================================================
+     DARK MODE
+===================================================== -->
+
+☀️
+<!-- =====================================================
+     HERO / OPENING
+===================================================== -->
+<section class="hero">
+<div class="hero-content">
+    <div class="brand reveal">
+        <span class="kaya">Kaya</span><span class="mart">Mart</span>
+    </div>
+    <div class="hero-line"></div>
+    <h1 class="reveal">
+        Your Marketplace.<br>
+        Your Way.
+    </h1>
+    <p class="reveal">
+        Before you enter KayaMart,
+        take a moment to discover
+        the story behind the marketplace.
+    </p>
+</div>
+<div class="scroll-indicator">
+    SCROLL
+</div>
+</section>
+<!-- =====================================================
+     SECTION 01
+===================================================== -->
+<section class="story">
+<div class="story-inner reveal">
+    <div class="section-number">
+        01 — THE IDEA
+    </div>
+    <h2>
+        One place.<br>
+        Many possibilities.
+    </h2>
+    <p>
+        KayaMart was created with a simple idea:
+        bring buyers, entrepreneurs and store owners
+        together in one marketplace.
+    </p>
+    <p>
+        A place where sellers can showcase their
+        products and customers can discover
+        different products more conveniently.
+    </p>
+</div>
+</section>
+<!-- =====================================================
+     SECTION 02 — FOUNDER
+===================================================== -->
+<section class="story">
+<div class="story-inner reveal founder-section">
+    <div class="section-number">
+        02 — THE PERSON
+    </div>
+    <img
+        class="founder-photo"
+        src="myphoto.jpg"
+        alt="Banson Asamoah Bright">
+    <h2>
+        Banson Asamoah Bright
+    </h2>
+    <p class="position">
+        Founder of KayaMart
+    </p>
+    <p>
+        A Ghanaian entrepreneur with interests in
+        technology, business, marketing and
+        learning new skills.
+    </p>
+</div>
+</section>
+<!-- =====================================================
+     SECTION 03 — JOURNEY
+===================================================== -->
+<section class="story">
+<div class="story-inner reveal">
+    <div class="section-number">
+        03 — THE JOURNEY
+    </div>
+    <h2>
+        From an idea<br>
+        to a platform.
+    </h2>
+    <p>
+        Banson began exploring entrepreneurship at
+        a young age through trading and other
+        business activities.
+    </p>
+    <p>
+        His interest in coding, digital marketing
+        and online business eventually led to the
+        development of KayaMart in 2026.
+    </p>
+</div>
+</section>
+<!-- =====================================================
+     SECTION 04 — KAYAMART
+===================================================== -->
+<section class="story">
+<div class="story-inner reveal">
+    <div class="section-number">
+        04 — KAYAMART
+    </div>
+    <h2>
+        Built for<br>
+        buyers & sellers.
+    </h2>
+    <div class="cards">
+        <div class="card">
+            <h3>
+                For Buyers
+            </h3>
+            <p>
+                Discover products from different
+                sellers and explore a marketplace
+                built around choice.
+            </p>
         </div>
-        <section class="profile">
-            <img
-                src="myphoto.jpg"
-                alt="Banson Asamoah Bright, Founder and CEO of KayaMart">
-            <h1>Banson Asamoah Bright</h1>
-            <p class="position">
-                Founder &amp; CEO of KayaMart
-            </p>
-            <p class="location">
-                Ghana
-            </p>
-        </section>
-        <section>
-            <h2>About the Founder</h2>
+        <div class="card">
+            <h3>
+                For Sellers
+            </h3>
             <p>
-                Banson Asamoah Bright is a Ghanaian entrepreneur and self-taught
-                technology enthusiast with an interest in business, digital
-                marketing and entrepreneurship.
+                Showcase your products through
+                your own virtual presence and
+                reach potential customers.
             </p>
-            <p>
-                He began exploring entrepreneurship at a young age through
-                trading and other small business activities. His interest in
-                technology and digital platforms later led him to explore
-                coding, marketing and online business.
-            </p>
-            <p>
-                In 2026, Banson began developing KayaMart with the vision of
-                creating a marketplace where buyers and sellers can connect
-                more conveniently in one place.
-            </p>
-        </section>
-        <section>
-            <h2>About KayaMart</h2>
-            <p>
-                KayaMart is a Ghanaian marketplace designed to connect buyers
-                with entrepreneurs, businesses and store owners. The platform
-                provides a virtual marketplace where sellers can showcase
-                products and reach potential customers.
-            </p>
-            <div class="company-box">
-                <strong>KayaMart</strong><br>
-                Your Marketplace. Your Way.
-                <br><br>
-                Official website:
-                <a href="https://www.kayamartgh.com/"
-                   target="_blank"
-                   rel="noopener noreferrer">
-                    www.kayamartgh.com
-                </a>
-            </div>
-        </section>
-        <section>
-            <h2>Kaya Group of Companies</h2>
-            <p>
-                KayaMart is associated with the Kaya Group of Companies (KGOC),
-                a business group founded and led by Banson Asamoah Bright.
-            </p>
-        </section>
-        <section>
-            <h2>Interests &amp; Skills</h2>
-            <ul>
-                <li>Entrepreneurship</li>
-                <li>Self-taught coding</li>
-                <li>Digital marketing</li>
-                <li>Marketing strategy</li>
-                <li>Learning new skills</li>
-                <li>Technology and digital business</li>
-            </ul>
-        </section>
-        <div class="links">
-            <a href="https://www.kayamartgh.com/"
-               target="_blank"
-               rel="noopener noreferrer">
-                Visit KayaMart
-            </a>
-            <a href="https://www.kayamartgh.com/"
-               target="_blank"
-               rel="noopener noreferrer">
-                Official Website
-            </a>
         </div>
-        <footer>
-            © 2026 KayaMart. All rights reserved.<br>
-            Founded by Banson Asamoah Bright.
-        </footer>
-    </main>
-    <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-            const btn = document.getElementById("modeToggle");
-            if (document.body.classList.contains("dark-mode")) {
-                btn.innerHTML = "🌙";
-            } else {
-                btn.innerHTML = "☀️";
-            }
+    </div>
+    <div class="company-box">
+        <strong>
+            KayaMart
+        </strong>
+        <br><br>
+        <span>
+            Your Marketplace. Your Way.
+        </span>
+        <br><br>
+        Official website:
+        <a
+            href="https://www.kayamartgh.com/"
+            target="_blank"
+            rel="noopener noreferrer">
+            www.kayamartgh.com
+        </a>
+    </div>
+</div>
+</section>
+<!-- =====================================================
+     SECTION 05 — VISION
+===================================================== -->
+<section class="story">
+<div class="story-inner reveal">
+    <div class="section-number">
+        05 — THE VISION
+    </div>
+    <h2>
+        This is only<br>
+        the beginning.
+    </h2>
+    <p>
+        KayaMart is being built with the ambition
+        of creating a marketplace where Ghanaian
+        entrepreneurs and customers can connect
+        more easily.
+    </p>
+    <p>
+        The journey has just started.
+    </p>
+    <div class="skills">
+        <div class="skill">
+            Entrepreneurship
+        </div>
+        <div class="skill">
+            Self-taught Coding
+        </div>
+        <div class="skill">
+            Digital Marketing
+        </div>
+        <div class="skill">
+            Marketing Strategy
+        </div>
+        <div class="skill">
+            Technology
+        </div>
+        <div class="skill">
+            Learning New Skills
+        </div>
+    </div>
+</div>
+</section>
+<!-- =====================================================
+     FINAL REVEAL
+===================================================== -->
+<section class="final">
+<div class="reveal">
+    <div class="section-number">
+        WELCOME TO KAYAMART
+    </div>
+    <h2>
+        Your Marketplace.<br>
+        Your Way.
+    </h2>
+    <p>
+        Now that you know the story,
+        it's time to experience the marketplace.
+    </p>
+    <a
+        href="index.html"
+        class="enter-btn"
+        id="enterBtn">
+        ENTER KAYAMART →
+    </a>
+</div>
+</section>
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+<footer>
+© 2026 KayaMart. All rights reserved.
+<br>
+Founded by Banson Asamoah Bright.
+</footer>
+<!-- =====================================================
+     JAVASCRIPT — EVERYTHING IS IN THIS SAME FILE
+===================================================== -->
+<script>
+/* =====================================================
+   SCROLL REVEAL
+===================================================== */
+const revealElements =
+    document.querySelectorAll(".reveal");
+function revealOnScroll() {
+    const windowHeight =
+        window.innerHeight;
+    revealElements.forEach(function(element) {
+        const elementTop =
+            element.getBoundingClientRect().top;
+        if (
+            elementTop <
+            windowHeight - 100
+        ) {
+            element.classList.add("active");
         }
-    </script>
+    });
+}
+window.addEventListener(
+    "scroll",
+    revealOnScroll
+);
+revealOnScroll();
+/* =====================================================
+   SCROLL PROGRESS
+===================================================== */
+function updateProgress() {
+    const scrollTop =
+        window.scrollY;
+    const pageHeight =
+        document.documentElement.scrollHeight -
+        window.innerHeight;
+    const percentage =
+        (scrollTop / pageHeight) * 100;
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        percentage + "%";
+}
+window.addEventListener(
+    "scroll",
+    updateProgress
+);
+updateProgress();
+/* =====================================================
+   DARK / LIGHT MODE
+===================================================== */
+const modeToggle =
+    document.getElementById(
+        "modeToggle"
+    );
+modeToggle.addEventListener(
+    "click",
+    function() {
+        document.body.classList.toggle(
+            "light"
+        );
+        if (
+            document.body.classList.contains(
+                "light"
+            )
+        ) {
+            modeToggle.innerHTML = "🌙";
+        } else {
+            modeToggle.innerHTML = "☀️";
+        }
+    }
+);
+/* =====================================================
+   ENTER KAYAMART
+===================================================== */
+const enterButton =
+    document.getElementById(
+        "enterBtn"
+    );
+enterButton.addEventListener(
+    "click",
+    function() {
+        /*
+         * Remember that the visitor
+         * has completed the introduction.
+         */
+        localStorage.setItem(
+            "kayamartIntroSeen",
+            "true"
+        );
+        this.innerHTML =
+            "ENTERING KAYAMART...";
+    }
+);
+/* =====================================================
+   FIRST VISIT MEMORY
+===================================================== */
+/*
+ * This records whether the visitor
+ * has already entered KayaMart.
+ *
+ * Because this is ONE HTML DOCUMENT,
+ * there is no separate welcome page.
+ */
+const introSeen =
+    localStorage.getItem(
+        "kayamartIntroSeen"
+    );
+/*
+ * The first time:
+ *
+ *     Scroll introduction
+ *          ↓
+ *     Enter KayaMart
+ *
+ * On later visits the browser remembers
+ * the visitor.
+ *
+ * If this file itself is your main
+ * KayaMart page, the intro remains part
+ * of the same document.
+ */
+console.log(
+    introSeen === "true"
+        ? "Returning KayaMart visitor"
+        : "First KayaMart visit"
+);
+/* =====================================================
+   OPTIONAL: RESET INTRO
+===================================================== */
+/*
+ * If you ever want to test the animation
+ * again, open your browser console and run:
+ *
+ * localStorage.removeItem("kayamartIntroSeen");
+ *
+ */
+</script>
 </body>
 </html>
